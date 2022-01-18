@@ -1,0 +1,59 @@
+enum PageType {
+  LP
+  SERVICE
+  RESTRICTED
+}
+
+input PageInput {
+  id: ID!
+  title: String!
+  show: Boolean!
+  width: Int!
+  height: Float!
+  layout: LayoutInput!
+  tags: [String]
+  attributes: [AttributeInput!]
+  pageType: PageType!
+}
+
+input AttributeInput {
+  key: String
+  val: String
+}
+
+input LayoutInput {
+  dropdown: DropDownComponentInput
+}
+
+input DropDownComponentInput {
+  getEvent: EventInput!
+  dropdownComponent: ComponentInput
+}
+
+enum ButtonComponentType {
+  BUTTON
+  SUBMIT
+}
+
+input ComponentInput {
+  type: ButtonComponentType!
+  name: String!
+  event: EventInput
+  child: ComponentInput
+  childrens: [ComponentInput]
+}
+
+input EventInput {
+  arguments: [EventArgumentInput!]!
+  options: [EventOptionType!]
+}
+
+enum EventOptionType {
+  RETRY
+  RELOAD
+}
+
+input EventArgumentInput {
+  name: String!
+  value: String!
+}

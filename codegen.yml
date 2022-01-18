@@ -1,0 +1,8 @@
+overwrite: true
+schema: "./test.graphql"
+generates:
+  gen/schemas.ts:
+    plugins:
+      - typescript
+      - ./dist/index.js:
+          schema: yup
