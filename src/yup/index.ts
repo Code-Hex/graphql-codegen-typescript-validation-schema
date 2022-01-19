@@ -39,7 +39,8 @@ export class YupGenerator {
   public generate(): string {
     return [
       ...Object.values(this.enums).map(
-        (enumdef) => `export const ${enumdef.name.value}Schema = yup.mixed().oneOf(Object.values(${enumdef.name.value}))`
+        (enumdef) =>
+          `export const ${enumdef.name.value}Schema = yup.mixed().oneOf(Object.values(${enumdef.name.value}))`
       ),
       ...this.inputObjects.map((inputObject) =>
         this.generateInputObjectYupSchema(inputObject)
@@ -87,9 +88,8 @@ export class YupGenerator {
     type: TypeNode
   ): string => {
     if (isListType(type)) {
-      return `yup.array().of(${this.generateInputObjectFieldTypeYupSchema(
-        type.type
-      )})`;
+      const schema = this.generateInputObjectFieldTypeYupSchema(type.type);
+      return `yup.array().of(${maybeLazy(type.type, schema)})`;
     }
     if (isNonNullType(type)) {
       const schema = this.generateInputObjectFieldTypeYupSchema(type.type);
