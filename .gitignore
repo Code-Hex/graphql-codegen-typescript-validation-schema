@@ -4,3 +4,4 @@ dist
 gen/*.ts
 package-lock.json
 .DS_Store
+tsconfig.tsbuildinfo
