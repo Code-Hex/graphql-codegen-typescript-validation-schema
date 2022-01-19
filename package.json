@@ -1,11 +1,21 @@
 {
   "name": "graphql-codegen-validation-schema",
   "version": "1.0.0",
-  "description": "A plugin for GraphQL codegen to generate form validation schema from your GraphQL schema",
-  "main": "./dist/index.js",
+  "description": "GraphQL Code Generator plugin to generate form validation schema from your GraphQL schema",
+  "respository": {
+    "type": "git",
+    "url": "https://github.com/Code-Hex/graphql-codegen-validation-schema.git"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist/*.{js,ts}"
+  ],
   "scripts": {
+    "type-check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "generate": "tsc && graphql-codegen"
+    "build": "tsc",
+    "generate": "tsc && graphql-codegen",
+    "prepublish": "tsc"
   },
   "keywords": [
     "gql",
@@ -36,5 +46,8 @@
     "@graphql-codegen/visitor-plugin-common": "^2.5.2",
     "@graphql-tools/utils": "^8.6.1",
     "graphql": "^15.8.0"
+  },
+  "bugs": {
+    "url": "https://github.com/Code-Hex/graphql-codegen-validation-schema/issues"
   }
 }
