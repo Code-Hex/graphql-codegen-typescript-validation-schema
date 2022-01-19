@@ -1,6 +1,6 @@
 {
   "name": "graphql-codegen-validation-schema",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "GraphQL Code Generator plugin to generate form validation schema from your GraphQL schema",
   "respository": {
     "type": "git",
