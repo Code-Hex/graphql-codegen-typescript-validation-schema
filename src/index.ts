@@ -1,46 +1,26 @@
-import { ImportYup, YupGenerator } from "./yup/index";
-import { ValidationSchema, ValidationSchemaPluginConfig } from "./types";
+import { transformSchemaAST } from "@graphql-codegen/schema-ast";
+import { YupSchemaVisitor } from "./yup/index";
+import { ValidationSchemaPluginConfig } from "./types";
 import { PluginFunction, Types } from "@graphql-codegen/plugin-helpers";
-import { GraphQLSchema } from "graphql";
-import { retrieveSchema } from "./graphql";
+import { GraphQLSchema, visit } from "graphql";
 
 export const plugin: PluginFunction<ValidationSchemaPluginConfig> = async (
   schema: GraphQLSchema,
   _documents: Types.DocumentFile[],
   config: ValidationSchemaPluginConfig
 ): Promise<Types.PluginOutput> => {
-  const { inputObjects, enums, scalars } = retrieveSchema(schema, config);
+  const { schema: _schema, ast } = transformSchemaAST(schema, config);
+  const { buildImports, ...visitor } = YupSchemaVisitor(_schema, config);
 
-  const prepend = [importSchema(config.schema)];
-  if (config.importFrom) {
-    prepend.push(
-      buildImportStatement(
-        [
-          // Should put on Scalar here?
-          ...Object.values(enums).map((enumdef) => enumdef.name.value),
-          ...inputObjects.map((inputObject) => inputObject.name.value),
-        ],
-        config.importFrom
-      )
-    );
-  }
+  const result = visit(ast, {
+    leave: visitor,
+  });
+
+  // @ts-ignore
+  const generated = result.definitions.filter((def) => typeof def === "string");
+
   return {
-    prepend,
-    content:
-      "\n" +
-      [new YupGenerator({ inputObjects, enums, scalars }).generate()].join(
-        "\n"
-      ),
+    prepend: buildImports(),
+    content: "\n" + [...generated].join("\n"),
   };
-};
-
-const buildImportStatement = (types: string[], importFrom: string): string =>
-  `import { ${types.join(", ")} } from "${importFrom}";`;
-
-const importSchema = (schema?: ValidationSchema): string => {
-  if (schema === "yup") {
-    return ImportYup();
-  }
-  // TODO(codehex): support zod
-  return ImportYup();
 };

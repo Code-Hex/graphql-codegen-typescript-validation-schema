@@ -1,8 +1,11 @@
-import { TypeScriptPluginConfig } from "@graphql-codegen/typescript";
+import { TsVisitor, TypeScriptPluginConfig } from "@graphql-codegen/typescript";
 import {
+  ASTKindToNode,
+  ASTNode,
   EnumTypeDefinitionNode,
   InputObjectTypeDefinitionNode,
   ScalarTypeDefinitionNode,
+  VisitFn,
 } from "graphql";
 
 export type ValidationSchema = "yup";
@@ -24,7 +27,6 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   schema?: ValidationSchema;
-
   /**
    * @description import types from generated typescript type path
    * if not given, omit import statement.
@@ -44,10 +46,51 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   importFrom?: string;
+  /**
+   * @description Generates validation schema for generated `const enum`, you can read more about const enums here: https://www.typescriptlang.org/docs/handbook/enums.html.
+   * @default false
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - typescript
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       constEnums: true
+   * ```
+   */
+  constEnums?: boolean;
+  /**
+   * @description Generates validation schema for enum as TypeScript `type`
+   * @default false
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       enumsAsTypes: true
+   * ```
+   *
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - typescript
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       enumsAsTypes: true
+   * ```
+   */
+  enumsAsTypes?: boolean;
 }
 
-export interface Nodes {
-  inputObjects: InputObjectTypeDefinitionNode[];
-  enums: Record<string, EnumTypeDefinitionNode>;
-  scalars: Record<string, ScalarTypeDefinitionNode>;
-}
+export type ValidationSchemaVisitor = {
+  [K in keyof ASTKindToNode]?: VisitFn<ASTNode, ASTKindToNode[K]>;
+} & {
+  buildImports: () => string[]
+};
