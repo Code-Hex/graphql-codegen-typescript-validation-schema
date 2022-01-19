@@ -14,6 +14,7 @@ input PageInput {
   tags: [String]
   attributes: [AttributeInput!]
   pageType: PageType!
+  date: Date
 }
 
 input AttributeInput {
@@ -57,3 +58,5 @@ input EventArgumentInput {
   name: String!
   value: String!
 }
+
+scalar Date
