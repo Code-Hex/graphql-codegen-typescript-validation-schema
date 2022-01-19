@@ -23,7 +23,7 @@ interface InputObjectFieldGeneratorParams {
   indentCount?: number;
 }
 
-export const ImportYup = (): string => `import * as yup from 'yup'`
+export const ImportYup = (): string => `import * as yup from 'yup'`;
 
 export class YupGenerator {
   private inputObjects: InputObjectTypeDefinitionNode[];
@@ -37,9 +37,14 @@ export class YupGenerator {
   }
 
   public generate(): string {
-    return this.inputObjects
-      .map((inputObject) => this.generateInputObjectYupSchema(inputObject))
-      .join("\n\n");
+    return [
+      ...Object.values(this.enums).map(
+        (enumdef) => `export const ${enumdef.name.value}Schema = yup.mixed().oneOf(Object.values(${enumdef.name.value}))`
+      ),
+      ...this.inputObjects.map((inputObject) =>
+        this.generateInputObjectYupSchema(inputObject)
+      ),
+    ].join("\n\n");
   }
 
   protected generateInputObjectYupSchema(
@@ -112,7 +117,7 @@ export class YupGenerator {
     }
     if (this.enums[node.value]) {
       const enumdef = this.enums[node.value];
-      return `yup.mixed().oneOf(Object.values(${enumdef.name.value}))`;
+      return `${enumdef.name.value}Schema`;
     }
     if (this.scalars[node.value]) {
       console.warn("unhandled scalar:", this.scalars[node.value]);
