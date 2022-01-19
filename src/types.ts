@@ -24,6 +24,26 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   schema?: ValidationSchema;
+
+  /**
+   * @description import types from generated typescript type path
+   * if not given, omit import statement.
+   *
+   * @exampeMarkdown
+   * ```yml
+   * generates:
+   *   path/to/types.ts:
+   *     plugins:
+   *       - typescript
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: yup
+   *       importFrom: ./path/to/types
+   * ```
+   */
+  importFrom?: string;
 }
 
 export interface Nodes {

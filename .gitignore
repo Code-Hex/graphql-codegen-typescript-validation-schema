@@ -1,6 +1,6 @@
 node_modules
 dist
 .npmignore
-gen/schemas.ts
+gen/*.ts
 package-lock.json
 .DS_Store

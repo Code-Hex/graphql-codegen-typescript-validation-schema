@@ -11,13 +11,31 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig> = async (
 ): Promise<Types.PluginOutput> => {
   const { inputObjects, enums, scalars } = retrieveSchema(schema, config);
 
+  const prepend = [importSchema(config.schema)];
+  if (config.importFrom) {
+    prepend.push(
+      buildImportStatement(
+        [
+          // Should put on Scalar here?
+          ...Object.values(enums).map((enumdef) => enumdef.name.value),
+          ...inputObjects.map((inputObject) => inputObject.name.value),
+        ],
+        config.importFrom
+      )
+    );
+  }
   return {
-    prepend: [importSchema(config.schema)],
-    content: [
-      new YupGenerator({ inputObjects, enums, scalars }).generate(),
-    ].join("\n"),
+    prepend,
+    content:
+      "\n" +
+      [new YupGenerator({ inputObjects, enums, scalars }).generate()].join(
+        "\n"
+      ),
   };
 };
+
+const buildImportStatement = (types: string[], importFrom: string): string =>
+  `import { ${types.join(", ")} } from "${importFrom}";`;
 
 const importSchema = (schema?: ValidationSchema): string => {
   if (schema === "yup") {

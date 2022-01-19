@@ -1,8 +1,11 @@
 overwrite: true
 schema: "./test.graphql"
 generates:
-  gen/schemas.ts:
+  gen/types.ts:
     plugins:
       - typescript
+  gen/schemas.ts:
+    plugins:
       - ./dist/index.js:
           schema: yup
+          importFrom: ./types
