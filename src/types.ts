@@ -1,15 +1,9 @@
-import { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
-
-// THIS ARE TYPES IN THE CONTEXT OF THE FIELD
-export const TYPE_LIST = "ListType";
-export const TYPE_NONULL = "NonNullType";
-export const TYPE_NAMED = "NamedType";
-
-// THIS ARE TYPES OF FIELD VALUE
-export const TYPE_INPUT = "Input";
-export const TYPE_BOOLEAN = "Boolean";
-export const TYPE_STRINGS = ["ID", "String"];
-export const TYPE_NUMBERS = ["Int", "Float"];
+import { TypeScriptPluginConfig } from "@graphql-codegen/typescript";
+import {
+  EnumTypeDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  ScalarTypeDefinitionNode,
+} from "graphql";
 
 export type ValidationSchema = "yup";
 
@@ -32,3 +26,8 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
   schema?: ValidationSchema;
 }
 
+export interface Nodes {
+  inputObjects: InputObjectTypeDefinitionNode[];
+  enums: Record<string, EnumTypeDefinitionNode>;
+  scalars: Record<string, ScalarTypeDefinitionNode>;
+}
