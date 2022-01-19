@@ -1,11 +1,8 @@
-import { TsVisitor, TypeScriptPluginConfig } from "@graphql-codegen/typescript";
+import { TypeScriptPluginConfig } from "@graphql-codegen/typescript";
 import {
   ASTKindToNode,
   ASTNode,
-  EnumTypeDefinitionNode,
-  InputObjectTypeDefinitionNode,
-  ScalarTypeDefinitionNode,
-  VisitFn,
+  ASTVisitor,
 } from "graphql";
 
 export type ValidationSchema = "yup";
@@ -89,8 +86,6 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
   enumsAsTypes?: boolean;
 }
 
-export type ValidationSchemaVisitor = {
-  [K in keyof ASTKindToNode]?: VisitFn<ASTNode, ASTKindToNode[K]>;
-} & {
+export type ValidationSchemaVisitor = ASTVisitor & {
   buildImports: () => string[]
 };

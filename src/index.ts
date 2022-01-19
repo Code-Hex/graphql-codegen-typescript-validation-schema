@@ -12,9 +12,7 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig> = async (
   const { schema: _schema, ast } = transformSchemaAST(schema, config);
   const { buildImports, ...visitor } = YupSchemaVisitor(_schema, config);
 
-  const result = visit(ast, {
-    leave: visitor,
-  });
+  const result = visit(ast, visitor);
 
   // @ts-ignore
   const generated = result.definitions.filter((def) => typeof def === "string");
