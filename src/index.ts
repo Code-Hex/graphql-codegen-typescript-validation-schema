@@ -8,11 +8,14 @@ import {
 } from "@graphql-codegen/plugin-helpers";
 import { GraphQLSchema } from "graphql";
 
-export const plugin: PluginFunction<ValidationSchemaPluginConfig> = (
+export const plugin: PluginFunction<
+  ValidationSchemaPluginConfig,
+  Types.ComplexPluginOutput
+> = (
   schema: GraphQLSchema,
   _documents: Types.DocumentFile[],
   config: ValidationSchemaPluginConfig
-): Types.PluginOutput => {
+): Types.ComplexPluginOutput => {
   const { schema: _schema, ast } = transformSchemaAST(schema, config);
   const { buildImports, ...visitor } = YupSchemaVisitor(_schema, config);
 

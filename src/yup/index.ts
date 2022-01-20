@@ -29,7 +29,7 @@ export const YupSchemaVisitor = (
       if (config.importFrom && importTypes.length > 0) {
         return [
           importYup,
-          `import { ${importTypes.join(", ")} } from "${config.importFrom}";`,
+          `import { ${importTypes.join(", ")} } from '${config.importFrom}'`,
         ];
       }
       return [importYup];
@@ -64,7 +64,7 @@ export const YupSchemaVisitor = (
           .withContent(
             `yup.mixed().oneOf([${node.values
               ?.map(
-                (enumOption) => `'${tsVisitor.convertName(enumOption.name)}'`
+                (enumOption) => `'${enumOption.name.value}'`
               )
               .join(", ")}])`
           ).string;
