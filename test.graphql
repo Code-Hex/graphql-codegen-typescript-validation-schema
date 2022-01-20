@@ -16,6 +16,7 @@ input PageInput {
   attributes: [AttributeInput!]
   pageType: PageType!
   date: Date
+  postIDs: [ID!]
 }
 
 input AttributeInput {

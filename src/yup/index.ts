@@ -128,21 +128,27 @@ const generateInputObjectFieldYupSchema = (
 const generateInputObjectFieldTypeYupSchema = (
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
-  type: TypeNode
+  type: TypeNode,
+  parentType?: TypeNode
 ): string => {
   if (isListType(type)) {
     const gen = generateInputObjectFieldTypeYupSchema(
       tsVisitor,
       schema,
-      type.type
+      type.type,
+      type,
     );
+    if (!isNonNullType(parentType)) {
+      return `yup.array().of(${maybeLazy(type.type, gen)}).optional()`;
+    }
     return `yup.array().of(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
     const gen = generateInputObjectFieldTypeYupSchema(
       tsVisitor,
       schema,
-      type.type
+      type.type,
+      type,
     );
     return maybeLazy(type.type, `${gen}.required()`);
   }
