@@ -3,7 +3,9 @@
   "compilerOptions": {
     "incremental": true,
     "declaration": true,
-    "outDir": "./dist",
+    "noEmit": false,
+    "rootDir": "src",
+    "outDir": "dist",
     "baseUrl": ".",
     "paths": {}
   },

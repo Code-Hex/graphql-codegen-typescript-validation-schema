@@ -6,6 +6,6 @@ generates:
       - typescript
   gen/schemas.ts:
     plugins:
-      - ./dist/index.js:
+      - ./dist/main/index.js:
           schema: yup
           importFrom: ./types
