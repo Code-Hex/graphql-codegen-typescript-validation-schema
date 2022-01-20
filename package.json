@@ -10,7 +10,12 @@
   "typings": "dist/main/index.d.ts",
   "module": "dist/module/index.mjs",
   "files": [
-    "dist/*.{js,ts}"
+    "dist/main",
+    "dist/module",
+    "!**/*.spec.*",
+    "!**/*.json",
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
     "type-check": "tsc --noEmit",
