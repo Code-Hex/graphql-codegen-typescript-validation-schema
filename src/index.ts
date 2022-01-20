@@ -1,19 +1,23 @@
 import { transformSchemaAST } from "@graphql-codegen/schema-ast";
 import { YupSchemaVisitor } from "./yup/index";
 import { ValidationSchemaPluginConfig } from "./config";
-import { oldVisit, PluginFunction, Types } from "@graphql-codegen/plugin-helpers";
+import {
+  oldVisit,
+  PluginFunction,
+  Types,
+} from "@graphql-codegen/plugin-helpers";
 import { GraphQLSchema } from "graphql";
 
-export const plugin: PluginFunction<ValidationSchemaPluginConfig> = async (
+export const plugin: PluginFunction<ValidationSchemaPluginConfig> = (
   schema: GraphQLSchema,
   _documents: Types.DocumentFile[],
   config: ValidationSchemaPluginConfig
-): Promise<Types.PluginOutput> => {
+): Types.PluginOutput => {
   const { schema: _schema, ast } = transformSchemaAST(schema, config);
   const { buildImports, ...visitor } = YupSchemaVisitor(_schema, config);
 
   const result = oldVisit(ast, {
-    leave: visitor
+    leave: visitor,
   });
 
   // @ts-ignore
@@ -24,5 +28,3 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig> = async (
     content: "\n" + [...generated].join("\n"),
   };
 };
-
-export default plugin;
