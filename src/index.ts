@@ -24,3 +24,5 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig> = async (
     content: "\n" + [...generated].join("\n"),
   };
 };
+
+export default { plugin };
