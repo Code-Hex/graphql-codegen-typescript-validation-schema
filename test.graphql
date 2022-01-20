@@ -2,6 +2,7 @@ enum PageType {
   LP
   SERVICE
   RESTRICTED
+  BASIC_AUTH
 }
 
 input PageInput {

@@ -63,16 +63,19 @@ export const YupSchemaVisitor = (
           .withName(`${enumname}Schema`)
           .withContent(
             `yup.mixed().oneOf([${node.values
-              ?.map((v) => `'${tsVisitor.convertName(v.name.value)}'`)
+              ?.map(
+                (enumOption) => `'${tsVisitor.convertName(enumOption.name)}'`
+              )
               .join(", ")}])`
           ).string;
       }
 
       const values = node.values
         ?.map(
-          (v) =>
-            `${enumname}.${tsVisitor.convertName(v.name.value, {
-              transformUnderscore: false,
+          (enumOption) =>
+            `${enumname}.${tsVisitor.convertName(enumOption.name, {
+              useTypesPrefix: false,
+              transformUnderscore: true,
             })}`
         )
         .join(", ");
