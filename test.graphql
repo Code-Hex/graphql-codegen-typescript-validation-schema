@@ -60,4 +60,15 @@ input EventArgumentInput {
   value: String!
 }
 
+input HTTPInput {
+  method: HTTPMethod
+  url: URL!
+}
+
+enum HTTPMethod {
+  GET
+  POST
+}
+
 scalar Date
+scalar URL

@@ -35,7 +35,7 @@ export const YupSchemaVisitor = (
       return [importYup];
     },
     InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
-      const name = node.name.value;
+      const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
 
       const shape = node.fields
@@ -53,7 +53,7 @@ export const YupSchemaVisitor = (
         ).string;
     },
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
-      const enumname = node.name.value;
+      const enumname = tsVisitor.convertName(node.name.value);
       importTypes.push(enumname);
 
       if (config.enumsAsTypes) {
@@ -161,12 +161,12 @@ const generateNameNodeYupSchema = (
   const typ = schema.getType(node.value);
 
   if (typ && typ.astNode?.kind === "InputObjectTypeDefinition") {
-    const enumName = typ.astNode.name.value;
+    const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema()`;
   }
 
   if (typ && typ.astNode?.kind === "EnumTypeDefinition") {
-    const enumName = typ.astNode.name.value;
+    const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema`;
   }
 
