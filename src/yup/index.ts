@@ -1,13 +1,12 @@
 import { isInput, isNonNullType, isListType, isNamedType } from "./../graphql";
-import {
-  ValidationSchemaPluginConfig,
-  ValidationSchemaVisitor,
-} from "./../types";
+import { ValidationSchemaPluginConfig } from "./../types";
 import {
   InputValueDefinitionNode,
   NameNode,
   TypeNode,
   GraphQLSchema,
+  InputObjectTypeDefinitionNode,
+  EnumTypeDefinitionNode,
 } from "graphql";
 import {
   DeclarationBlock,
@@ -20,7 +19,7 @@ const importYup = `import * as yup from 'yup'`;
 export const YupSchemaVisitor = (
   schema: GraphQLSchema,
   config: ValidationSchemaPluginConfig
-): ValidationSchemaVisitor => {
+) => {
   const tsVisitor = new TsVisitor(schema, config);
 
   const importTypes: string[] = [];
@@ -35,52 +34,48 @@ export const YupSchemaVisitor = (
       }
       return [importYup];
     },
-    InputObjectTypeDefinition: {
-      leave(node) {
-        const name = node.name.value;
-        importTypes.push(name);
+    InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
+      const name = node.name.value;
+      importTypes.push(name);
 
-        const shape = node.fields
-          ?.map((field) =>
-            generateInputObjectFieldYupSchema(tsVisitor, schema, field, 2)
-          )
-          .join(",\n");
+      const shape = node.fields
+        ?.map((field) =>
+          generateInputObjectFieldYupSchema(tsVisitor, schema, field, 2)
+        )
+        .join(",\n");
 
-        return new DeclarationBlock({})
-          .export()
-          .asKind("function")
-          .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
-          .withBlock(
-            [indent(`return yup.object({`), shape, indent("})")].join("\n")
-          ).string;
-      },
+      return new DeclarationBlock({})
+        .export()
+        .asKind("function")
+        .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
+        .withBlock(
+          [indent(`return yup.object({`), shape, indent("})")].join("\n")
+        ).string;
     },
-    EnumTypeDefinition: {
-      leave(node) {
-        const enumname = node.name.value;
-        importTypes.push(enumname);
+    EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
+      const enumname = node.name.value;
+      importTypes.push(enumname);
 
-        if (config.enumsAsTypes) {
-          return new DeclarationBlock({})
-            .export()
-            .asKind("const")
-            .withName(`${enumname}Schema`)
-            .withContent(
-              `yup.mixed().oneOf([${node.values
-                ?.map((v) => `'${tsVisitor.convertName(v.name.value)}'`)
-                .join(", ")}])`
-            ).string;
-        }
-
-        const values = node.values
-          ?.map((v) => `${enumname}.${tsVisitor.convertName(v.name.value)}`)
-          .join(", ");
+      if (config.enumsAsTypes) {
         return new DeclarationBlock({})
           .export()
           .asKind("const")
           .withName(`${enumname}Schema`)
-          .withContent(`yup.mixed().oneOf([${values}])`).string;
-      },
+          .withContent(
+            `yup.mixed().oneOf([${node.values
+              ?.map((v) => `'${tsVisitor.convertName(v.name.value)}'`)
+              .join(", ")}])`
+          ).string;
+      }
+
+      const values = node.values
+        ?.map((v) => `${enumname}.${tsVisitor.convertName(v.name.value)}`)
+        .join(", ");
+      return new DeclarationBlock({})
+        .export()
+        .asKind("const")
+        .withName(`${enumname}Schema`)
+        .withContent(`yup.mixed().oneOf([${values}])`).string;
     },
     // ScalarTypeDefinition: (node) => {
     //   const decl = new DeclarationBlock({})
