@@ -23,8 +23,8 @@
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.main.json",
     "build:module": "tsc -p tsconfig.module.json",
-    "generate": "tsc && graphql-codegen",
-    "prepublish": "tsc"
+    "generate": "run-p build:* && graphql-codegen",
+    "prepublish": "run-p build:*"
   },
   "keywords": [
     "gql",
