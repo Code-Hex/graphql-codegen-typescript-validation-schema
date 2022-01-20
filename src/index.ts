@@ -1,6 +1,6 @@
 import { transformSchemaAST } from "@graphql-codegen/schema-ast";
 import { YupSchemaVisitor } from "./yup/index";
-import { ValidationSchemaPluginConfig } from "./types";
+import { ValidationSchemaPluginConfig } from "./config";
 import { oldVisit, PluginFunction, Types } from "@graphql-codegen/plugin-helpers";
 import { GraphQLSchema } from "graphql";
 

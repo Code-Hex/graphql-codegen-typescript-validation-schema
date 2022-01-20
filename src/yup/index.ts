@@ -1,5 +1,5 @@
 import { isInput, isNonNullType, isListType, isNamedType } from "./../graphql";
-import { ValidationSchemaPluginConfig } from "./../types";
+import { ValidationSchemaPluginConfig } from "../config";
 import {
   InputValueDefinitionNode,
   NameNode,
