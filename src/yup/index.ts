@@ -69,7 +69,12 @@ export const YupSchemaVisitor = (
       }
 
       const values = node.values
-        ?.map((v) => `${enumname}.${tsVisitor.convertName(v.name.value)}`)
+        ?.map(
+          (v) =>
+            `${enumname}.${tsVisitor.convertName(v.name.value, {
+              transformUnderscore: false,
+            })}`
+        )
         .join(", ");
       return new DeclarationBlock({})
         .export()
