@@ -4,7 +4,7 @@ import { ValidationSchemaPluginConfig } from "./config";
 import { oldVisit, PluginFunction, Types } from "@graphql-codegen/plugin-helpers";
 import { GraphQLSchema } from "graphql";
 
-export const plugin: PluginFunction<ValidationSchemaPluginConfig> = async (
+const plugin: PluginFunction<ValidationSchemaPluginConfig> = async (
   schema: GraphQLSchema,
   _documents: Types.DocumentFile[],
   config: ValidationSchemaPluginConfig
