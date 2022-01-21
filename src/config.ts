@@ -4,7 +4,7 @@ export type ValidationSchema = "yup";
 
 export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
   /**
-   * @description specify generate schema.
+   * @description specify generate schema
    * @default yup
    *
    * @exampleMarkdown
@@ -63,4 +63,28 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   enumsAsTypes?: boolean;
+  /**
+   * @description this is for yup schema. use this when you specified `schema: yup`
+   */
+  yup?: YupSchemaPluginConfig
+}
+
+interface YupSchemaPluginConfig {
+  /**
+   * @description Generates yup schema as strict.
+   * @default false
+   * @see https://github.com/jquense/yup#schemastrictenabled-boolean--false-schema
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       yup:
+   *         strict: true
+   * ```
+   */
+  strict?: boolean
 }

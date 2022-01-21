@@ -40,7 +40,7 @@ export const YupSchemaVisitor = (
 
       const shape = node.fields
         ?.map((field) =>
-          generateInputObjectFieldYupSchema(tsVisitor, schema, field, 2)
+          generateInputObjectFieldYupSchema(config, tsVisitor, schema, field, 2)
         )
         .join(",\n");
 
@@ -63,9 +63,7 @@ export const YupSchemaVisitor = (
           .withName(`${enumname}Schema`)
           .withContent(
             `yup.mixed().oneOf([${node.values
-              ?.map(
-                (enumOption) => `'${enumOption.name.value}'`
-              )
+              ?.map((enumOption) => `'${enumOption.name.value}'`)
               .join(", ")}])`
           ).string;
       }
@@ -108,6 +106,7 @@ export const YupSchemaVisitor = (
 };
 
 const generateInputObjectFieldYupSchema = (
+  config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
   field: InputValueDefinitionNode,
@@ -115,6 +114,7 @@ const generateInputObjectFieldYupSchema = (
 ): string => {
   // TOOD(codehex): handle directive
   const gen = generateInputObjectFieldTypeYupSchema(
+    config,
     tsVisitor,
     schema,
     field.type
@@ -126,6 +126,7 @@ const generateInputObjectFieldYupSchema = (
 };
 
 const generateInputObjectFieldTypeYupSchema = (
+  config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
   type: TypeNode,
@@ -133,10 +134,11 @@ const generateInputObjectFieldTypeYupSchema = (
 ): string => {
   if (isListType(type)) {
     const gen = generateInputObjectFieldTypeYupSchema(
+      config,
       tsVisitor,
       schema,
       type.type,
-      type,
+      type
     );
     if (!isNonNullType(parentType)) {
       return `yup.array().of(${maybeLazy(type.type, gen)}).optional()`;
@@ -145,21 +147,23 @@ const generateInputObjectFieldTypeYupSchema = (
   }
   if (isNonNullType(type)) {
     const gen = generateInputObjectFieldTypeYupSchema(
+      config,
       tsVisitor,
       schema,
       type.type,
-      type,
+      type
     );
     return maybeLazy(type.type, `${gen}.defined()`);
   }
   if (isNamedType(type)) {
-    return generateNameNodeYupSchema(tsVisitor, schema, type.name);
+    return generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
   }
   console.warn("unhandled type:", type);
   return "";
 };
 
 const generateNameNodeYupSchema = (
+  config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
   node: NameNode
@@ -176,7 +180,8 @@ const generateNameNodeYupSchema = (
     return `${enumName}Schema`;
   }
 
-  return yup4Scalar(tsVisitor, node.value);
+  const primitive = yup4Scalar(tsVisitor, node.value);
+  return config.yup?.strict ? `${primitive}.strict(true)` : primitive;
 };
 
 const maybeLazy = (type: TypeNode, schema: string): string => {

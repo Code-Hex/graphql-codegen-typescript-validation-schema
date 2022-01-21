@@ -216,22 +216,43 @@ describe("yup", () => {
       "export const PageTypeSchema = yup.mixed().oneOf(['PUBLIC', 'BASIC_AUTH'])"
     );
   });
-  // describe("with importFrom", () => {
-  //   it("Should work", async () => {
-  //     const schema = buildSchema(/* GraphQL */ `
-  //       "custom enum"
-  //       enum MyEnum {
-  //         "this is a"
-  //         A
-  //         "this is b"
-  //         B
-  //       }
-  //     `);
-  //     const result = (await plugin(schema, [], {
-  //       importFrom: "./generated-types",
-  //     })) as Types.ComplexPluginOutput;
+  it("with yup.strict", async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PrimitiveInput {
+        a: ID
+        b: String
+        c: Boolean
+        d: Int
+        e: Float
+        f: F!
+      }
 
-  //     expect(1).toBe(1)
-  //   });
-  // });
+      input F {
+        a: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        yup: {
+          strict: true,
+        },
+      },
+      {}
+    );
+    const wantContains = [
+      "export function PrimitiveInputSchema(): yup.SchemaOf<PrimitiveInput>",
+      "a: yup.string().strict(true),",
+      "b: yup.string().strict(true),",
+      "c: yup.boolean().strict(true),",
+      "d: yup.number().strict(true),",
+      "e: yup.number().strict(true),",
+      "f: FSchema().defined()",
+      "a: yup.string().strict(true).defined()", // for FSchema
+    ];
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
 });
