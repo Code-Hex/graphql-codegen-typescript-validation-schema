@@ -150,7 +150,7 @@ const generateInputObjectFieldTypeYupSchema = (
       type.type,
       type,
     );
-    return maybeLazy(type.type, `${gen}.required()`);
+    return maybeLazy(type.type, `${gen}.defined()`);
   }
   if (isNamedType(type)) {
     return generateNameNodeYupSchema(tsVisitor, schema, type.name);
