@@ -39,22 +39,6 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   importFrom?: string;
   /**
-   * @description Generates validation schema for generated `const enum`, you can read more about const enums here: https://www.typescriptlang.org/docs/handbook/enums.html.
-   * @default false
-   *
-   * @exampleMarkdown
-   * ```yml
-   * generates:
-   *   path/to/file.ts:
-   *     plugins:
-   *       - typescript
-   *       - graphql-codegen-validation-schema
-   *     config:
-   *       constEnums: true
-   * ```
-   */
-  constEnums?: boolean;
-  /**
    * @description Generates validation schema for enum as TypeScript `type`
    * @default false
    *
