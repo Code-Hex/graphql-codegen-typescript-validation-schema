@@ -10,10 +10,7 @@
   "typings": "dist/main/index.d.ts",
   "module": "dist/module/index.mjs",
   "files": [
-    "dist/main",
-    "dist/module",
-    "!**/*.spec.*",
-    "!**/*.json",
+    "dist/**/*.{js,ts}",
     "LICENSE",
     "README.md"
   ],
