@@ -23,7 +23,7 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn test
         env:
-            CI: true
+          CI: true
   eslint:
     runs-on: ubuntu-latest
     steps:
