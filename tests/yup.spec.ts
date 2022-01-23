@@ -1,5 +1,3 @@
-// import "@graphql-codegen/testing";
-import { Types } from "@graphql-codegen/plugin-helpers";
 import { buildSchema } from "graphql";
 import { plugin } from "../src/index";
 
