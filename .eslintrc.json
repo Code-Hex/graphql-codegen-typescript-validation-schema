@@ -35,6 +35,6 @@
   "ignorePatterns": [
     "dist",
     "node_modules",
-    "gen"
+    "example"
   ]
 }

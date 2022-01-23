@@ -10,10 +10,10 @@
     "paths": {}
   },
   "include": [
-    "src/*.ts"
+    "src"
   ],
   "exclude": [
-    "./gen/*.ts",
+    "./example",
     "./dist"
   ]
 }
