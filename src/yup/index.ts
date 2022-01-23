@@ -1,5 +1,5 @@
-import { isInput, isNonNullType, isListType, isNamedType } from "./../graphql";
-import { ValidationSchemaPluginConfig } from "../config";
+import { isInput, isNonNullType, isListType, isNamedType } from './../graphql';
+import { ValidationSchemaPluginConfig } from '../config';
 import {
   InputValueDefinitionNode,
   NameNode,
@@ -7,20 +7,14 @@ import {
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
   EnumTypeDefinitionNode,
-} from "graphql";
-import {
-  DeclarationBlock,
-  indent,
-} from "@graphql-codegen/visitor-plugin-common";
-import { TsVisitor } from "@graphql-codegen/typescript";
-import { buildApi, formatDirectiveConfig } from "../directive";
+} from 'graphql';
+import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+import { TsVisitor } from '@graphql-codegen/typescript';
+import { buildApi, formatDirectiveConfig } from '../directive';
 
 const importYup = `import * as yup from 'yup'`;
 
-export const YupSchemaVisitor = (
-  schema: GraphQLSchema,
-  config: ValidationSchemaPluginConfig
-) => {
+export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
   const tsVisitor = new TsVisitor(schema, config);
 
   const importTypes: string[] = [];
@@ -28,10 +22,7 @@ export const YupSchemaVisitor = (
   return {
     buildImports: (): string[] => {
       if (config.importFrom && importTypes.length > 0) {
-        return [
-          importYup,
-          `import { ${importTypes.join(", ")} } from '${config.importFrom}'`,
-        ];
+        return [importYup, `import { ${importTypes.join(', ')} } from '${config.importFrom}'`];
       }
       return [importYup];
     },
@@ -40,18 +31,14 @@ export const YupSchemaVisitor = (
       importTypes.push(name);
 
       const shape = node.fields
-        ?.map((field) =>
-          generateInputObjectFieldYupSchema(config, tsVisitor, schema, field, 2)
-        )
-        .join(",\n");
+        ?.map(field => generateInputObjectFieldYupSchema(config, tsVisitor, schema, field, 2))
+        .join(',\n');
 
       return new DeclarationBlock({})
         .export()
-        .asKind("function")
+        .asKind('function')
         .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
-        .withBlock(
-          [indent(`return yup.object({`), shape, indent("})")].join("\n")
-        ).string;
+        .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
     },
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
@@ -60,27 +47,25 @@ export const YupSchemaVisitor = (
       if (config.enumsAsTypes) {
         return new DeclarationBlock({})
           .export()
-          .asKind("const")
+          .asKind('const')
           .withName(`${enumname}Schema`)
           .withContent(
-            `yup.mixed().oneOf([${node.values
-              ?.map((enumOption) => `'${enumOption.name.value}'`)
-              .join(", ")}])`
+            `yup.mixed().oneOf([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`
           ).string;
       }
 
       const values = node.values
         ?.map(
-          (enumOption) =>
+          enumOption =>
             `${enumname}.${tsVisitor.convertName(enumOption.name, {
               useTypesPrefix: false,
               transformUnderscore: true,
             })}`
         )
-        .join(", ");
+        .join(', ');
       return new DeclarationBlock({})
         .export()
-        .asKind("const")
+        .asKind('const')
         .withName(`${enumname}Schema`)
         .withContent(`yup.mixed().oneOf([${values}])`).string;
     },
@@ -113,20 +98,12 @@ const generateInputObjectFieldYupSchema = (
   field: InputValueDefinitionNode,
   indentCount: number
 ): string => {
-  let gen = generateInputObjectFieldTypeYupSchema(
-    config,
-    tsVisitor,
-    schema,
-    field.type
-  );
+  let gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, field.type);
   if (config.directives && field.directives) {
     const formatted = formatDirectiveConfig(config.directives);
     gen += buildApi(formatted, field.directives);
   }
-  return indent(
-    `${field.name.value}: ${maybeLazy(field.type, gen)}`,
-    indentCount
-  );
+  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };
 
 const generateInputObjectFieldTypeYupSchema = (
@@ -137,33 +114,21 @@ const generateInputObjectFieldTypeYupSchema = (
   parentType?: TypeNode
 ): string => {
   if (isListType(type)) {
-    const gen = generateInputObjectFieldTypeYupSchema(
-      config,
-      tsVisitor,
-      schema,
-      type.type,
-      type
-    );
+    const gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
     if (!isNonNullType(parentType)) {
       return `yup.array().of(${maybeLazy(type.type, gen)}).optional()`;
     }
     return `yup.array().of(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateInputObjectFieldTypeYupSchema(
-      config,
-      tsVisitor,
-      schema,
-      type.type,
-      type
-    );
+    const gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
     return maybeLazy(type.type, `${gen}.defined()`);
   }
   if (isNamedType(type)) {
     return generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
   }
-  console.warn("unhandled type:", type);
-  return "";
+  console.warn('unhandled type:', type);
+  return '';
 };
 
 const generateNameNodeYupSchema = (
@@ -174,12 +139,12 @@ const generateNameNodeYupSchema = (
 ): string => {
   const typ = schema.getType(node.value);
 
-  if (typ && typ.astNode?.kind === "InputObjectTypeDefinition") {
+  if (typ && typ.astNode?.kind === 'InputObjectTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema()`;
   }
 
-  if (typ && typ.astNode?.kind === "EnumTypeDefinition") {
+  if (typ && typ.astNode?.kind === 'EnumTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema`;
   }
@@ -199,13 +164,13 @@ const maybeLazy = (type: TypeNode, schema: string): string => {
 const yup4Scalar = (tsVisitor: TsVisitor, scalarName: string): string => {
   const tsType = tsVisitor.scalars[scalarName];
   switch (tsType) {
-    case "string":
+    case 'string':
       return `yup.string()`;
-    case "number":
+    case 'number':
       return `yup.number()`;
-    case "boolean":
+    case 'boolean':
       return `yup.boolean()`;
   }
-  console.warn("unhandled name:", scalarName);
+  console.warn('unhandled name:', scalarName);
   return `yup.mixed()`;
 };
