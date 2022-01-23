@@ -1,14 +1,14 @@
 overwrite: true
-schema: './test.graphql'
+schema: './example/test.graphql'
 generates:
-  gen/types.ts:
+  example/types.ts:
     plugins:
       - typescript
-  gen/schemas.ts:
+  example/yup/schemas.ts:
     plugins:
       - ./dist/main/index.js:
           schema: yup
-          importFrom: ./types
+          importFrom: ../types
           directives:
             required:
               msg: required
