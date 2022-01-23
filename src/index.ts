@@ -23,6 +23,7 @@ export const plugin: PluginFunction<
     leave: visitor,
   });
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const generated = result.definitions.filter((def) => typeof def === "string");
 
