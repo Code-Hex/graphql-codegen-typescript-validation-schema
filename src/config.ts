@@ -74,17 +74,13 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   enumsAsTypes?: boolean;
   /**
-   * @description this is for yup schema. use this when you specified `schema: yup`
-   */
-  yup?: YupSchemaPluginConfig;
-  /**
-   * @description Generates yup schema as strict.
+   * @description Generates validation schema with more API based on directive schema.
    * @exampleMarkdown
    * ```yml
    * generates:
    *   path/to/file.ts:
    *     plugins:
-   *       - graphql-codegen-validation-schema:
+   *       - graphql-codegen-validation-schema
    *     config:
    *       schema: yup
    *       directives:

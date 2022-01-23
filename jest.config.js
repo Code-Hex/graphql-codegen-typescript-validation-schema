@@ -1,5 +1,5 @@
 const { resolve } = require("path");
-const { pathsToModuleNameMapper } = require("ts-jest/utils");
+const { pathsToModuleNameMapper } = require("ts-jest");
 
 const pkg = require("./package.json");
 const tsconfig = require("./tsconfig.json");
