@@ -95,11 +95,11 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *         constraint:
    *           minLength: min # same as ['min', '$1']
    *           maxLength: max
-   *           startsWith: ["matches", "^$1"]
-   *           endsWith: ["matches", "$1$"]
-   *           contains: ["matches", "$1"]
-   *           notContains: ["matches", "^((?!$1).)*$"]
-   *           pattern: matches
+   *           startsWith: ["matches", "/^$1/"]
+   *           endsWith: ["matches", "/$1$/"]
+   *           contains: ["matches", "/$1/"]
+   *           notContains: ["matches", "/^((?!$1).)*$/"]
+   *           pattern: ["matches", "/$1/"]
    *           format:
    *             # For example, `@constraint(format: "uri")`. this case $1 will be "uri".
    *             # Therefore the generator generates yup schema `.url()` followed by `uri: 'url'`
