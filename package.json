@@ -24,6 +24,7 @@
     "build:main": "tsc -p tsconfig.main.json",
     "build:module": "tsc -p tsconfig.module.json",
     "lint": "eslint --ext .ts .",
+    "lint-fix": "eslint --fix --ext .ts .",
     "generate": "run-p build:* && graphql-codegen",
     "prepublish": "run-p build:*"
   },

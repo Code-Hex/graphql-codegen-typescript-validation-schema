@@ -24,3 +24,32 @@ jobs:
       - run: yarn test
         env:
             CI: true
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 17
+      - name: Cache Yarn
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint-fix
+      - name: Auto commit fixed code
+        id: auto-commit-action
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Apply auto lint-fix changes
+          branch: ${{ github.head_ref }}
+      - name: eslint
+        if: steps.auto-commit-action.outputs.changes_detected == 'false'
+        uses: reviewdog/action-eslint@v1
+        with:
+          level: warning
+          reporter: github-pr-review
