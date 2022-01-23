@@ -185,7 +185,7 @@ const generateNameNodeYupSchema = (
   }
 
   const primitive = yup4Scalar(tsVisitor, node.value);
-  return config.yup?.strict ? `${primitive}.strict(true)` : primitive;
+  return primitive;
 };
 
 const maybeLazy = (type: TypeNode, schema: string): string => {
