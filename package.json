@@ -23,6 +23,7 @@
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.main.json",
     "build:module": "tsc -p tsconfig.module.json",
+    "lint": "eslint --ext .ts .",
     "generate": "run-p build:* && graphql-codegen",
     "prepublish": "run-p build:*"
   },
@@ -47,6 +48,9 @@
     "@graphql-codegen/typescript": "^2.4.2",
     "@tsconfig/recommended": "^1.0.1",
     "@types/jest": "^27.4.0",
+    "@typescript-eslint/eslint-plugin": "^5.10.0",
+    "@typescript-eslint/parser": "^5.10.0",
+    "eslint": "^8.7.0",
     "jest": "^27.4.7",
     "npm-run-all": "^4.1.5",
     "ts-jest": "^27.1.3",
