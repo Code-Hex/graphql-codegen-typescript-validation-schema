@@ -41,6 +41,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - run: yarn install --frozen-lockfile
       - run: yarn lint-fix
+      - run: yarn prettier
       - name: Auto commit fixed code
         id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v4
