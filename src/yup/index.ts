@@ -13,6 +13,7 @@ import {
   indent,
 } from "@graphql-codegen/visitor-plugin-common";
 import { TsVisitor } from "@graphql-codegen/typescript";
+import { buildApi, formatDirectiveConfig } from "../directive";
 
 const importYup = `import * as yup from 'yup'`;
 
@@ -112,13 +113,16 @@ const generateInputObjectFieldYupSchema = (
   field: InputValueDefinitionNode,
   indentCount: number
 ): string => {
-  // TOOD(codehex): handle directive
-  const gen = generateInputObjectFieldTypeYupSchema(
+  let gen = generateInputObjectFieldTypeYupSchema(
     config,
     tsVisitor,
     schema,
     field.type
   );
+  if (config.directives && field.directives) {
+    const formatted = formatDirectiveConfig(config.directives);
+    gen += buildApi(formatted, field.directives);
+  }
   return indent(
     `${field.name.value}: ${maybeLazy(field.type, gen)}`,
     indentCount

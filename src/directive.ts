@@ -3,10 +3,10 @@ import {
   ConstDirectiveNode,
   ConstValueNode,
   Kind,
-  NameNode,
   valueFromASTUntyped,
 } from "graphql";
 import { DirectiveConfig, DirectiveObjectArguments } from "./config";
+import { isConvertableRegexp } from "./regexp";
 
 export interface FormattedDirectiveConfig {
   [directive: string]: FormattedDirectiveArguments;
@@ -22,7 +22,8 @@ export interface FormattedDirectiveObjectArguments {
 
 const isFormattedDirectiveObjectArguments = (
   arg: FormattedDirectiveArguments[keyof FormattedDirectiveArguments]
-): arg is FormattedDirectiveObjectArguments => arg !== undefined && !Array.isArray(arg);
+): arg is FormattedDirectiveObjectArguments =>
+  arg !== undefined && !Array.isArray(arg);
 
 // ```yml
 // directives:
@@ -205,8 +206,13 @@ const stringify = (arg: any, quoteString?: boolean): string => {
   if (Array.isArray(arg)) {
     return arg.map((v) => stringify(v, true)).join(",");
   }
-  if (quoteString && typeof arg === "string") {
-    return JSON.stringify(arg);
+  if (typeof arg === "string") {
+    if (isConvertableRegexp(arg)) {
+      return arg;
+    }
+    if (quoteString) {
+      return JSON.stringify(arg);
+    }
   }
   if (
     typeof arg === "boolean" ||
