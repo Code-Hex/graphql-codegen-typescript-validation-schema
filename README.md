@@ -29,6 +29,8 @@ generates:
       schema: yup
 ```
 
+You can check [example directory](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) if you want to check more complex config example or how is generated some files.
+
 ## Config API Reference
 
 ### `schema`
