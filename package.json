@@ -25,6 +25,8 @@
     "build:module": "tsc -p tsconfig.module.json",
     "lint": "eslint --ext .ts .",
     "lint-fix": "eslint --fix --ext .ts .",
+    "prettier": "prettier --ignore-path .gitignore --write --list-different \"**/*.{ts,graphql,yml}\"",
+    "prettier:check": "prettier --ignore-path .gitignore --check \"**/*.{ts,graphql,yml}\"",
     "generate": "run-p build:* && graphql-codegen",
     "prepublish": "run-p build:*"
   },
@@ -54,6 +56,7 @@
     "eslint": "^8.7.0",
     "jest": "^27.4.7",
     "npm-run-all": "^4.1.5",
+    "prettier": "2.5.1",
     "ts-jest": "^27.1.3",
     "typescript": "^4.5.4",
     "yup": "^0.32.11"

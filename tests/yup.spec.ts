@@ -1,10 +1,10 @@
-import { buildSchema } from "graphql";
-import { plugin } from "../src/index";
+import { buildSchema } from 'graphql';
+import { plugin } from '../src/index';
 
-describe("yup", () => {
+describe('yup', () => {
   test.each([
     [
-      "defined",
+      'defined',
       /* GraphQL */ `
         input PrimitiveInput {
           a: ID!
@@ -15,16 +15,16 @@ describe("yup", () => {
         }
       `,
       [
-        "export function PrimitiveInputSchema(): yup.SchemaOf<PrimitiveInput>",
-        "a: yup.string().defined()",
-        "b: yup.string().defined()",
-        "c: yup.boolean().defined()",
-        "d: yup.number().defined()",
-        "e: yup.number().defined()",
+        'export function PrimitiveInputSchema(): yup.SchemaOf<PrimitiveInput>',
+        'a: yup.string().defined()',
+        'b: yup.string().defined()',
+        'c: yup.boolean().defined()',
+        'd: yup.number().defined()',
+        'e: yup.number().defined()',
       ],
     ],
     [
-      "optional",
+      'optional',
       /* GraphQL */ `
         input PrimitiveInput {
           a: ID
@@ -36,17 +36,17 @@ describe("yup", () => {
         }
       `,
       [
-        "export function PrimitiveInputSchema(): yup.SchemaOf<PrimitiveInput>",
+        'export function PrimitiveInputSchema(): yup.SchemaOf<PrimitiveInput>',
         // alphabet order
-        "a: yup.string(),",
-        "b: yup.string(),",
-        "c: yup.boolean(),",
-        "d: yup.number(),",
-        "e: yup.number(),",
+        'a: yup.string(),',
+        'b: yup.string(),',
+        'c: yup.boolean(),',
+        'd: yup.number(),',
+        'e: yup.number(),',
       ],
     ],
     [
-      "array",
+      'array',
       /* GraphQL */ `
         input ArrayInput {
           a: [String]
@@ -58,17 +58,17 @@ describe("yup", () => {
         }
       `,
       [
-        "export function ArrayInputSchema(): yup.SchemaOf<ArrayInput>",
-        "a: yup.array().of(yup.string()).optional(),",
-        "b: yup.array().of(yup.string().defined()).optional(),",
-        "c: yup.array().of(yup.string().defined()).defined(),",
-        "d: yup.array().of(yup.array().of(yup.string()).optional()).optional(),",
-        "e: yup.array().of(yup.array().of(yup.string()).defined()).optional(),",
-        "f: yup.array().of(yup.array().of(yup.string()).defined()).defined()",
+        'export function ArrayInputSchema(): yup.SchemaOf<ArrayInput>',
+        'a: yup.array().of(yup.string()).optional(),',
+        'b: yup.array().of(yup.string().defined()).optional(),',
+        'c: yup.array().of(yup.string().defined()).defined(),',
+        'd: yup.array().of(yup.array().of(yup.string()).optional()).optional(),',
+        'e: yup.array().of(yup.array().of(yup.string()).defined()).optional(),',
+        'f: yup.array().of(yup.array().of(yup.string()).defined()).defined()',
       ],
     ],
     [
-      "ref input object",
+      'ref input object',
       /* GraphQL */ `
         input AInput {
           b: BInput!
@@ -81,16 +81,16 @@ describe("yup", () => {
         }
       `,
       [
-        "export function AInputSchema(): yup.SchemaOf<AInput>",
-        "b: yup.lazy(() => BInputSchema().defined()) as never",
-        "export function BInputSchema(): yup.SchemaOf<BInput>",
-        "c: yup.lazy(() => CInputSchema().defined()) as never",
-        "export function CInputSchema(): yup.SchemaOf<CInput>",
-        "a: yup.lazy(() => AInputSchema().defined()) as never",
+        'export function AInputSchema(): yup.SchemaOf<AInput>',
+        'b: yup.lazy(() => BInputSchema().defined()) as never',
+        'export function BInputSchema(): yup.SchemaOf<BInput>',
+        'c: yup.lazy(() => CInputSchema().defined()) as never',
+        'export function CInputSchema(): yup.SchemaOf<CInput>',
+        'a: yup.lazy(() => AInputSchema().defined()) as never',
       ],
     ],
     [
-      "nested input object",
+      'nested input object',
       /* GraphQL */ `
         input NestedInput {
           child: NestedInput
@@ -98,13 +98,13 @@ describe("yup", () => {
         }
       `,
       [
-        "export function NestedInputSchema(): yup.SchemaOf<NestedInput>",
-        "child: yup.lazy(() => NestedInputSchema()) as never,",
-        "childrens: yup.array().of(yup.lazy(() => NestedInputSchema()) as never).optional()",
+        'export function NestedInputSchema(): yup.SchemaOf<NestedInput>',
+        'child: yup.lazy(() => NestedInputSchema()) as never,',
+        'childrens: yup.array().of(yup.lazy(() => NestedInputSchema()) as never).optional()',
       ],
     ],
     [
-      "enum",
+      'enum',
       /* GraphQL */ `
         enum PageType {
           PUBLIC
@@ -115,13 +115,13 @@ describe("yup", () => {
         }
       `,
       [
-        "export const PageTypeSchema = yup.mixed().oneOf([PageType.Public, PageType.BasicAuth])",
-        "export function PageInputSchema(): yup.SchemaOf<PageInput>",
-        "pageType: PageTypeSchema.defined()",
+        'export const PageTypeSchema = yup.mixed().oneOf([PageType.Public, PageType.BasicAuth])',
+        'export function PageInputSchema(): yup.SchemaOf<PageInput>',
+        'pageType: PageTypeSchema.defined()',
       ],
     ],
     [
-      "camelcase",
+      'camelcase',
       /* GraphQL */ `
         input HTTPInput {
           method: HTTPMethod
@@ -136,13 +136,13 @@ describe("yup", () => {
         scalar URL # unknown scalar, should be any (yup.mixed())
       `,
       [
-        "export function HttpInputSchema(): yup.SchemaOf<HttpInput>",
-        "export const HttpMethodSchema = yup.mixed().oneOf([HttpMethod.Get, HttpMethod.Post])",
-        "method: HttpMethodSchema",
-        "url: yup.mixed().defined()",
+        'export function HttpInputSchema(): yup.SchemaOf<HttpInput>',
+        'export const HttpMethodSchema = yup.mixed().oneOf([HttpMethod.Get, HttpMethod.Post])',
+        'method: HttpMethodSchema',
+        'url: yup.mixed().defined()',
       ],
     ],
-  ])("%s", async (_, textSchema, wantContains) => {
+  ])('%s', async (_, textSchema, wantContains) => {
     const schema = buildSchema(textSchema);
     const result = await plugin(schema, [], {}, {});
     expect(result.prepend).toContain("import * as yup from 'yup'");
@@ -152,7 +152,7 @@ describe("yup", () => {
     }
   });
 
-  it("with scalars", async () => {
+  it('with scalars', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input Say {
         phrase: Text!
@@ -167,17 +167,17 @@ describe("yup", () => {
       [],
       {
         scalars: {
-          Text: "string",
-          Count: "number",
+          Text: 'string',
+          Count: 'number',
         },
       },
       {}
     );
-    expect(result.content).toContain("phrase: yup.string().defined()");
-    expect(result.content).toContain("times: yup.number().defined()");
+    expect(result.content).toContain('phrase: yup.string().defined()');
+    expect(result.content).toContain('times: yup.number().defined()');
   });
 
-  it("with importFrom", async () => {
+  it('with importFrom', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input Say {
         phrase: String!
@@ -187,15 +187,15 @@ describe("yup", () => {
       schema,
       [],
       {
-        importFrom: "./types",
+        importFrom: './types',
       },
       {}
     );
     expect(result.prepend).toContain("import { Say } from './types'");
-    expect(result.content).toContain("phrase: yup.string().defined()");
+    expect(result.content).toContain('phrase: yup.string().defined()');
   });
 
-  it("with enumsAsTypes", async () => {
+  it('with enumsAsTypes', async () => {
     const schema = buildSchema(/* GraphQL */ `
       enum PageType {
         PUBLIC
@@ -210,8 +210,6 @@ describe("yup", () => {
       },
       {}
     );
-    expect(result.content).toContain(
-      "export const PageTypeSchema = yup.mixed().oneOf(['PUBLIC', 'BASIC_AUTH'])"
-    );
+    expect(result.content).toContain("export const PageTypeSchema = yup.mixed().oneOf(['PUBLIC', 'BASIC_AUTH'])");
   });
 });

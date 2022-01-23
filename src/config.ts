@@ -1,6 +1,6 @@
-import { TypeScriptPluginConfig } from "@graphql-codegen/typescript";
+import { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 
-export type ValidationSchema = "yup";
+export type ValidationSchema = 'yup';
 
 export interface DirectiveConfig {
   [directive: string]: {
