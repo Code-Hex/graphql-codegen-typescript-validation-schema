@@ -14,7 +14,9 @@ describe("isConvertableRegexp", () => {
       "/hello/y",
       "/hello/dgimsuy",
       `/\\w+\\s/g`,
+      // eslint-disable-next-line no-useless-escape
       `/^[a-z]+:[\\\/]$/i`,
+      // eslint-disable-next-line no-useless-escape
       `/^(?:\d{3}|\(\d{3}\))([-\/\.])\d{3}\\1\d{4}$/`,
     ])("%s", (maybeRegexp) => {
       expect(isConvertableRegexp(maybeRegexp)).toBeTruthy();

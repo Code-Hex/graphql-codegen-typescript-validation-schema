@@ -115,23 +115,3 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   directives?: DirectiveConfig;
 }
-
-interface YupSchemaPluginConfig {
-  /**
-   * @description Generates yup schema as strict.
-   * @default false
-   * @see https://github.com/jquense/yup#schemastrictenabled-boolean--false-schema
-   *
-   * @exampleMarkdown
-   * ```yml
-   * generates:
-   *   path/to/file.ts:
-   *     plugins:
-   *       - graphql-codegen-validation-schema
-   *     config:
-   *       yup:
-   *         strict: true
-   * ```
-   */
-  strict?: boolean;
-}
