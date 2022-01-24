@@ -96,6 +96,14 @@ generates:
     config:
       schema: yup
       directives:
+        # Write directives like
+        #
+        # directive:
+        #   arg1: schemaApi
+        #   arg2: ["schemaApi2", "Hello $1"]
+        #
+        # See more examples in `./tests/directive.spec.ts`
+        # https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/blob/main/tests/directive.spec.ts
         required:
           msg: required
         constraint:
@@ -108,7 +116,7 @@ generates:
 
 ```graphql
 input ExampleInput {
-  email: String! @required(msg: "Hello, World!") @constraint(minLength: 50)
+  email: String! @required(msg: "Hello, World!") @constraint(minLength: 50, format: "email")
   message: String! @constraint(startsWith: "Hello")
 }
 ```
@@ -118,7 +126,7 @@ Then generates yup validation schema like below.
 ```ts
 export function ExampleInputSchema(): yup.SchemaOf<ExampleInput> {
   return yup.object({
-    email: yup.string().defined().required("Hello, World!").min(50),
+    email: yup.string().defined().required("Hello, World!").min(50).email(),
     message: yup.string().defined().matches(/^Hello/)
   })
 }
