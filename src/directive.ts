@@ -109,6 +109,7 @@ export const formatDirectiveObjectArguments = (args: DirectiveObjectArguments): 
 // ```
 export const buildApi = (config: FormattedDirectiveConfig, directives: ReadonlyArray<ConstDirectiveNode>): string =>
   directives
+    .filter(directive => config[directive.name.value] !== undefined)
     .map(directive => {
       const directiveName = directive.name.value;
       const argsConfig = config[directiveName];
