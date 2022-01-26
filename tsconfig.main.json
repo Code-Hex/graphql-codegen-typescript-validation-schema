@@ -1,9 +1,13 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
+    "rootDir": "src",
     "outDir": "dist/main",
     "types": [
       "node"
     ]
-  }
+  },
+  "exclude": [
+    "example"
+  ]
 }

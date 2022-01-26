@@ -6,15 +6,14 @@
     "declaration": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "rootDir": "src",
     "outDir": "dist/module",
     "types": [
       "node"
     ]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
   "exclude": [
-    "node_modules/**"
+    "node_modules/**",
+    "example"
   ]
 }
