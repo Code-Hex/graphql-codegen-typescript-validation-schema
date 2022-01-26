@@ -37,3 +37,36 @@ generates:
               max: ['max', '$1 + 1']
               exclusiveMin: min
               exclusiveMax: max
+  example/zod/schemas.ts:
+    plugins:
+      - ./dist/main/index.js:
+          schema: zod
+          importFrom: ../types
+          directives:
+            required:
+              msg: required
+            # This is example using constraint directive.
+            # see: https://github.com/confuser/graphql-constraint-directive
+            constraint:
+              minLength: min # same as ['min', '$1']
+              maxLength: max
+              startsWith: ['regex', '/^$1/']
+              endsWith: ['regex', '/$1$/']
+              contains: ['regex', '/$1/']
+              notContains: ['regex', '/^((?!$1).)*$/']
+              pattern: ['regex', '/$1/']
+              format:
+                # For example, `@constraint(format: "uri")`. this case $1 will be "uri".
+                # Therefore the generator generates yup schema `.url()` followed by `uri: 'url'`
+                # If $1 does not match anywhere, the generator will ignore.
+                uri: url
+                email: email
+                uuid: uuid
+                # yup does not have `ipv4` API. If you want to add this,
+                # you need to add the logic using `yup.addMethod`.
+                # see: https://github.com/jquense/yup#addmethodschematype-schema-name-string-method--schema-void
+                ipv4: ipv4
+              min: ['min', '$1 - 1']
+              max: ['max', '$1 + 1']
+              exclusiveMin: min
+              exclusiveMax: max
