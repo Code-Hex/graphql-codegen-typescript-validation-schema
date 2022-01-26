@@ -13,7 +13,7 @@ import { TsVisitor } from '@graphql-codegen/typescript';
 import { buildApi, formatDirectiveConfig } from '../directive';
 
 const importZod = `import { z } from 'zod'`;
-const anySchema = `definedNonNullAnySchema`
+const anySchema = `definedNonNullAnySchema`;
 
 export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
   const tsVisitor = new TsVisitor(schema, config);
@@ -28,11 +28,12 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       return [importZod];
     },
     initialEmit: (): string =>
+      '\n' +
       [
         // Unfortunately, zod doesn’t provide non-null defined any schema.
         // This is a temporary hack until it is fixed.
         // see: https://github.com/colinhacks/zod/issues/884
-        'type definedNonNullAny = {}',
+        new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
         new DeclarationBlock({})
           .export()
           .asKind('const')
@@ -43,7 +44,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           .asKind('const')
           .withName(`${anySchema}: z.ZodSchema<definedNonNullAny>`)
           .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
-      ].join('\n\n'),
+      ].join('\n'),
     InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
@@ -115,22 +116,18 @@ const generateInputObjectFieldTypeZodSchema = (
   if (isNamedType(type)) {
     const gen = generateNameNodeZodSchema(tsVisitor, schema, type.name);
     if (isNonNullType(parentType)) {
-      return gen
+      return gen;
     }
     if (isListType(parentType)) {
-      return `${gen}.nullable()`
+      return `${gen}.nullable()`;
     }
-    return `${gen}.nullish()`
+    return `${gen}.nullish()`;
   }
   console.warn('unhandled type:', type);
   return '';
 };
 
-const generateNameNodeZodSchema = (
-  tsVisitor: TsVisitor,
-  schema: GraphQLSchema,
-  node: NameNode
-): string => {
+const generateNameNodeZodSchema = (tsVisitor: TsVisitor, schema: GraphQLSchema, node: NameNode): string => {
   const typ = schema.getType(node.value);
 
   if (typ && typ.astNode?.kind === 'InputObjectTypeDefinition') {

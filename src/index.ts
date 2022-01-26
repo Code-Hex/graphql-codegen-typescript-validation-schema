@@ -23,16 +23,13 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
 
   return {
     prepend: buildImports(),
-    content: '\n' + [
-      initialEmit(),
-      ...generated,
-    ].join('\n'),
+    content: [initialEmit(), ...generated].join('\n'),
   };
 };
 
 const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
   if (config?.schema === 'zod') {
-    return ZodSchemaVisitor(schema, config)
+    return ZodSchemaVisitor(schema, config);
   }
-  return YupSchemaVisitor(schema, config)
-}
+  return YupSchemaVisitor(schema, config);
+};
