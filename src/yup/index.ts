@@ -26,7 +26,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       }
       return [importYup];
     },
-    initialEmit: (): string => "",
+    initialEmit: (): string => '',
     InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
