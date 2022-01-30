@@ -31,6 +31,8 @@ generates:
 
 You can check [example directory](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) if you want to see more complex config example or how is generated some files.
 
+...And I wrote some tips in there.
+
 ## Config API Reference
 
 ### `schema`
@@ -96,7 +98,7 @@ input ExampleInput {
 }
 ```
 
-#### yup
+#### yup schema
 
 ```yml
 generates:
@@ -136,8 +138,7 @@ export function ExampleInputSchema(): yup.SchemaOf<ExampleInput> {
 }
 ```
 
-#### zod
-
+#### zod schema
 
 ```yml
 generates:
