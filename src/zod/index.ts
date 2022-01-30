@@ -12,9 +12,10 @@ import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common
 import { TsVisitor } from '@graphql-codegen/typescript';
 import { buildApi, formatDirectiveConfig } from '../directive';
 
-const importYup = `import * as yup from 'yup'`;
+const importZod = `import { z } from 'zod'`;
+const anySchema = `definedNonNullAnySchema`;
 
-export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
+export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
   const tsVisitor = new TsVisitor(schema, config);
 
   const importTypes: string[] = [];
@@ -22,11 +23,28 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
   return {
     buildImports: (): string[] => {
       if (config.importFrom && importTypes.length > 0) {
-        return [importYup, `import { ${importTypes.join(', ')} } from '${config.importFrom}'`];
+        return [importZod, `import { ${importTypes.join(', ')} } from '${config.importFrom}'`];
       }
-      return [importYup];
+      return [importZod];
     },
-    initialEmit: (): string => '',
+    initialEmit: (): string =>
+      '\n' +
+      [
+        // Unfortunately, zod doesn’t provide non-null defined any schema.
+        // This is a temporary hack until it is fixed.
+        // see: https://github.com/colinhacks/zod/issues/884
+        new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
+        new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`isDefinedNonNullAny`)
+          .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`).string,
+        new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`${anySchema}: z.ZodSchema<definedNonNullAny>`)
+          .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
+      ].join('\n'),
     InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
@@ -38,8 +56,8 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       return new DeclarationBlock({})
         .export()
         .asKind('function')
-        .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
-        .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
+        .withName(`${name}Schema(): z.ZodSchema<${name}>`)
+        .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string;
     },
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
@@ -50,45 +68,15 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           .export()
           .asKind('const')
           .withName(`${enumname}Schema`)
-          .withContent(
-            `yup.mixed().oneOf([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`
-          ).string;
+          .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`).string;
       }
 
-      const values = node.values
-        ?.map(
-          enumOption =>
-            `${enumname}.${tsVisitor.convertName(enumOption.name, {
-              useTypesPrefix: false,
-              transformUnderscore: true,
-            })}`
-        )
-        .join(', ');
       return new DeclarationBlock({})
         .export()
         .asKind('const')
         .withName(`${enumname}Schema`)
-        .withContent(`yup.mixed().oneOf([${values}])`).string;
+        .withContent(`z.nativeEnum(${enumname})`).string;
     },
-    // ScalarTypeDefinition: (node) => {
-    //   const decl = new DeclarationBlock({})
-    //     .export()
-    //     .asKind("const")
-    //     .withName(`${node.name.value}Schema`);
-
-    //   if (tsVisitor.scalars[node.name.value]) {
-    //     const tsType = tsVisitor.scalars[node.name.value];
-    //     switch (tsType) {
-    //       case "string":
-    //         return decl.withContent(`yup.string()`).string;
-    //       case "number":
-    //         return decl.withContent(`yup.number()`).string;
-    //       case "boolean":
-    //         return decl.withContent(`yup.boolean()`).string;
-    //     }
-    //   }
-    //   return decl.withContent(`yup.mixed()`).string;
-    // },
   };
 };
 
@@ -99,7 +87,7 @@ const generateInputObjectFieldYupSchema = (
   field: InputValueDefinitionNode,
   indentCount: number
 ): string => {
-  let gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, field.type);
+  let gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, field.type);
   if (config.directives && field.directives) {
     const formatted = formatDirectiveConfig(config.directives);
     gen += buildApi(formatted, field.directives);
@@ -107,7 +95,7 @@ const generateInputObjectFieldYupSchema = (
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };
 
-const generateInputObjectFieldTypeYupSchema = (
+const generateInputObjectFieldTypeZodSchema = (
   config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
@@ -115,29 +103,31 @@ const generateInputObjectFieldTypeYupSchema = (
   parentType?: TypeNode
 ): string => {
   if (isListType(type)) {
-    const gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
+    const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, type.type, type);
     if (!isNonNullType(parentType)) {
-      return `yup.array().of(${maybeLazy(type.type, gen)}).optional()`;
+      return `z.array(${maybeLazy(type.type, gen)}).nullish()`;
     }
-    return `yup.array().of(${maybeLazy(type.type, gen)})`;
+    return `z.array(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
-    return maybeLazy(type.type, `${gen}.defined()`);
+    const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, type.type, type);
+    return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
-    return generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
+    const gen = generateNameNodeZodSchema(tsVisitor, schema, type.name);
+    if (isNonNullType(parentType)) {
+      return gen;
+    }
+    if (isListType(parentType)) {
+      return `${gen}.nullable()`;
+    }
+    return `${gen}.nullish()`;
   }
   console.warn('unhandled type:', type);
   return '';
 };
 
-const generateNameNodeYupSchema = (
-  config: ValidationSchemaPluginConfig,
-  tsVisitor: TsVisitor,
-  schema: GraphQLSchema,
-  node: NameNode
-): string => {
+const generateNameNodeZodSchema = (tsVisitor: TsVisitor, schema: GraphQLSchema, node: NameNode): string => {
   const typ = schema.getType(node.value);
 
   if (typ && typ.astNode?.kind === 'InputObjectTypeDefinition') {
@@ -150,28 +140,26 @@ const generateNameNodeYupSchema = (
     return `${enumName}Schema`;
   }
 
-  const primitive = yup4Scalar(tsVisitor, node.value);
-  return primitive;
+  return zod4Scalar(tsVisitor, node.value);
 };
 
 const maybeLazy = (type: TypeNode, schema: string): string => {
   if (isNamedType(type) && isInput(type.name.value)) {
-    // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
-    return `yup.lazy(() => ${schema}) as never`;
+    return `z.lazy(() => ${schema})`;
   }
   return schema;
 };
 
-const yup4Scalar = (tsVisitor: TsVisitor, scalarName: string): string => {
+const zod4Scalar = (tsVisitor: TsVisitor, scalarName: string): string => {
   const tsType = tsVisitor.scalars[scalarName];
   switch (tsType) {
     case 'string':
-      return `yup.string()`;
+      return `z.string()`;
     case 'number':
-      return `yup.number()`;
+      return `z.number()`;
     case 'boolean':
-      return `yup.boolean()`;
+      return `z.boolean()`;
   }
   console.warn('unhandled name:', scalarName);
-  return `yup.mixed()`;
+  return anySchema;
 };

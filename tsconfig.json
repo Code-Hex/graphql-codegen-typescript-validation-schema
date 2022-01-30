@@ -4,16 +4,15 @@
     "incremental": true,
     "declaration": true,
     "noEmit": false,
-    "rootDir": "src",
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {}
   },
   "include": [
-    "src"
+    "src",
+    "example"
   ],
   "exclude": [
-    "./example",
-    "./dist"
+    "dist"
   ]
 }
