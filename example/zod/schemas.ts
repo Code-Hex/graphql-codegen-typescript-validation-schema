@@ -36,7 +36,7 @@ export function DropDownComponentInputSchema(): z.ZodSchema<DropDownComponentInp
 export function EventArgumentInputSchema(): z.ZodSchema<EventArgumentInput> {
   return z.object({
     name: z.string().min(5),
-    value: z.string().regex(/^foo/)
+    value: z.string().regex(/^foo/, "message")
   })
 }
 

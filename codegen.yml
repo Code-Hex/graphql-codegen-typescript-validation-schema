@@ -43,30 +43,17 @@ generates:
           schema: zod
           importFrom: ../types
           directives:
-            required:
-              msg: required
-            # This is example using constraint directive.
-            # see: https://github.com/confuser/graphql-constraint-directive
+            # Write directives like
+            #
+            # directive:
+            #   arg1: schemaApi
+            #   arg2: ["schemaApi2", "Hello $1"]
+            #
+            # See more examples in `./tests/directive.spec.ts`
+            # https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/blob/main/tests/directive.spec.ts
             constraint:
-              minLength: min # same as ['min', '$1']
-              maxLength: max
-              startsWith: ['regex', '/^$1/']
-              endsWith: ['regex', '/$1$/']
-              contains: ['regex', '/$1/']
-              notContains: ['regex', '/^((?!$1).)*$/']
-              pattern: ['regex', '/$1/']
+              minLength: min
+              # Replace $1 with specified `startsWith` argument value of the constraint directive
+              startsWith: ["regex", "/^$1/", "message"]
               format:
-                # For example, `@constraint(format: "uri")`. this case $1 will be "uri".
-                # Therefore the generator generates yup schema `.url()` followed by `uri: 'url'`
-                # If $1 does not match anywhere, the generator will ignore.
-                uri: url
                 email: email
-                uuid: uuid
-                # yup does not have `ipv4` API. If you want to add this,
-                # you need to add the logic using `yup.addMethod`.
-                # see: https://github.com/jquense/yup#addmethodschematype-schema-name-string-method--schema-void
-                ipv4: ipv4
-              min: ['min', '$1 - 1']
-              max: ['max', '$1 + 1']
-              exclusiveMin: min
-              exclusiveMax: max
