@@ -54,6 +54,6 @@ generates:
             constraint:
               minLength: min
               # Replace $1 with specified `startsWith` argument value of the constraint directive
-              startsWith: ["regex", "/^$1/", "message"]
+              startsWith: ['regex', '/^$1/', 'message']
               format:
                 email: email
