@@ -165,7 +165,7 @@ generates:
             email: email
 ```
 
-Then generates yup validation schema like below.
+Then generates zod validation schema like below.
 
 ```ts
 export function ExampleInputSchema(): z.ZodSchema<ExampleInput> {
