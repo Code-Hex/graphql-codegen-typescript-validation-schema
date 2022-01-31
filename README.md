@@ -57,7 +57,7 @@ generates:
 
 type: `string`
 
-import types from generated typescript type path. if not given, omit import statement.
+When provided, import types from the generated typescript types file path. if not given, omit import statement.
 
 ```yml
 generates:
