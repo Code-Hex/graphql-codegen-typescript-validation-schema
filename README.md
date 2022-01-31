@@ -48,7 +48,7 @@ generates:
   path/to/graphql.ts:
     plugins:
       - typescript
-      - graphql-codegen-validation-schema
+      - typescript-validation-schema
     config:
       schema: yup
 ```
@@ -66,7 +66,7 @@ generates:
       - typescript
   path/to/validation.ts:
     plugins:
-      - graphql-codegen-validation-schema
+      - typescript-validation-schema
     config:
       importFrom: ./graphql # path for generated ts code
 ```
@@ -105,7 +105,7 @@ generates:
   path/to/graphql.ts:
     plugins:
       - typescript
-      - graphql-codegen-validation-schema
+      - typescript-validation-schema
     config:
       schema: yup
       directives:
@@ -145,7 +145,7 @@ generates:
   path/to/graphql.ts:
     plugins:
       - typescript
-      - graphql-codegen-validation-schema
+      - typescript-validation-schema
     config:
       schema: zod
       directives:
