@@ -87,7 +87,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       notAllowEmptyString: true
    * ```
    */
-   notAllowEmptyString?: boolean;
+  notAllowEmptyString?: boolean;
   /**
    * @description Generates validation schema with more API based on directive schema.
    * @exampleMarkdown

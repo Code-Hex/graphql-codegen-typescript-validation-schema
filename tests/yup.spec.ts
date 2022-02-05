@@ -238,7 +238,7 @@ describe('yup', () => {
       'c: yup.boolean().defined(),',
       'd: yup.number().defined(),',
       'e: yup.number().defined()',
-    ]
+    ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
     }
