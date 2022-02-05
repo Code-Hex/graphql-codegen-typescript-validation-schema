@@ -123,7 +123,8 @@ const generateInputObjectFieldTypeYupSchema = (
   }
   if (isNonNullType(type)) {
     const gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
-    return maybeLazy(type.type, `${gen}.defined()`);
+    const nonNullGen = maybeNonEmptyString(config, tsVisitor, gen, type.type);
+    return maybeLazy(type.type, nonNullGen);
   }
   if (isNamedType(type)) {
     return generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
@@ -160,6 +161,23 @@ const maybeLazy = (type: TypeNode, schema: string): string => {
     return `yup.lazy(() => ${schema}) as never`;
   }
   return schema;
+};
+
+const maybeNonEmptyString = (
+  config: ValidationSchemaPluginConfig,
+  tsVisitor: TsVisitor,
+  schema: string,
+  childType: TypeNode
+): string => {
+  if (config.notAllowEmptyString === true && isNamedType(childType)) {
+    const maybeScalarName = childType.name.value;
+    const tsType = tsVisitor.scalars[maybeScalarName];
+    if (tsType === 'string') {
+      return `${schema}.required()`;
+    }
+  }
+  // fallback
+  return `${schema}.defined()`;
 };
 
 const yup4Scalar = (tsVisitor: TsVisitor, scalarName: string): string => {
