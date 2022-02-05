@@ -169,15 +169,15 @@ const maybeNonEmptyString = (
   schema: string,
   childType: TypeNode
 ): string => {
-  if (config.notAllowEmptyString === true && isNamedType(childType)) {
-    const maybeScalarName = childType.name.value;
-    const tsType = tsVisitor.scalars[maybeScalarName];
-    if (tsType === 'string') {
-      return `${schema}.required()`;
-    }
+  if (!isNamedType(childType)) {
+    return `${schema}.required()`;
   }
-  // fallback
-  return `${schema}.defined()`;
+  const maybeScalarName = childType.name.value;
+  const tsType = tsVisitor.scalars[maybeScalarName];
+  if (!config.notAllowEmptyString && tsType === 'string') {
+    return `${schema}.defined()`;
+  }
+  return `${schema}.required()`;
 };
 
 const yup4Scalar = (tsVisitor: TsVisitor, scalarName: string): string => {

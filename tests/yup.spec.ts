@@ -18,9 +18,9 @@ describe('yup', () => {
         'export function PrimitiveInputSchema(): yup.SchemaOf<PrimitiveInput>',
         'a: yup.string().defined()',
         'b: yup.string().defined()',
-        'c: yup.boolean().defined()',
-        'd: yup.number().defined()',
-        'e: yup.number().defined()',
+        'c: yup.boolean().required()',
+        'd: yup.number().required()',
+        'e: yup.number().required()',
       ],
     ],
     [
@@ -61,10 +61,10 @@ describe('yup', () => {
         'export function ArrayInputSchema(): yup.SchemaOf<ArrayInput>',
         'a: yup.array().of(yup.string()).optional(),',
         'b: yup.array().of(yup.string().defined()).optional(),',
-        'c: yup.array().of(yup.string().defined()).defined(),',
+        'c: yup.array().of(yup.string().defined()).required(),',
         'd: yup.array().of(yup.array().of(yup.string()).optional()).optional(),',
-        'e: yup.array().of(yup.array().of(yup.string()).defined()).optional(),',
-        'f: yup.array().of(yup.array().of(yup.string()).defined()).defined()',
+        'e: yup.array().of(yup.array().of(yup.string()).required()).optional(),',
+        'f: yup.array().of(yup.array().of(yup.string()).required()).required()',
       ],
     ],
     [
@@ -82,11 +82,11 @@ describe('yup', () => {
       `,
       [
         'export function AInputSchema(): yup.SchemaOf<AInput>',
-        'b: yup.lazy(() => BInputSchema().defined()) as never',
+        'b: yup.lazy(() => BInputSchema().required()) as never',
         'export function BInputSchema(): yup.SchemaOf<BInput>',
-        'c: yup.lazy(() => CInputSchema().defined()) as never',
+        'c: yup.lazy(() => CInputSchema().required()) as never',
         'export function CInputSchema(): yup.SchemaOf<CInput>',
-        'a: yup.lazy(() => AInputSchema().defined()) as never',
+        'a: yup.lazy(() => AInputSchema().required()) as never',
       ],
     ],
     [
@@ -117,7 +117,7 @@ describe('yup', () => {
       [
         'export const PageTypeSchema = yup.mixed().oneOf([PageType.Public, PageType.BasicAuth])',
         'export function PageInputSchema(): yup.SchemaOf<PageInput>',
-        'pageType: PageTypeSchema.defined()',
+        'pageType: PageTypeSchema.required()',
       ],
     ],
     [
@@ -139,7 +139,7 @@ describe('yup', () => {
         'export function HttpInputSchema(): yup.SchemaOf<HttpInput>',
         'export const HttpMethodSchema = yup.mixed().oneOf([HttpMethod.Get, HttpMethod.Post])',
         'method: HttpMethodSchema',
-        'url: yup.mixed().defined()',
+        'url: yup.mixed().required()',
       ],
     ],
   ])('%s', async (_, textSchema, wantContains) => {
@@ -174,7 +174,7 @@ describe('yup', () => {
       {}
     );
     expect(result.content).toContain('phrase: yup.string().defined()');
-    expect(result.content).toContain('times: yup.number().defined()');
+    expect(result.content).toContain('times: yup.number().required()');
   });
 
   it('with importFrom', async () => {
@@ -235,9 +235,9 @@ describe('yup', () => {
       'export function PrimitiveInputSchema(): yup.SchemaOf<PrimitiveInput>',
       'a: yup.string().required(),',
       'b: yup.string().required(),',
-      'c: yup.boolean().defined(),',
-      'd: yup.number().defined(),',
-      'e: yup.number().defined()',
+      'c: yup.boolean().required(),',
+      'd: yup.number().required(),',
+      'e: yup.number().required()',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
