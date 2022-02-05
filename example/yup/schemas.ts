@@ -16,14 +16,14 @@ export function ComponentInputSchema(): yup.SchemaOf<ComponentInput> {
     childrens: yup.array().of(yup.lazy(() => ComponentInputSchema()) as never).optional(),
     event: yup.lazy(() => EventInputSchema()) as never,
     name: yup.string().defined(),
-    type: ButtonComponentTypeSchema.defined()
+    type: ButtonComponentTypeSchema.required()
   })
 }
 
 export function DropDownComponentInputSchema(): yup.SchemaOf<DropDownComponentInput> {
   return yup.object({
     dropdownComponent: yup.lazy(() => ComponentInputSchema()) as never,
-    getEvent: yup.lazy(() => EventInputSchema().defined()) as never
+    getEvent: yup.lazy(() => EventInputSchema().required()) as never
   })
 }
 
@@ -36,8 +36,8 @@ export function EventArgumentInputSchema(): yup.SchemaOf<EventArgumentInput> {
 
 export function EventInputSchema(): yup.SchemaOf<EventInput> {
   return yup.object({
-    arguments: yup.array().of(yup.lazy(() => EventArgumentInputSchema().defined()) as never).defined(),
-    options: yup.array().of(EventOptionTypeSchema.defined()).optional()
+    arguments: yup.array().of(yup.lazy(() => EventArgumentInputSchema().required()) as never).required(),
+    options: yup.array().of(EventOptionTypeSchema.required()).optional()
   })
 }
 
@@ -46,7 +46,7 @@ export const EventOptionTypeSchema = yup.mixed().oneOf([EventOptionType.Reload, 
 export function HttpInputSchema(): yup.SchemaOf<HttpInput> {
   return yup.object({
     method: HttpMethodSchema,
-    url: yup.mixed().defined()
+    url: yup.mixed().required()
   })
 }
 
@@ -60,17 +60,17 @@ export function LayoutInputSchema(): yup.SchemaOf<LayoutInput> {
 
 export function PageInputSchema(): yup.SchemaOf<PageInput> {
   return yup.object({
-    attributes: yup.array().of(yup.lazy(() => AttributeInputSchema().defined()) as never).optional(),
+    attributes: yup.array().of(yup.lazy(() => AttributeInputSchema().required()) as never).optional(),
     date: yup.mixed(),
-    height: yup.number().defined(),
+    height: yup.number().required(),
     id: yup.string().defined(),
-    layout: yup.lazy(() => LayoutInputSchema().defined()) as never,
-    pageType: PageTypeSchema.defined(),
+    layout: yup.lazy(() => LayoutInputSchema().required()) as never,
+    pageType: PageTypeSchema.required(),
     postIDs: yup.array().of(yup.string().defined()).optional(),
-    show: yup.boolean().defined(),
+    show: yup.boolean().required(),
     tags: yup.array().of(yup.string()).optional(),
     title: yup.string().defined(),
-    width: yup.number().defined()
+    width: yup.number().required()
   })
 }
 
