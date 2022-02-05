@@ -212,4 +212,35 @@ describe('yup', () => {
     );
     expect(result.content).toContain("export const PageTypeSchema = yup.mixed().oneOf(['PUBLIC', 'BASIC_AUTH'])");
   });
+
+  it('with notAllowEmptyString', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PrimitiveInput {
+        a: ID!
+        b: String!
+        c: Boolean!
+        d: Int!
+        e: Float!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        notAllowEmptyString: true,
+      },
+      {}
+    );
+    const wantContains = [
+      'export function PrimitiveInputSchema(): yup.SchemaOf<PrimitiveInput>',
+      'a: yup.string().required(),',
+      'b: yup.string().required(),',
+      'c: yup.boolean().defined(),',
+      'd: yup.number().defined(),',
+      'e: yup.number().defined()',
+    ]
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
 });

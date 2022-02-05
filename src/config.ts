@@ -74,6 +74,21 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   enumsAsTypes?: boolean;
   /**
+   * @description Generates validation string schema as do not allow empty characters by default.
+   * @default false
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       notAllowEmptyString: true
+   * ```
+   */
+   notAllowEmptyString?: boolean;
+  /**
    * @description Generates validation schema with more API based on directive schema.
    * @exampleMarkdown
    * ```yml

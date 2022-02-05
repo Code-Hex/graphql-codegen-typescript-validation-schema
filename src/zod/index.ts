@@ -116,6 +116,10 @@ const generateInputObjectFieldTypeZodSchema = (
   if (isNamedType(type)) {
     const gen = generateNameNodeZodSchema(tsVisitor, schema, type.name);
     if (isNonNullType(parentType)) {
+      if (config.notAllowEmptyString === true) {
+        const tsType = tsVisitor.scalars[type.name.value];
+        if (tsType === 'string') return `${gen}.min(1)`
+      }
       return gen;
     }
     if (isListType(parentType)) {

@@ -215,4 +215,36 @@ describe('zod', () => {
     );
     expect(result.content).toContain("export const PageTypeSchema = z.enum(['PUBLIC', 'BASIC_AUTH'])");
   });
+
+  it('with notAllowEmptyString', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PrimitiveInput {
+        a: ID!
+        b: String!
+        c: Boolean!
+        d: Int!
+        e: Float!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        notAllowEmptyString: true,
+      },
+      {}
+    );
+    const wantContains = [
+      'export function PrimitiveInputSchema(): z.ZodSchema<PrimitiveInput>',
+      'a: z.string().min(1),',
+      'b: z.string().min(1),',
+      'c: z.boolean(),',
+      'd: z.number(),',
+      'e: z.number()',
+    ];
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
 });
