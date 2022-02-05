@@ -85,6 +85,12 @@ type: `boolean` default: `false`
 
 Generates enum as TypeScript `type` instead of `enum`.
 
+### `notAllowEmptyString`
+
+type: `boolean` default: `false`
+
+Generates validation string schema as do not allow empty characters by default.
+
 ### `directives`
 
 type: `DirectiveConfig`
