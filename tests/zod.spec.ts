@@ -247,4 +247,37 @@ describe('zod', () => {
       expect(result.content).toContain(wantContain);
     }
   });
+
+  it('with scalarSchemas', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input ScalarsInput {
+        date: Date!
+        email: Email
+        str: String!
+      }
+      scalar Date
+      scalar Email
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        scalarSchemas: {
+          Date: 'z.date()',
+          Email: 'z.string().email()',
+        },
+      },
+      {}
+    );
+    const wantContains = [
+      'export function ScalarsInputSchema(): z.ZodSchema<ScalarsInput>',
+      'date: z.date(),',
+      'email: z.string().email().nullish(),',
+      'str: z.string()',
+    ];
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
 });

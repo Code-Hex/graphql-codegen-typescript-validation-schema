@@ -151,7 +151,7 @@ const generateNameNodeYupSchema = (
     return `${enumName}Schema`;
   }
 
-  const primitive = yup4Scalar(tsVisitor, node.value);
+  const primitive = yup4Scalar(config, tsVisitor, node.value);
   return primitive;
 };
 
@@ -180,7 +180,10 @@ const maybeNonEmptyString = (
   return `${schema}.defined()`;
 };
 
-const yup4Scalar = (tsVisitor: TsVisitor, scalarName: string): string => {
+const yup4Scalar = (config: ValidationSchemaPluginConfig, tsVisitor: TsVisitor, scalarName: string): string => {
+  if (config.scalarSchemas?.[scalarName]) {
+    return config.scalarSchemas[scalarName];
+  }
   const tsType = tsVisitor.scalars[scalarName];
   switch (tsType) {
     case 'string':

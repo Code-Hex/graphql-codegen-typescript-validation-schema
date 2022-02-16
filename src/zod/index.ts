@@ -114,7 +114,7 @@ const generateInputObjectFieldTypeZodSchema = (
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
-    const gen = generateNameNodeZodSchema(tsVisitor, schema, type.name);
+    const gen = generateNameNodeZodSchema(config, tsVisitor, schema, type.name);
     if (isNonNullType(parentType)) {
       if (config.notAllowEmptyString === true) {
         const tsType = tsVisitor.scalars[type.name.value];
@@ -131,7 +131,12 @@ const generateInputObjectFieldTypeZodSchema = (
   return '';
 };
 
-const generateNameNodeZodSchema = (tsVisitor: TsVisitor, schema: GraphQLSchema, node: NameNode): string => {
+const generateNameNodeZodSchema = (
+  config: ValidationSchemaPluginConfig,
+  tsVisitor: TsVisitor,
+  schema: GraphQLSchema,
+  node: NameNode
+): string => {
   const typ = schema.getType(node.value);
 
   if (typ && typ.astNode?.kind === 'InputObjectTypeDefinition') {
@@ -144,7 +149,7 @@ const generateNameNodeZodSchema = (tsVisitor: TsVisitor, schema: GraphQLSchema, 
     return `${enumName}Schema`;
   }
 
-  return zod4Scalar(tsVisitor, node.value);
+  return zod4Scalar(config, tsVisitor, node.value);
 };
 
 const maybeLazy = (type: TypeNode, schema: string): string => {
@@ -154,7 +159,10 @@ const maybeLazy = (type: TypeNode, schema: string): string => {
   return schema;
 };
 
-const zod4Scalar = (tsVisitor: TsVisitor, scalarName: string): string => {
+const zod4Scalar = (config: ValidationSchemaPluginConfig, tsVisitor: TsVisitor, scalarName: string): string => {
+  if (config.scalarSchemas?.[scalarName]) {
+    return config.scalarSchemas[scalarName];
+  }
   const tsType = tsVisitor.scalars[scalarName];
   switch (tsType) {
     case 'string':
