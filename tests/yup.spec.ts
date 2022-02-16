@@ -243,4 +243,36 @@ describe('yup', () => {
       expect(result.content).toContain(wantContain);
     }
   });
+
+  it('with scalarSchemas', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input ScalarsInput {
+        date: Date!
+        email: Email
+        str: String!
+      }
+      scalar Date
+      scalar Email
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        scalarSchemas: {
+          Date: 'yup.date()',
+          Email: 'yup.string().email()',
+        },
+      },
+      {}
+    );
+    const wantContains = [
+      'export function ScalarsInputSchema(): yup.SchemaOf<ScalarsInput>',
+      'date: yup.date().defined(),',
+      'email: yup.string().email(),',
+      'str: yup.string().defined()',
+    ];
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
 });

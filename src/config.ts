@@ -12,6 +12,10 @@ export interface DirectiveObjectArguments {
   [matched: string]: string | string[];
 }
 
+interface ScalarSchemas {
+  [name: string]: string;
+}
+
 export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
   /**
    * @description specify generate schema
@@ -88,6 +92,28 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   notAllowEmptyString?: boolean;
+  /**
+   * @description Extends or overrides validation schema for the built-in scalars and custom GraphQL scalars.
+   *
+   * @exampleMarkdown
+   * ```yml
+   * config:
+   *   schema: yup
+   *   scalarSchemas:
+   *     Date: yup.date()
+   *     Email: yup.string().email()
+   * ```
+   *
+   * @exampleMarkdown
+   * ```yml
+   * config:
+   *   schema: zod
+   *   scalarSchemas:
+   *     Date: z.date()
+   *     Email: z.string().email()
+   * ```
+   */
+  scalarSchemas?: ScalarSchemas;
   /**
    * @description Generates validation schema with more API based on directive schema.
    * @exampleMarkdown
