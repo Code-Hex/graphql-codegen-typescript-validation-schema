@@ -91,6 +91,32 @@ type: `boolean` default: `false`
 
 Generates validation string schema as do not allow empty characters by default.
 
+### `scalarSchemas`
+
+type: `ScalarSchemas`
+
+Extends or overrides validation schema for the built-in scalars and custom GraphQL scalars.
+
+#### yup schema
+
+```yml
+config:
+  schema: yup
+  scalarSchemas:
+    Date: yup.date()
+    Email: yup.string().email()
+```
+
+#### zod schema
+
+```yml
+config:
+  schema: zod
+  scalarSchemas:
+    Date: z.date()
+    Email: z.string().email()
+```
+
 ### `directives`
 
 type: `DirectiveConfig`
