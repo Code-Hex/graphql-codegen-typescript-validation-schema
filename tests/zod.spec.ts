@@ -15,7 +15,7 @@ describe('zod', () => {
         }
       `,
       [
-        'export function PrimitiveInputSchema(): z.ZodSchema<PrimitiveInput>',
+        'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
         'a: z.string()',
         'b: z.string()',
         'c: z.boolean()',
@@ -36,7 +36,7 @@ describe('zod', () => {
         }
       `,
       [
-        'export function PrimitiveInputSchema(): z.ZodSchema<PrimitiveInput>',
+        'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
         // alphabet order
         'a: z.string().nullish(),',
         'b: z.string().nullish(),',
@@ -58,7 +58,7 @@ describe('zod', () => {
         }
       `,
       [
-        'export function ArrayInputSchema(): z.ZodSchema<ArrayInput>',
+        'export function ArrayInputSchema(): z.ZodObject<Properties<ArrayInput>>',
         'a: z.array(z.string().nullable()).nullish(),',
         'b: z.array(z.string()).nullish(),',
         'c: z.array(z.string()),',
@@ -81,11 +81,11 @@ describe('zod', () => {
         }
       `,
       [
-        'export function AInputSchema(): z.ZodSchema<AInput>',
+        'export function AInputSchema(): z.ZodObject<Properties<AInput>>',
         'b: z.lazy(() => BInputSchema())',
-        'export function BInputSchema(): z.ZodSchema<BInput>',
+        'export function BInputSchema(): z.ZodObject<Properties<BInput>>',
         'c: z.lazy(() => CInputSchema())',
-        'export function CInputSchema(): z.ZodSchema<CInput>',
+        'export function CInputSchema(): z.ZodObject<Properties<CInput>>',
         'a: z.lazy(() => AInputSchema())',
       ],
     ],
@@ -98,7 +98,7 @@ describe('zod', () => {
         }
       `,
       [
-        'export function NestedInputSchema(): z.ZodSchema<NestedInput>',
+        'export function NestedInputSchema(): z.ZodObject<Properties<NestedInput>>',
         'child: z.lazy(() => NestedInputSchema().nullish()),',
         'childrens: z.array(z.lazy(() => NestedInputSchema().nullable())).nullish()',
       ],
@@ -116,7 +116,7 @@ describe('zod', () => {
       `,
       [
         'export const PageTypeSchema = z.nativeEnum(PageType)',
-        'export function PageInputSchema(): z.ZodSchema<PageInput>',
+        'export function PageInputSchema(): z.ZodObject<Properties<PageInput>>',
         'pageType: PageTypeSchema',
       ],
     ],
@@ -136,7 +136,7 @@ describe('zod', () => {
         scalar URL # unknown scalar, should be any (definedNonNullAnySchema)
       `,
       [
-        'export function HttpInputSchema(): z.ZodSchema<HttpInput>',
+        'export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>>',
         'export const HttpMethodSchema = z.nativeEnum(HttpMethod)',
         'method: HttpMethodSchema',
         'url: definedNonNullAnySchema',
@@ -236,7 +236,7 @@ describe('zod', () => {
       {}
     );
     const wantContains = [
-      'export function PrimitiveInputSchema(): z.ZodSchema<PrimitiveInput>',
+      'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
       'a: z.string().min(1),',
       'b: z.string().min(1),',
       'c: z.boolean(),',
@@ -271,7 +271,7 @@ describe('zod', () => {
       {}
     );
     const wantContains = [
-      'export function ScalarsInputSchema(): z.ZodSchema<ScalarsInput>',
+      'export function ScalarsInputSchema(): z.ZodObject<Properties<ScalarsInput>>',
       'date: z.date(),',
       'email: z.string().email().nullish(),',
       'str: z.string()',

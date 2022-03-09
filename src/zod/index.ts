@@ -30,6 +30,10 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     initialEmit: (): string =>
       '\n' +
       [
+        new DeclarationBlock({})
+          .asKind('type')
+          .withName('Properties<T>')
+          .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;', '}>'].join('\n')).string,
         // Unfortunately, zod doesn’t provide non-null defined any schema.
         // This is a temporary hack until it is fixed.
         // see: https://github.com/colinhacks/zod/issues/884
@@ -42,7 +46,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         new DeclarationBlock({})
           .export()
           .asKind('const')
-          .withName(`${anySchema}: z.ZodSchema<definedNonNullAny>`)
+          .withName(`${anySchema}`)
           .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
       ].join('\n'),
     InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
@@ -56,7 +60,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       return new DeclarationBlock({})
         .export()
         .asKind('function')
-        .withName(`${name}Schema(): z.ZodSchema<${name}>`)
+        .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
         .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string;
     },
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {

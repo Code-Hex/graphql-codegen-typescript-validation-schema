@@ -1,13 +1,17 @@
 import { z } from 'zod'
 import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType } from '../types'
 
+type Properties<T> = Required<{
+  [K in keyof T]: z.ZodType<T[K], any, T[K]>;
+}>;
+
 type definedNonNullAny = {};
 
 export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
 
-export const definedNonNullAnySchema: z.ZodSchema<definedNonNullAny> = z.any().refine((v) => isDefinedNonNullAny(v));
+export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
 
-export function AttributeInputSchema(): z.ZodSchema<AttributeInput> {
+export function AttributeInputSchema(): z.ZodObject<Properties<AttributeInput>> {
   return z.object({
     key: z.string().nullish(),
     val: z.string().nullish()
@@ -16,7 +20,7 @@ export function AttributeInputSchema(): z.ZodSchema<AttributeInput> {
 
 export const ButtonComponentTypeSchema = z.nativeEnum(ButtonComponentType);
 
-export function ComponentInputSchema(): z.ZodSchema<ComponentInput> {
+export function ComponentInputSchema(): z.ZodObject<Properties<ComponentInput>> {
   return z.object({
     child: z.lazy(() => ComponentInputSchema().nullish()),
     childrens: z.array(z.lazy(() => ComponentInputSchema().nullable())).nullish(),
@@ -26,21 +30,21 @@ export function ComponentInputSchema(): z.ZodSchema<ComponentInput> {
   })
 }
 
-export function DropDownComponentInputSchema(): z.ZodSchema<DropDownComponentInput> {
+export function DropDownComponentInputSchema(): z.ZodObject<Properties<DropDownComponentInput>> {
   return z.object({
     dropdownComponent: z.lazy(() => ComponentInputSchema().nullish()),
     getEvent: z.lazy(() => EventInputSchema())
   })
 }
 
-export function EventArgumentInputSchema(): z.ZodSchema<EventArgumentInput> {
+export function EventArgumentInputSchema(): z.ZodObject<Properties<EventArgumentInput>> {
   return z.object({
     name: z.string().min(5),
     value: z.string().regex(/^foo/, "message")
   })
 }
 
-export function EventInputSchema(): z.ZodSchema<EventInput> {
+export function EventInputSchema(): z.ZodObject<Properties<EventInput>> {
   return z.object({
     arguments: z.array(z.lazy(() => EventArgumentInputSchema())),
     options: z.array(EventOptionTypeSchema).nullish()
@@ -49,7 +53,7 @@ export function EventInputSchema(): z.ZodSchema<EventInput> {
 
 export const EventOptionTypeSchema = z.nativeEnum(EventOptionType);
 
-export function HttpInputSchema(): z.ZodSchema<HttpInput> {
+export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>> {
   return z.object({
     method: HttpMethodSchema.nullish(),
     url: definedNonNullAnySchema
@@ -58,13 +62,13 @@ export function HttpInputSchema(): z.ZodSchema<HttpInput> {
 
 export const HttpMethodSchema = z.nativeEnum(HttpMethod);
 
-export function LayoutInputSchema(): z.ZodSchema<LayoutInput> {
+export function LayoutInputSchema(): z.ZodObject<Properties<LayoutInput>> {
   return z.object({
     dropdown: z.lazy(() => DropDownComponentInputSchema().nullish())
   })
 }
 
-export function PageInputSchema(): z.ZodSchema<PageInput> {
+export function PageInputSchema(): z.ZodObject<Properties<PageInput>> {
   return z.object({
     attributes: z.array(z.lazy(() => AttributeInputSchema())).nullish(),
     date: definedNonNullAnySchema.nullish(),
