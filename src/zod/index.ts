@@ -30,11 +30,10 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     initialEmit: (): string =>
       '\n' +
       [
-        new DeclarationBlock({}).asKind('type').withName('Properties<T>').withContent([
-          'Required<{',
-          '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;',
-          '}>',
-        ].join('\n')).string,
+        new DeclarationBlock({})
+          .asKind('type')
+          .withName('Properties<T>')
+          .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;', '}>'].join('\n')).string,
         // Unfortunately, zod doesn’t provide non-null defined any schema.
         // This is a temporary hack until it is fixed.
         // see: https://github.com/colinhacks/zod/issues/884
