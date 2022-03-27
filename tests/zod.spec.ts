@@ -296,10 +296,10 @@ describe('zod', () => {
           schema: 'zod',
           directives: {
             constraint: {
-              minLength: ['min', "$1", "Please input more than $1"],
-              maxLength: ['max', "$1", "Please input less than $1"]
-            }
-          }
+              minLength: ['min', '$1', 'Please input more than $1'],
+              maxLength: ['max', '$1', 'Please input less than $1'],
+            },
+          },
         },
         {}
       );
@@ -310,7 +310,7 @@ describe('zod', () => {
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
       }
-    })
+    });
     it('not null field', async () => {
       const schema = buildSchema(/* GraphQL */ `
         input UserCreateInput {
@@ -326,10 +326,10 @@ describe('zod', () => {
           schema: 'zod',
           directives: {
             constraint: {
-              minLength: ['min', "$1", "Please input more than $1"],
-              maxLength: ['max', "$1", "Please input less than $1"]
-            }
-          }
+              minLength: ['min', '$1', 'Please input more than $1'],
+              maxLength: ['max', '$1', 'Please input less than $1'],
+            },
+          },
         },
         {}
       );
@@ -340,7 +340,7 @@ describe('zod', () => {
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
       }
-    })
+    });
     it('list field', async () => {
       const schema = buildSchema(/* GraphQL */ `
         input UserCreateInput {
@@ -356,10 +356,10 @@ describe('zod', () => {
           schema: 'zod',
           directives: {
             constraint: {
-              minLength: ['min', "$1", "Please input more than $1"],
-              maxLength: ['max', "$1", "Please input less than $1"]
-            }
-          }
+              minLength: ['min', '$1', 'Please input more than $1'],
+              maxLength: ['max', '$1', 'Please input less than $1'],
+            },
+          },
         },
         {}
       );
@@ -370,6 +370,6 @@ describe('zod', () => {
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
       }
-    })
+    });
   });
 });
