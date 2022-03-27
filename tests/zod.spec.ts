@@ -305,7 +305,7 @@ describe('zod', () => {
       );
       const wantContains = [
         'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
-        'profile: z.string().min(1, \"Please input more than 1\").max(5000, \"Please input less than 5000\").nullish()',
+        'profile: z.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000").nullish()',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
@@ -335,7 +335,7 @@ describe('zod', () => {
       );
       const wantContains = [
         'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
-        'profile: z.string().min(1, \"Please input more than 1\").max(5000, \"Please input less than 5000\")',
+        'profile: z.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000")',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
