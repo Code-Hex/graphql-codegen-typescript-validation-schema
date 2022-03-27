@@ -91,11 +91,7 @@ const generateInputObjectFieldYupSchema = (
   field: InputValueDefinitionNode,
   indentCount: number
 ): string => {
-  let gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, field.type);
-  if (config.directives && field.directives) {
-    const formatted = formatDirectiveConfig(config.directives);
-    gen += buildApi(formatted, field.directives);
-  }
+  const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, field, field.type);
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };
 
@@ -103,37 +99,56 @@ const generateInputObjectFieldTypeZodSchema = (
   config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
+  field: InputValueDefinitionNode,
   type: TypeNode,
   parentType?: TypeNode
 ): string => {
   if (isListType(type)) {
-    const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, type.type, type);
+    const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, field, type.type, type)
     if (!isNonNullType(parentType)) {
-      return `z.array(${maybeLazy(type.type, gen)}).nullish()`;
+      const arrayGen = `z.array(${maybeLazy(type.type, gen)})`
+      const maybeLazyGen = applyDirectives(config,field, arrayGen)
+      return `${maybeLazyGen}.nullish()`;
     }
     return `z.array(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, type.type, type);
+    const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, field, type.type, type);
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
-    const gen = generateNameNodeZodSchema(config, tsVisitor, schema, type.name);
+    const gen = generateNameNodeZodSchema(config, tsVisitor, schema, type.name)
+    if (isListType(parentType)) {
+      return `${gen}.nullable()`;
+    }
+    const appliedDirectivesGen = applyDirectives(config, field, gen)
     if (isNonNullType(parentType)) {
       if (config.notAllowEmptyString === true) {
         const tsType = tsVisitor.scalars[type.name.value];
         if (tsType === 'string') return `${gen}.min(1)`;
       }
-      return gen;
+      return appliedDirectivesGen;
     }
     if (isListType(parentType)) {
-      return `${gen}.nullable()`;
+      return `${appliedDirectivesGen}.nullable()`;
     }
-    return `${gen}.nullish()`;
+    return `${appliedDirectivesGen}.nullish()`;
   }
   console.warn('unhandled type:', type);
   return '';
 };
+
+const applyDirectives = (
+  config: ValidationSchemaPluginConfig,
+  field: InputValueDefinitionNode,
+  gen: string,
+): string => {
+  if (config.directives && field.directives) {
+    const formatted = formatDirectiveConfig(config.directives);
+    return gen + buildApi(formatted, field.directives);
+  }
+  return gen
+}
 
 const generateNameNodeZodSchema = (
   config: ValidationSchemaPluginConfig,
