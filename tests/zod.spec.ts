@@ -280,4 +280,96 @@ describe('zod', () => {
       expect(result.content).toContain(wantContain);
     }
   });
+  describe('issues #19', () => {
+    it('string field', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          profile: String @constraint(minLength: 1, maxLength: 5000)
+        }
+
+        directive @constraint(minLength: Int!, maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          directives: {
+            constraint: {
+              minLength: ['min', '$1', 'Please input more than $1'],
+              maxLength: ['max', '$1', 'Please input less than $1'],
+            },
+          },
+        },
+        {}
+      );
+      const wantContains = [
+        'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
+        'profile: z.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000").nullish()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+    it('not null field', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          profile: String! @constraint(minLength: 1, maxLength: 5000)
+        }
+
+        directive @constraint(minLength: Int!, maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          directives: {
+            constraint: {
+              minLength: ['min', '$1', 'Please input more than $1'],
+              maxLength: ['max', '$1', 'Please input less than $1'],
+            },
+          },
+        },
+        {}
+      );
+      const wantContains = [
+        'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
+        'profile: z.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000")',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+    it('list field', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          profile: [String] @constraint(minLength: 1, maxLength: 5000)
+        }
+
+        directive @constraint(minLength: Int!, maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          directives: {
+            constraint: {
+              minLength: ['min', '$1', 'Please input more than $1'],
+              maxLength: ['max', '$1', 'Please input less than $1'],
+            },
+          },
+        },
+        {}
+      );
+      const wantContains = [
+        'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
+        'profile: z.array(z.string().nullable()).min(1, "Please input more than 1").max(5000, "Please input less than 5000").nullish()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+  });
 });
