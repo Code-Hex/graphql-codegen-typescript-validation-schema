@@ -54,7 +54,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       importTypes.push(name);
 
       const shape = node.fields
-        ?.map(field => generateInputObjectFieldYupSchema(config, tsVisitor, schema, field, 2))
+        ?.map(field => generateInputObjectFieldZodSchema(config, tsVisitor, schema, field, 2))
         .join(',\n');
 
       return new DeclarationBlock({})
@@ -84,7 +84,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
   };
 };
 
-const generateInputObjectFieldYupSchema = (
+const generateInputObjectFieldZodSchema = (
   config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
