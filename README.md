@@ -6,6 +6,7 @@
 
 - [x] support [yup](https://github.com/jquense/yup)
 - [x] support [zod](https://github.com/colinhacks/zod)
+- [x] support [myzod](https://github.com/davidmdm/myzod)
 
 ## Quick Start
 
@@ -29,9 +30,9 @@ generates:
       schema: yup # or zod
 ```
 
-You can check [example directory](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) if you want to see more complex config example or how is generated some files.
+You can check [example](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) directory if you want to see more complex config example or how is generated some files.
 
-...And I wrote some tips in there.
+The Q&A for each schema is written in the README in the respective example directory.
 
 ## Config API Reference
 
@@ -41,7 +42,7 @@ type: `ValidationSchema` default: `'yup'`
 
 Specify generete validation schema you want.
 
-You can specify `yup` or `zod`.
+You can specify `yup` or `zod` or `myzod`.
 
 ```yml
 generates:
@@ -207,3 +208,7 @@ export function ExampleInputSchema(): z.ZodSchema<ExampleInput> {
   })
 }
 ```
+
+#### other schema
+
+Please see [example](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) directory.
