@@ -1,0 +1,12 @@
+{
+  "extends": ["config:base"],
+  "enabledManagers": ["npm"],
+  "ignorePresets": [":prHourlyLimit2"],
+  "timezone": "Asia/Tokyo",
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
+  "dependencyDashboard": false,
+  "onboarding": false,
+  "prConcurrentLimit": 5
+}
