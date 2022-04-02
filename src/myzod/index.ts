@@ -15,7 +15,7 @@ import { buildApi, formatDirectiveConfig } from '../directive';
 const importZod = `import myzod from 'myzod'`;
 const anySchema = `definedNonNullAnySchema`;
 
-export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
+export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
   const tsVisitor = new TsVisitor(schema, config);
 
   const importTypes: string[] = [];
@@ -27,7 +27,6 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       }
       return [importZod];
     },
-
     initialEmit: (): string =>
       '\n' +
       [
@@ -75,15 +74,16 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
       importTypes.push(enumname);
-      /* 
+      // z.enum are basically myzod.literals
       if (config.enumsAsTypes) {
         return new DeclarationBlock({})
           .export()
-          .asKind('const')
+          .asKind('type')
           .withName(`${enumname}Schema`)
-          .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`).string;
+          .withContent(`myzod.literals(${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')})`)
+          .string;
       }
-    */
+
       return new DeclarationBlock({})
         .export()
         .asKind('const')
@@ -117,7 +117,7 @@ const generateInputObjectFieldTypeMyZodSchema = (
     if (!isNonNullType(parentType)) {
       const arrayGen = `myzod.array(${maybeLazy(type.type, gen)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
-      return `${maybeLazyGen}.optional()`; //  to make it equivalent to nullish: `${maybeLazyGen}.optional().optional().or(nullable())`;
+      return `${maybeLazyGen}.optional().nullable()`;
     }
     return `myzod.array(${maybeLazy(type.type, gen)})`;
   }
@@ -128,7 +128,7 @@ const generateInputObjectFieldTypeMyZodSchema = (
   if (isNamedType(type)) {
     const gen = generateNameNodeMyZodSchema(config, tsVisitor, schema, type.name);
     if (isListType(parentType)) {
-      return `${gen}.nullable()`; //TODO: Test this later
+      return `${gen}.nullable()`;
     }
     const appliedDirectivesGen = applyDirectives(config, field, gen);
     if (isNonNullType(parentType)) {
@@ -139,15 +139,14 @@ const generateInputObjectFieldTypeMyZodSchema = (
       return appliedDirectivesGen;
     }
     if (isListType(parentType)) {
-      return `${appliedDirectivesGen}.nullable()`; //TODO: Test this later
+      return `${appliedDirectivesGen}.nullable()`;
     }
-    return `${appliedDirectivesGen}.optional()`; // to make it equivalent to nullish: `${appliedDirectivesGen}.optional().or(nullable())`;
+    return `${appliedDirectivesGen}.optional().nullable()`;
   }
   console.warn('unhandled type:', type);
   return '';
 };
 
-// TODO: Find out how it works and implement it
 const applyDirectives = (
   config: ValidationSchemaPluginConfig,
   field: InputValueDefinitionNode,
