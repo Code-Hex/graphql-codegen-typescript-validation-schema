@@ -1,4 +1,5 @@
 import { ZodSchemaVisitor } from './zod/index';
+import { MyZodSchemaVisitor } from './myzod/index';
 import { transformSchemaAST } from '@graphql-codegen/schema-ast';
 import { YupSchemaVisitor } from './yup/index';
 import { ValidationSchemaPluginConfig } from './config';
@@ -30,6 +31,8 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
 const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
   if (config?.schema === 'zod') {
     return ZodSchemaVisitor(schema, config);
+  } else if (config?.schema === 'myzod') {
+    return MyZodSchemaVisitor(schema, config);
   }
   return YupSchemaVisitor(schema, config);
 };
