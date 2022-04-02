@@ -57,3 +57,15 @@ generates:
               startsWith: ['regex', '/^$1/', 'message']
               format:
                 email: email
+  example/myzod/schemas.ts:
+    plugins:
+      - ./dist/main/index.js:
+          schema: myzod
+          importFrom: ../types
+          directives:
+            constraint:
+              minLength: min
+              # Replace $1 with specified `startsWith` argument value of the constraint directive
+              startsWith: ['pattern', '/^$1/']
+              format:
+                email: email

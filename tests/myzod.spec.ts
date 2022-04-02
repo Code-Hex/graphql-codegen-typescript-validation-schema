@@ -15,7 +15,7 @@ describe('myzod', () => {
         }
       `,
       [
-        'export const PrimitiveInputSchema: myzod.Type<PrimitiveInput>',
+        'export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {',
         'a: myzod.string()',
         'b: myzod.string()',
         'c: myzod.boolean()',
@@ -36,7 +36,7 @@ describe('myzod', () => {
         }
       `,
       [
-        'export const PrimitiveInputSchema: myzod.Type<PrimitiveInput>',
+        'export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {',
         // alphabet order
         'a: myzod.string().optional().nullable(),',
         'b: myzod.string().optional().nullable(),',
@@ -58,7 +58,7 @@ describe('myzod', () => {
         }
       `,
       [
-        'export const ArrayInputSchema: myzod.Type<ArrayInput>',
+        'export function ArrayInputSchema(): myzod.Type<ArrayInput> {',
         'a: myzod.array(myzod.string().nullable()).optional().nullable(),',
         'b: myzod.array(myzod.string()).optional().nullable(),',
         'c: myzod.array(myzod.string()),',
@@ -81,11 +81,11 @@ describe('myzod', () => {
         }
       `,
       [
-        'export const AInputSchema: myzod.Type<AInput>',
+        'export function AInputSchema(): myzod.Type<AInput> {',
         'b: myzod.lazy(() => BInputSchema())',
-        'export const BInputSchema: myzod.Type<BInput>',
+        'export function BInputSchema(): myzod.Type<BInput> {',
         'c: myzod.lazy(() => CInputSchema())',
-        'export const CInputSchema: myzod.Type<CInput>',
+        'export function CInputSchema(): myzod.Type<CInput> {',
         'a: myzod.lazy(() => AInputSchema())',
       ],
     ],
@@ -98,7 +98,7 @@ describe('myzod', () => {
         }
       `,
       [
-        'export const NestedInputSchema: myzod.Type<NestedInput>',
+        'export function NestedInputSchema(): myzod.Type<NestedInput> {',
         'child: myzod.lazy(() => NestedInputSchema().optional().nullable()),',
         'childrens: myzod.array(myzod.lazy(() => NestedInputSchema().nullable())).optional().nullable()',
       ],
@@ -116,7 +116,7 @@ describe('myzod', () => {
       `,
       [
         'export const PageTypeSchema = myzod.enum(PageType)',
-        'export const PageInputSchema: myzod.Type<PageInput>',
+        'export function PageInputSchema(): myzod.Type<PageInput> {',
         'pageType: PageTypeSchema',
       ],
     ],
@@ -136,7 +136,7 @@ describe('myzod', () => {
         scalar URL # unknown scalar, should be any (definedNonNullAnySchema)
       `,
       [
-        'export const HttpInputSchema: myzod.Type<HttpInput>',
+        'export function HttpInputSchema(): myzod.Type<HttpInput> {',
         'export const HttpMethodSchema = myzod.enum(HttpMethod)',
         'method: HttpMethodSchema',
         'url: definedNonNullAnySchema',
@@ -145,7 +145,7 @@ describe('myzod', () => {
   ])('%s', async (_, textSchema, wantContains) => {
     const schema = buildSchema(textSchema);
     const result = await plugin(schema, [], { schema: 'myzod' }, {});
-    expect(result.prepend).toContain("import myzod from 'myzod'");
+    expect(result.prepend).toContain("import * as myzod from 'myzod'");
 
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
@@ -236,7 +236,7 @@ describe('myzod', () => {
       {}
     );
     const wantContains = [
-      'export const PrimitiveInputSchema: myzod.Type<PrimitiveInput>',
+      'export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {',
       'a: myzod.string().min(1),',
       'b: myzod.string().min(1),',
       'c: myzod.boolean(),',
@@ -271,7 +271,7 @@ describe('myzod', () => {
       {}
     );
     const wantContains = [
-      'export const ScalarsInputSchema: myzod.Type<ScalarsInput>',
+      'export function ScalarsInputSchema(): myzod.Type<ScalarsInput> {',
       'date: myzod.date(),',
       'email: myzod.string()', // TODO: Test implementation
       'str: myzod.string()',
@@ -304,7 +304,7 @@ describe('myzod', () => {
         {}
       );
       const wantContains = [
-        'export const UserCreateInputSchema: myzod.Type<UserCreateInput>',
+        'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
         'profile: myzod.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000").optional().nullable()',
       ];
       for (const wantContain of wantContains) {
@@ -334,7 +334,7 @@ describe('myzod', () => {
         {}
       );
       const wantContains = [
-        'export const UserCreateInputSchema: myzod.Type<UserCreateInput>',
+        'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
         'profile: myzod.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000")',
       ];
       for (const wantContain of wantContains) {
@@ -364,7 +364,7 @@ describe('myzod', () => {
         {}
       );
       const wantContains = [
-        'export const UserCreateInputSchema: myzod.Type<UserCreateInput>',
+        'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
         'profile: myzod.array(myzod.string().nullable()).min(1, "Please input more than 1").max(5000, "Please input less than 5000").optional().nullable()',
       ];
       for (const wantContain of wantContains) {
