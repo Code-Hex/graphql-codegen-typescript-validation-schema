@@ -12,7 +12,7 @@ import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common
 import { TsVisitor } from '@graphql-codegen/typescript';
 import { buildApi, formatDirectiveConfig } from '../directive';
 
-const importZod = `import myzod from 'myzod'`;
+const importZod = `import * as myzod from 'myzod'`;
 const anySchema = `definedNonNullAnySchema`;
 
 export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
@@ -30,32 +30,11 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
     initialEmit: (): string =>
       '\n' +
       [
-        /*
-        * MyZod allows you to create typed objects with `myzod.Type<YourCustomType>`
-        * See https://www.npmjs.com/package/myzod#lazy
-        new DeclarationBlock({})
-          .asKind('type')
-          .withName('Properties<T>')
-          .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;', '}>'].join('\n')).string,
-       */
-        /* 
-        * MyZod allows empty object hence no need for these hacks
-        * See https://www.npmjs.com/package/myzod#object
-        // Unfortunately, zod doesn’t provide non-null defined any schema.
-        // This is a temporary hack until it is fixed.
-        // see: https://github.com/colinhacks/zod/issues/884
-        new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
-        new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`isDefinedNonNullAny`)
-          .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`).string,
         new DeclarationBlock({})
           .export()
           .asKind('const')
           .withName(`${anySchema}`)
-          .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
-     */
+          .withContent(`myzod.object({})`).string,
       ].join('\n'),
     InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
@@ -67,9 +46,9 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
 
       return new DeclarationBlock({})
         .export()
-        .asKind('const')
-        .withName(`${name}Schema: myzod.Type<${name}>`) //TODO: Test this
-        .withBlock([indent(`myzod.object({`), shape, indent('})')].join('\n')).string;
+        .asKind('function')
+        .withName(`${name}Schema(): myzod.Type<${name}>`)
+        .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
     },
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
@@ -177,7 +156,7 @@ const generateNameNodeMyZodSchema = (
     return `${enumName}Schema`;
   }
 
-  return zod4Scalar(config, tsVisitor, node.value);
+  return myzod4Scalar(config, tsVisitor, node.value);
 };
 
 const maybeLazy = (type: TypeNode, schema: string): string => {
@@ -187,7 +166,7 @@ const maybeLazy = (type: TypeNode, schema: string): string => {
   return schema;
 };
 
-const zod4Scalar = (config: ValidationSchemaPluginConfig, tsVisitor: TsVisitor, scalarName: string): string => {
+const myzod4Scalar = (config: ValidationSchemaPluginConfig, tsVisitor: TsVisitor, scalarName: string): string => {
   if (config.scalarSchemas?.[scalarName]) {
     return config.scalarSchemas[scalarName];
   }
