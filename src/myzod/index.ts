@@ -30,11 +30,8 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
     initialEmit: (): string =>
       '\n' +
       [
-        new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`${anySchema}`)
-          .withContent(`myzod.object({})`).string,
+        new DeclarationBlock({}).export().asKind('const').withName(`${anySchema}`).withContent(`myzod.object({})`)
+          .string,
       ].join('\n'),
     InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
