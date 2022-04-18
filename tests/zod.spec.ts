@@ -300,6 +300,26 @@ describe('zod', () => {
     expect(result.prepend).toContain("import { ISay } from './types'");
     expect(result.content).toContain('export function ISaySchema(): z.ZodObject<Properties<ISay>> {');
   });
+
+  it('with typesSuffix', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        typesSuffix: 'I',
+        importFrom: './types',
+      },
+      {}
+    );
+    expect(result.prepend).toContain("import { SayI } from './types'");
+    expect(result.content).toContain('export function SayISchema(): z.ZodObject<Properties<SayI>> {');
+  });
   describe('issues #19', () => {
     it('string field', async () => {
       const schema = buildSchema(/* GraphQL */ `
