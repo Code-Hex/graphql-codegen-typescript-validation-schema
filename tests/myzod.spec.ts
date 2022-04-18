@@ -280,6 +280,25 @@ describe('myzod', () => {
       expect(result.content).toContain(wantContain);
     }
   });
+  it('with typesPrefix', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        typesPrefix: 'I',
+        importFrom: './types',
+      },
+      {}
+    );
+    expect(result.prepend).toContain("import { ISay } from './types'");
+    expect(result.content).toContain('export function ISaySchema(): myzod.Type<ISay> {');
+  });
   describe('issues #19', () => {
     it('string field', async () => {
       const schema = buildSchema(/* GraphQL */ `
