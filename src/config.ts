@@ -53,6 +53,25 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   importFrom?: string;
   /**
+   * @description Prefixes all import types from generated typescript type.
+   * @default ""
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/types.ts:
+   *     plugins:
+   *       - typescript
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       typesPrefix: I
+   *       importFrom: ./path/to/types
+   * ```
+   */
+  typesPrefix?: string;
+  /**
    * @description Generates validation schema for enum as TypeScript `type`
    * @default false
    *

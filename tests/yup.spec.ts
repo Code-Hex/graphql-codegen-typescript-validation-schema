@@ -275,4 +275,23 @@ describe('yup', () => {
       expect(result.content).toContain(wantContain);
     }
   });
+
+  it('with typesPrefix', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        typesPrefix: 'I',
+        importFrom: './types',
+      },
+      {}
+    );
+    expect(result.prepend).toContain("import { ISay } from './types'");
+    expect(result.content).toContain('export function ISaySchema(): yup.SchemaOf<ISay> {');
+  });
 });
