@@ -80,6 +80,33 @@ import { GeneratedInput } from './graphql'
 /* generates validation schema here */
 ```
 
+### `typesPrefix`
+
+type: `string` default: (empty)
+
+Prefixes all import types from generated typescript type.
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+  path/to/validation.ts:
+    plugins:
+      - typescript-validation-schema
+    config:
+      typesPrefix: I
+      importFrom: ./graphql # path for generated ts code
+```
+
+Then the generator generates code with import statement like below.
+
+```ts
+import { IGeneratedInput } from './graphql'
+
+/* generates validation schema here */
+```
+
 ### `enumsAsTypes`
 
 type: `boolean` default: `false`
