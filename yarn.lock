@@ -4438,10 +4438,10 @@ mute-stream@0.0.8:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-myzod@1.8.7:
-  version "1.8.7"
-  resolved "https://registry.yarnpkg.com/myzod/-/myzod-1.8.7.tgz#f7e1d5379b517de039729735a8578a550c562292"
-  integrity sha512-H/Nmst+ZIGQppKVeOq6ufieRnnK0u+UfDLgCrG1Rtn6W/GzMoz6Ur9/iLBwB0N8s6ZE/4hhbRTUt3Pg7nH4X2Q==
+myzod@1.8.8:
+  version "1.8.8"
+  resolved "https://registry.yarnpkg.com/myzod/-/myzod-1.8.8.tgz#1bd97965bcb26ac63ff8de9ab0ece72b776651c2"
+  integrity sha512-DMXQjmnqvHxDPWkWLVz40FXm/3W95PnZMeLJiM5ickVqcFLeWlgOa4CDhV8PJ9rViiC1WvZoQJRCmMF6pzTTPA==
 
 nanoclone@^0.2.1:
   version "0.2.1"
