@@ -63,6 +63,29 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
         .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string;
     },
+    ObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
+      if (!config.useObjectTypes) return;
+      const name = tsVisitor.convertName(node.name.value);
+      importTypes.push(name);
+
+      const shape = node.fields
+        ?.map((field) =>
+          generateInputObjectFieldZodSchema(config, tsVisitor, schema, field, 2)
+        )
+        .join(',\n');
+
+      return new DeclarationBlock({})
+        .export()
+        .asKind('function')
+        .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
+        .withBlock(
+          [
+            indent(`return z.object({`),
+            `    __typename: z.literal('${node.name.value}').optional(),\n${shape}`,
+            indent('})'),
+          ].join('\n')
+        ).string;
+    },
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
       importTypes.push(enumname);
