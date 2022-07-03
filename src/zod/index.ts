@@ -6,7 +6,9 @@ import {
   TypeNode,
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
   EnumTypeDefinitionNode,
+  FieldDefinitionNode,
 } from 'graphql';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { TsVisitor } from '@graphql-codegen/typescript';
@@ -53,9 +55,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
 
-      const shape = node.fields
-        ?.map(field => generateInputObjectFieldZodSchema(config, tsVisitor, schema, field, 2))
-        .join(',\n');
+      const shape = node.fields?.map(field => generateFieldZodSchema(config, tsVisitor, schema, field, 2)).join(',\n');
 
       return new DeclarationBlock({})
         .export()
@@ -63,16 +63,12 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
         .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string;
     },
-    ObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
+    ObjectTypeDefinition: (node: ObjectTypeDefinitionNode) => {
       if (!config.useObjectTypes) return;
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
 
-      const shape = node.fields
-        ?.map((field) =>
-          generateInputObjectFieldZodSchema(config, tsVisitor, schema, field, 2)
-        )
-        .join(',\n');
+      const shape = node.fields?.map(field => generateFieldZodSchema(config, tsVisitor, schema, field, 2)).join(',\n');
 
       return new DeclarationBlock({})
         .export()
@@ -107,27 +103,27 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
   };
 };
 
-const generateInputObjectFieldZodSchema = (
+const generateFieldZodSchema = (
   config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
-  field: InputValueDefinitionNode,
+  field: InputValueDefinitionNode | FieldDefinitionNode,
   indentCount: number
 ): string => {
-  const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, field, field.type);
+  const gen = generateFieldTypeZodSchema(config, tsVisitor, schema, field, field.type);
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };
 
-const generateInputObjectFieldTypeZodSchema = (
+const generateFieldTypeZodSchema = (
   config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
-  field: InputValueDefinitionNode,
+  field: InputValueDefinitionNode | FieldDefinitionNode,
   type: TypeNode,
   parentType?: TypeNode
 ): string => {
   if (isListType(type)) {
-    const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, field, type.type, type);
+    const gen = generateFieldTypeZodSchema(config, tsVisitor, schema, field, type.type, type);
     if (!isNonNullType(parentType)) {
       const arrayGen = `z.array(${maybeLazy(type.type, gen)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
@@ -136,7 +132,7 @@ const generateInputObjectFieldTypeZodSchema = (
     return `z.array(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateInputObjectFieldTypeZodSchema(config, tsVisitor, schema, field, type.type, type);
+    const gen = generateFieldTypeZodSchema(config, tsVisitor, schema, field, type.type, type);
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
@@ -163,7 +159,7 @@ const generateInputObjectFieldTypeZodSchema = (
 
 const applyDirectives = (
   config: ValidationSchemaPluginConfig,
-  field: InputValueDefinitionNode,
+  field: InputValueDefinitionNode | FieldDefinitionNode,
   gen: string
 ): string => {
   if (config.directives && field.directives) {

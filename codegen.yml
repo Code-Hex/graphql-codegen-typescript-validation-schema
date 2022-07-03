@@ -9,6 +9,7 @@ generates:
       - ./dist/main/index.js:
           schema: yup
           importFrom: ../types
+          useObjectTypes: true
           directives:
             required:
               msg: required
@@ -42,6 +43,7 @@ generates:
       - ./dist/main/index.js:
           schema: zod
           importFrom: ../types
+          useObjectTypes: true
           directives:
             # Write directives like
             #
@@ -62,6 +64,7 @@ generates:
       - ./dist/main/index.js:
           schema: myzod
           importFrom: ../types
+          useObjectTypes: true
           directives:
             constraint:
               minLength: min

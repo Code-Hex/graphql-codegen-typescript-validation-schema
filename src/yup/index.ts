@@ -7,6 +7,8 @@ import {
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
   EnumTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+  FieldDefinitionNode,
 } from 'graphql';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { TsVisitor } from '@graphql-codegen/typescript';
@@ -31,15 +33,32 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
 
-      const shape = node.fields
-        ?.map(field => generateInputObjectFieldYupSchema(config, tsVisitor, schema, field, 2))
-        .join(',\n');
+      const shape = node.fields?.map(field => generateFieldYupSchema(config, tsVisitor, schema, field, 2)).join(',\n');
 
       return new DeclarationBlock({})
         .export()
         .asKind('function')
         .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
         .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
+    },
+    ObjectTypeDefinition: (node: ObjectTypeDefinitionNode) => {
+      if (!config.useObjectTypes) return;
+      const name = tsVisitor.convertName(node.name.value);
+      importTypes.push(name);
+
+      const shape = node.fields?.map(field => generateFieldYupSchema(config, tsVisitor, schema, field, 2)).join(',\n');
+
+      return new DeclarationBlock({})
+        .export()
+        .asKind('function')
+        .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
+        .withBlock(
+          [
+            indent(`return yup.object({`),
+            `    __typename: yup.mixed().oneOf(['${node.name.value}', undefined]),\n${shape}`,
+            indent('})'),
+          ].join('\n')
+        ).string;
     },
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
@@ -92,14 +111,14 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
   };
 };
 
-const generateInputObjectFieldYupSchema = (
+const generateFieldYupSchema = (
   config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
-  field: InputValueDefinitionNode,
+  field: InputValueDefinitionNode | FieldDefinitionNode,
   indentCount: number
 ): string => {
-  let gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, field.type);
+  let gen = generateFieldTypeYupSchema(config, tsVisitor, schema, field.type);
   if (config.directives && field.directives) {
     const formatted = formatDirectiveConfig(config.directives);
     gen += buildApi(formatted, field.directives);
@@ -107,7 +126,7 @@ const generateInputObjectFieldYupSchema = (
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };
 
-const generateInputObjectFieldTypeYupSchema = (
+const generateFieldTypeYupSchema = (
   config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
@@ -115,14 +134,14 @@ const generateInputObjectFieldTypeYupSchema = (
   parentType?: TypeNode
 ): string => {
   if (isListType(type)) {
-    const gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
+    const gen = generateFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
     if (!isNonNullType(parentType)) {
       return `yup.array().of(${maybeLazy(type.type, gen)}).optional()`;
     }
     return `yup.array().of(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateInputObjectFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
+    const gen = generateFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
     const nonNullGen = maybeNonEmptyString(config, tsVisitor, gen, type.type);
     return maybeLazy(type.type, nonNullGen);
   }
