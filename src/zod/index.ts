@@ -125,7 +125,7 @@ const generateInputObjectFieldTypeZodSchema = (
     if (isNonNullType(parentType)) {
       if (config.notAllowEmptyString === true) {
         const tsType = tsVisitor.scalars[type.name.value];
-        if (tsType === 'string') return `${gen}.min(1)`;
+        if (tsType === 'string') return `${appliedDirectivesGen}.min(1)`;
       }
       return appliedDirectivesGen;
     }
