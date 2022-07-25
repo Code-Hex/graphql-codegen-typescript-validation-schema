@@ -37,7 +37,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * @description import types from generated typescript type path
    * if not given, omit import statement.
    *
-   * @exampeMarkdown
+   * @exampleMarkdown
    * ```yml
    * generates:
    *   path/to/types.ts:
@@ -193,4 +193,22 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   directives?: DirectiveConfig;
+  /**
+   * @description Converts the regular graphql type into a zod validation function.
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/types.ts:
+   *     plugins:
+   *       - typescript
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: yup
+   *       useObjectTypes: true
+   * ```
+   */
+  useObjectTypes?: boolean;
 }

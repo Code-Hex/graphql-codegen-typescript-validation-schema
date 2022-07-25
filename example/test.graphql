@@ -5,6 +5,15 @@ enum PageType {
   BASIC_AUTH
 }
 
+type User {
+  id: ID
+  name: String
+  email: String
+  password: String
+  createdAt: Date
+  updatedAt: Date
+}
+
 input PageInput {
   id: ID!
   title: String!

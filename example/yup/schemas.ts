@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType } from '../types'
+import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
 
 export function AttributeInputSchema(): yup.SchemaOf<AttributeInput> {
   return yup.object({
@@ -75,3 +75,15 @@ export function PageInputSchema(): yup.SchemaOf<PageInput> {
 }
 
 export const PageTypeSchema = yup.mixed().oneOf([PageType.BasicAuth, PageType.Lp, PageType.Restricted, PageType.Service]);
+
+export function UserSchema(): yup.SchemaOf<User> {
+  return yup.object({
+    __typename: yup.mixed().oneOf(['User', undefined]),
+    createdAt: yup.mixed(),
+    email: yup.string(),
+    id: yup.string(),
+    name: yup.string(),
+    password: yup.string(),
+    updatedAt: yup.mixed()
+  })
+}

@@ -6,7 +6,9 @@ import {
   TypeNode,
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
   EnumTypeDefinitionNode,
+  FieldDefinitionNode,
 } from 'graphql';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { TsVisitor } from '@graphql-codegen/typescript';
@@ -38,7 +40,7 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
       importTypes.push(name);
 
       const shape = node.fields
-        ?.map(field => generateInputObjectFieldMyZodSchema(config, tsVisitor, schema, field, 2))
+        ?.map(field => generateFieldMyZodSchema(config, tsVisitor, schema, field, 2))
         .join(',\n');
 
       return new DeclarationBlock({})
@@ -46,6 +48,27 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
         .asKind('function')
         .withName(`${name}Schema(): myzod.Type<${name}>`)
         .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
+    },
+    ObjectTypeDefinition: (node: ObjectTypeDefinitionNode) => {
+      if (!config.useObjectTypes) return;
+      const name = tsVisitor.convertName(node.name.value);
+      importTypes.push(name);
+
+      const shape = node.fields
+        ?.map(field => generateFieldMyZodSchema(config, tsVisitor, schema, field, 2))
+        .join(',\n');
+
+      return new DeclarationBlock({})
+        .export()
+        .asKind('function')
+        .withName(`${name}Schema(): myzod.Type<${name}>`)
+        .withBlock(
+          [
+            indent(`return myzod.object({`),
+            `    __typename: myzod.literal('${node.name.value}').optional(),\n${shape}`,
+            indent('})'),
+          ].join('\n')
+        ).string;
     },
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
@@ -69,27 +92,27 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
   };
 };
 
-const generateInputObjectFieldMyZodSchema = (
+const generateFieldMyZodSchema = (
   config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
-  field: InputValueDefinitionNode,
+  field: InputValueDefinitionNode | FieldDefinitionNode,
   indentCount: number
 ): string => {
-  const gen = generateInputObjectFieldTypeMyZodSchema(config, tsVisitor, schema, field, field.type);
+  const gen = generateFieldTypeMyZodSchema(config, tsVisitor, schema, field, field.type);
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };
 
-const generateInputObjectFieldTypeMyZodSchema = (
+const generateFieldTypeMyZodSchema = (
   config: ValidationSchemaPluginConfig,
   tsVisitor: TsVisitor,
   schema: GraphQLSchema,
-  field: InputValueDefinitionNode,
+  field: InputValueDefinitionNode | FieldDefinitionNode,
   type: TypeNode,
   parentType?: TypeNode
 ): string => {
   if (isListType(type)) {
-    const gen = generateInputObjectFieldTypeMyZodSchema(config, tsVisitor, schema, field, type.type, type);
+    const gen = generateFieldTypeMyZodSchema(config, tsVisitor, schema, field, type.type, type);
     if (!isNonNullType(parentType)) {
       const arrayGen = `myzod.array(${maybeLazy(type.type, gen)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
@@ -98,7 +121,7 @@ const generateInputObjectFieldTypeMyZodSchema = (
     return `myzod.array(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateInputObjectFieldTypeMyZodSchema(config, tsVisitor, schema, field, type.type, type);
+    const gen = generateFieldTypeMyZodSchema(config, tsVisitor, schema, field, type.type, type);
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
@@ -125,7 +148,7 @@ const generateInputObjectFieldTypeMyZodSchema = (
 
 const applyDirectives = (
   config: ValidationSchemaPluginConfig,
-  field: InputValueDefinitionNode,
+  field: InputValueDefinitionNode | FieldDefinitionNode,
   gen: string
 ): string => {
   if (config.directives && field.directives) {

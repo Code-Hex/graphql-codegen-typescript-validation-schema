@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType } from '../types'
+import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
 
 type Properties<T> = Required<{
   [K in keyof T]: z.ZodType<T[K], any, T[K]>;
@@ -85,3 +85,15 @@ export function PageInputSchema(): z.ZodObject<Properties<PageInput>> {
 }
 
 export const PageTypeSchema = z.nativeEnum(PageType);
+
+export function UserSchema(): z.ZodObject<Properties<User>> {
+  return z.object({
+    __typename: z.literal('User').optional(),
+    createdAt: definedNonNullAnySchema.nullish(),
+    email: z.string().nullish(),
+    id: z.string().nullish(),
+    name: z.string().nullish(),
+    password: z.string().nullish(),
+    updatedAt: definedNonNullAnySchema.nullish()
+  })
+}
