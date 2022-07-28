@@ -86,3 +86,13 @@ export enum PageType {
   Restricted = 'RESTRICTED',
   Service = 'SERVICE'
 }
+
+export type User = {
+  __typename?: 'User';
+  createdAt?: Maybe<Scalars['Date']>;
+  email?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['ID']>;
+  name?: Maybe<Scalars['String']>;
+  password?: Maybe<Scalars['String']>;
+  updatedAt?: Maybe<Scalars['Date']>;
+};

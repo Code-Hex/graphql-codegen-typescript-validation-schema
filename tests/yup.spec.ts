@@ -313,4 +313,77 @@ describe('yup', () => {
     expect(result.prepend).toContain("import { SayI } from './types'");
     expect(result.content).toContain('export function SayISchema(): yup.SchemaOf<SayI> {');
   });
+  describe('GraphQl Type Support', () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input ScalarsInput {
+        date: Date!
+        email: Email
+      }
+      scalar Date
+      scalar Email
+      input UserCreateInput {
+        name: String!
+        email: Email!
+      }
+      type User {
+        id: ID!
+        name: String
+        age: Int
+        email: Email
+        isMember: Boolean
+        createdAt: Date!
+      }
+    `);
+
+    it('not generate if useObjectTypes false', async () => {
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+        },
+        {}
+      );
+      expect(result.content).not.toContain("export function UserSchema(): yup.SchemaOf<User> {");
+    });
+
+    it('generate both input & type if useObjectTypes true', async () => {
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+          useObjectTypes: true,
+          scalarSchemas: {
+            Date: 'yup.date()',
+            Email: 'yup.string().email()',
+          },
+        },
+        {}
+      );
+      const wantContains = [
+        // ScalarsInput
+        "export function ScalarsInputSchema(): yup.SchemaOf<ScalarsInput> {",
+        "return yup.object({",
+        "date: yup.date().defined()",
+        "email: yup.string().email()",
+        // User Create Input
+        "export function UserCreateInputSchema(): yup.SchemaOf<UserCreateInput> {",
+        "name: yup.string().defined()",
+        "email: yup.string().email().defined()",
+        // User
+        "export function UserSchema(): yup.SchemaOf<User> {",
+        "__typename: yup.mixed().oneOf(['User', undefined])",
+        "id: yup.string().defined()",
+        "name: yup.string()",
+        "age: yup.number()",
+        "isMember: yup.boolean()",
+        "email: yup.string().email()",
+        "createdAt: yup.date().defined()",
+      ]
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+  });
 });
