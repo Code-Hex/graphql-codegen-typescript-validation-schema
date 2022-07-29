@@ -411,7 +411,7 @@ describe('myzod', () => {
     });
   });
 
-  describe('GraphQl Type Support', () => {
+  describe('with withObjectType', () => {
     const schema = buildSchema(/* GraphQL */ `
       input ScalarsInput {
         date: Date!
@@ -431,9 +431,21 @@ describe('myzod', () => {
         isMember: Boolean
         createdAt: Date!
       }
+
+      type Mutation {
+        _empty: String
+      }
+
+      type Query {
+        _empty: String
+      }
+
+      type Subscription {
+        _empty: String
+      }
     `);
 
-    it('not generate if useObjectTypes false', async () => {
+    it('not generate if withObjectType false', async () => {
       const result = await plugin(
         schema,
         [],
@@ -451,7 +463,7 @@ describe('myzod', () => {
         [],
         {
           schema: 'myzod',
-          useObjectTypes: true,
+          withObjectType: true,
           scalarSchemas: {
             Date: 'myzod.date()',
             Email: 'myzod.string().email()',
@@ -464,7 +476,7 @@ describe('myzod', () => {
         'export const definedNonNullAnySchema = myzod.object({});',
         'export function ScalarsInputSchema(): myzod.Type<ScalarsInput> {',
         'date: myzod.date(),',
-        'email: myzod.string().email().optional().nullable()',
+        'email: myzod.string().email().optional().nullable(),',
         // User Create Input
         'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
         'name: myzod.string(),',
@@ -481,6 +493,10 @@ describe('myzod', () => {
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
+      }
+
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+        expect(result.content).not.toContain(wantNotContain);
       }
     });
   });

@@ -476,7 +476,7 @@ describe('zod', () => {
       }
     });
   });
-  describe('GraphQl Type Support', () => {
+  describe('with withObjectType', () => {
     const schema = buildSchema(/* GraphQL */ `
       input ScalarsInput {
         date: Date!
@@ -496,9 +496,21 @@ describe('zod', () => {
         isMember: Boolean
         createdAt: Date!
       }
+
+      type Mutation {
+        _empty: String
+      }
+
+      type Query {
+        _empty: String
+      }
+
+      type Subscription {
+        _empty: String
+      }
     `);
 
-    it('not generate if useObjectTypes false', async () => {
+    it('not generate if withObjectType false', async () => {
       const result = await plugin(
         schema,
         [],
@@ -516,7 +528,7 @@ describe('zod', () => {
         [],
         {
           schema: 'zod',
-          useObjectTypes: true,
+          withObjectType: true,
           scalarSchemas: {
             Date: 'z.date()',
             Email: 'z.string().email()',
@@ -528,24 +540,28 @@ describe('zod', () => {
         // ScalarsInput
         'export function ScalarsInputSchema(): z.ZodObject<Properties<ScalarsInput>> {',
         'return z.object({',
-        'date: z.date()',
+        'date: z.date(),',
         'email: z.string().email().nullish()',
         // User Create Input
         'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {',
-        'name: z.string()',
+        'name: z.string(),',
         'email: z.string().email()',
         // User
         'export function UserSchema(): z.ZodObject<Properties<User>> {',
         "__typename: z.literal('User').optional()",
-        'id: z.string()',
+        'id: z.string(),',
         'name: z.string().nullish(),',
-        'age: z.number().nullish()',
-        'isMember: z.boolean().nullish()',
-        'email: z.string().email().nullish()',
+        'age: z.number().nullish(),',
+        'isMember: z.boolean().nullish(),',
+        'email: z.string().email().nullish(),',
         'createdAt: z.date()',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
+      }
+
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+        expect(result.content).not.toContain(wantNotContain);
       }
     });
   });

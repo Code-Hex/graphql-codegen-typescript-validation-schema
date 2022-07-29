@@ -1,4 +1,4 @@
-import { isInput, isNonNullType, isListType, isNamedType } from './../graphql';
+import { isInput, isNonNullType, isListType, isNamedType, ObjectTypeDefinitionBuilder } from './../graphql';
 import { ValidationSchemaPluginConfig } from '../config';
 import {
   InputValueDefinitionNode,
@@ -41,8 +41,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
         .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
     },
-    ObjectTypeDefinition: (node: ObjectTypeDefinitionNode) => {
-      if (!config.useObjectTypes) return;
+    ObjectTypeDefinition: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
 
@@ -59,7 +58,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
             indent('})'),
           ].join('\n')
         ).string;
-    },
+    }),
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
       importTypes.push(enumname);
