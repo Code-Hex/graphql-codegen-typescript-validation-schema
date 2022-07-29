@@ -442,7 +442,7 @@ describe('myzod', () => {
         },
         {}
       );
-      expect(result.content).not.toContain("export function UserSchema(): myzod.Type<User> {");
+      expect(result.content).not.toContain('export function UserSchema(): myzod.Type<User> {');
     });
 
     it('generate both input & type', async () => {
@@ -461,24 +461,24 @@ describe('myzod', () => {
       );
       const wantContains = [
         // ScalarsInput
-        "export const definedNonNullAnySchema = myzod.object({});",
-        "export function ScalarsInputSchema(): myzod.Type<ScalarsInput> {",
-        "date: myzod.date(),",
-        "email: myzod.string().email().optional().nullable()",
+        'export const definedNonNullAnySchema = myzod.object({});',
+        'export function ScalarsInputSchema(): myzod.Type<ScalarsInput> {',
+        'date: myzod.date(),',
+        'email: myzod.string().email().optional().nullable()',
         // User Create Input
-        "export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {",
-        "name: myzod.string(),",
-        "email: myzod.string().email()",
+        'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
+        'name: myzod.string(),',
+        'email: myzod.string().email()',
         // User
-        "export function UserSchema(): myzod.Type<User> {",
+        'export function UserSchema(): myzod.Type<User> {',
         "__typename: myzod.literal('User').optional(),",
-        "id: myzod.string(),",
-        "name: myzod.string().optional().nullable(),",
-        "age: myzod.number().optional().nullable(),",
-        "email: myzod.string().email().optional().nullable(),",
-        "isMember: myzod.boolean().optional().nullable(),",
-        "createdAt: myzod.date()",
-      ]
+        'id: myzod.string(),',
+        'name: myzod.string().optional().nullable(),',
+        'age: myzod.number().optional().nullable(),',
+        'email: myzod.string().email().optional().nullable(),',
+        'isMember: myzod.boolean().optional().nullable(),',
+        'createdAt: myzod.date()',
+      ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
       }

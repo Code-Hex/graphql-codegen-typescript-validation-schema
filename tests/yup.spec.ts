@@ -344,7 +344,7 @@ describe('yup', () => {
         },
         {}
       );
-      expect(result.content).not.toContain("export function UserSchema(): yup.SchemaOf<User> {");
+      expect(result.content).not.toContain('export function UserSchema(): yup.SchemaOf<User> {');
     });
 
     it('generate both input & type if useObjectTypes true', async () => {
@@ -363,24 +363,24 @@ describe('yup', () => {
       );
       const wantContains = [
         // ScalarsInput
-        "export function ScalarsInputSchema(): yup.SchemaOf<ScalarsInput> {",
-        "return yup.object({",
-        "date: yup.date().defined()",
-        "email: yup.string().email()",
+        'export function ScalarsInputSchema(): yup.SchemaOf<ScalarsInput> {',
+        'return yup.object({',
+        'date: yup.date().defined()',
+        'email: yup.string().email()',
         // User Create Input
-        "export function UserCreateInputSchema(): yup.SchemaOf<UserCreateInput> {",
-        "name: yup.string().defined()",
-        "email: yup.string().email().defined()",
+        'export function UserCreateInputSchema(): yup.SchemaOf<UserCreateInput> {',
+        'name: yup.string().defined()',
+        'email: yup.string().email().defined()',
         // User
-        "export function UserSchema(): yup.SchemaOf<User> {",
+        'export function UserSchema(): yup.SchemaOf<User> {',
         "__typename: yup.mixed().oneOf(['User', undefined])",
-        "id: yup.string().defined()",
-        "name: yup.string()",
-        "age: yup.number()",
-        "isMember: yup.boolean()",
-        "email: yup.string().email()",
-        "createdAt: yup.date().defined()",
-      ]
+        'id: yup.string().defined()',
+        'name: yup.string()',
+        'age: yup.number()',
+        'isMember: yup.boolean()',
+        'email: yup.string().email()',
+        'createdAt: yup.date().defined()',
+      ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
       }
