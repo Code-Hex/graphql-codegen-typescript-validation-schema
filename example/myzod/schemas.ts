@@ -1,5 +1,5 @@
 import * as myzod from 'myzod'
-import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType } from '../types'
+import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
 
 export const definedNonNullAnySchema = myzod.object({});
 
@@ -77,3 +77,15 @@ export function PageInputSchema(): myzod.Type<PageInput> {
 }
 
 export const PageTypeSchema = myzod.enum(PageType);
+
+export function UserSchema(): myzod.Type<User> {
+  return myzod.object({
+    __typename: myzod.literal('User').optional(),
+    createdAt: definedNonNullAnySchema.optional().nullable(),
+    email: myzod.string().optional().nullable(),
+    id: myzod.string().optional().nullable(),
+    name: myzod.string().optional().nullable(),
+    password: myzod.string().optional().nullable(),
+    updatedAt: definedNonNullAnySchema.optional().nullable()
+  })
+}

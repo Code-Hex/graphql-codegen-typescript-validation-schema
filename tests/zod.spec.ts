@@ -412,4 +412,77 @@ describe('zod', () => {
       }
     });
   });
+  describe('GraphQl Type Support', () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input ScalarsInput {
+        date: Date!
+        email: Email
+      }
+      scalar Date
+      scalar Email
+      input UserCreateInput {
+        name: String!
+        email: Email!
+      }
+      type User {
+        id: ID!
+        name: String
+        age: Int
+        email: Email
+        isMember: Boolean
+        createdAt: Date!
+      }
+    `);
+
+    it('not generate if useObjectTypes false', async () => {
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+        },
+        {}
+      );
+      expect(result.content).not.toContain('export function UserSchema(): z.ZodObject<Properties<User>>');
+    });
+
+    it('generate both input & type', async () => {
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          useObjectTypes: true,
+          scalarSchemas: {
+            Date: 'z.date()',
+            Email: 'z.string().email()',
+          },
+        },
+        {}
+      );
+      const wantContains = [
+        // ScalarsInput
+        'export function ScalarsInputSchema(): z.ZodObject<Properties<ScalarsInput>> {',
+        'return z.object({',
+        'date: z.date()',
+        'email: z.string().email().nullish()',
+        // User Create Input
+        'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {',
+        'name: z.string()',
+        'email: z.string().email()',
+        // User
+        'export function UserSchema(): z.ZodObject<Properties<User>> {',
+        "__typename: z.literal('User').optional()",
+        'id: z.string()',
+        'name: z.string().nullish(),',
+        'age: z.number().nullish()',
+        'isMember: z.boolean().nullish()',
+        'email: z.string().email().nullish()',
+        'createdAt: z.date()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+  });
 });
