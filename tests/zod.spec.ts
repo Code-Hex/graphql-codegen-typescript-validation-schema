@@ -412,6 +412,70 @@ describe('zod', () => {
       }
     });
   });
+  describe('PR #112', () => {
+    it('with notAllowEmptyString', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          profile: String! @constraint(maxLength: 5000)
+          age: Int!
+        }
+
+        directive @constraint(maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          notAllowEmptyString: true,
+          directives: {
+            constraint: {
+              maxLength: ['max', '$1', 'Please input less than $1'],
+            },
+          },
+        },
+        {}
+      );
+      const wantContains = [
+        'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
+        'profile: z.string().max(5000, "Please input less than 5000").min(1),',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('without notAllowEmptyString', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          profile: String! @constraint(maxLength: 5000)
+          age: Int!
+        }
+
+        directive @constraint(maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          directives: {
+            constraint: {
+              maxLength: ['max', '$1', 'Please input less than $1'],
+            },
+          },
+        },
+        {}
+      );
+      const wantContains = [
+        'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
+        'profile: z.string().max(5000, "Please input less than 5000"),',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+  });
   describe('GraphQl Type Support', () => {
     const schema = buildSchema(/* GraphQL */ `
       input ScalarsInput {
