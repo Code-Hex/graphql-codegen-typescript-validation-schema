@@ -152,6 +152,12 @@ type: `ScalarSchemas`
 
 Extends or overrides validation schema for the built-in scalars and custom GraphQL scalars.
 
+### `withObjectType`
+
+type: `boolean` default: `false`
+
+Generates validation schema with GraphQL type objects. But excludes `Query`, `Mutation`, `Subscription` objects.
+
 #### yup schema
 
 ```yml

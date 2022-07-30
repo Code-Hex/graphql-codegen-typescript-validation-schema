@@ -313,29 +313,14 @@ describe('yup', () => {
     expect(result.prepend).toContain("import { SayI } from './types'");
     expect(result.content).toContain('export function SayISchema(): yup.SchemaOf<SayI> {');
   });
-  describe('GraphQl Type Support', () => {
-    const schema = buildSchema(/* GraphQL */ `
-      input ScalarsInput {
-        date: Date!
-        email: Email
-      }
-      scalar Date
-      scalar Email
-      input UserCreateInput {
-        name: String!
-        email: Email!
-      }
-      type User {
-        id: ID!
-        name: String
-        age: Int
-        email: Email
-        isMember: Boolean
-        createdAt: Date!
-      }
-    `);
-
-    it('not generate if useObjectTypes false', async () => {
+  describe('with withObjectType', () => {
+    it('not generate if withObjectType false', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type User {
+          id: ID!
+          name: String
+        }
+      `);
       const result = await plugin(
         schema,
         [],
@@ -347,13 +332,94 @@ describe('yup', () => {
       expect(result.content).not.toContain('export function UserSchema(): yup.SchemaOf<User> {');
     });
 
-    it('generate both input & type if useObjectTypes true', async () => {
+    it('generate object type contains object type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Book {
+          author: Author
+          title: String
+        }
+
+        type Book2 {
+          author: Author!
+          title: String!
+        }
+
+        type Author {
+          books: [Book]
+          name: String
+        }
+      `);
       const result = await plugin(
         schema,
         [],
         {
           schema: 'yup',
-          useObjectTypes: true,
+          withObjectType: true,
+        },
+        {}
+      );
+      const wantContains = [
+        'export function AuthorSchema(): yup.SchemaOf<Author> {',
+        "__typename: yup.mixed().oneOf(['Author', undefined]),",
+        'books: yup.array().of(BookSchema().optional()).optional(),',
+        'name: yup.string()',
+
+        'export function BookSchema(): yup.SchemaOf<Book> {',
+        "__typename: yup.mixed().oneOf(['Book', undefined]),",
+        'author: AuthorSchema().optional(),',
+        'title: yup.string()',
+
+        'export function Book2Schema(): yup.SchemaOf<Book2> {',
+        "__typename: yup.mixed().oneOf(['Book2', undefined]),",
+        'author: AuthorSchema().optional().defined(),',
+        'title: yup.string().defined()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+        expect(result.content).not.toContain(wantNotContain);
+      }
+    });
+
+    it('generate both input & type if withObjectType true', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        scalar Date
+        scalar Email
+        input UserCreateInput {
+          name: String!
+          date: Date!
+          email: Email!
+        }
+        type User {
+          id: ID!
+          name: String
+          age: Int
+          email: Email
+          isMember: Boolean
+          createdAt: Date!
+        }
+
+        type Mutation {
+          _empty: String
+        }
+
+        type Query {
+          _empty: String
+        }
+
+        type Subscription {
+          _empty: String
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+          withObjectType: true,
           scalarSchemas: {
             Date: 'yup.date()',
             Email: 'yup.string().email()',
@@ -362,27 +428,27 @@ describe('yup', () => {
         {}
       );
       const wantContains = [
-        // ScalarsInput
-        'export function ScalarsInputSchema(): yup.SchemaOf<ScalarsInput> {',
-        'return yup.object({',
-        'date: yup.date().defined()',
-        'email: yup.string().email()',
         // User Create Input
         'export function UserCreateInputSchema(): yup.SchemaOf<UserCreateInput> {',
-        'name: yup.string().defined()',
+        'name: yup.string().defined(),',
+        'date: yup.date().defined(),',
         'email: yup.string().email().defined()',
         // User
         'export function UserSchema(): yup.SchemaOf<User> {',
-        "__typename: yup.mixed().oneOf(['User', undefined])",
-        'id: yup.string().defined()',
-        'name: yup.string()',
-        'age: yup.number()',
-        'isMember: yup.boolean()',
-        'email: yup.string().email()',
+        "__typename: yup.mixed().oneOf(['User', undefined]),",
+        'id: yup.string().defined(),',
+        'name: yup.string(),',
+        'age: yup.number(),',
+        'isMember: yup.boolean(),',
+        'email: yup.string().email(),',
         'createdAt: yup.date().defined()',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
+      }
+
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+        expect(result.content).not.toContain(wantNotContain);
       }
     });
   });

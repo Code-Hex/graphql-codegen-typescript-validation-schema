@@ -153,6 +153,25 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   scalarSchemas?: ScalarSchemas;
   /**
+   * @description Generates validation schema with GraphQL type objects.
+   * but excludes "Query", "Mutation", "Subscription" objects.
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/types.ts:
+   *     plugins:
+   *       - typescript
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: yup
+   *       withObjectType: true
+   * ```
+   */
+  withObjectType?: boolean;
+  /**
    * @description Generates validation schema with more API based on directive schema.
    * @exampleMarkdown
    * ```yml
@@ -193,22 +212,4 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   directives?: DirectiveConfig;
-  /**
-   * @description Converts the regular graphql type into a zod validation function.
-   *
-   * @exampleMarkdown
-   * ```yml
-   * generates:
-   *   path/to/types.ts:
-   *     plugins:
-   *       - typescript
-   *   path/to/schemas.ts:
-   *     plugins:
-   *       - graphql-codegen-validation-schema
-   *     config:
-   *       schema: yup
-   *       useObjectTypes: true
-   * ```
-   */
-  useObjectTypes?: boolean;
 }

@@ -1,4 +1,4 @@
-import { isInput, isNonNullType, isListType, isNamedType } from './../graphql';
+import { isInput, isNonNullType, isListType, isNamedType, ObjectTypeDefinitionBuilder } from './../graphql';
 import { ValidationSchemaPluginConfig } from '../config';
 import {
   InputValueDefinitionNode,
@@ -41,8 +41,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
         .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
     },
-    ObjectTypeDefinition: (node: ObjectTypeDefinitionNode) => {
-      if (!config.useObjectTypes) return;
+    ObjectTypeDefinition: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
 
@@ -55,11 +54,12 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withBlock(
           [
             indent(`return yup.object({`),
-            `    __typename: yup.mixed().oneOf(['${node.name.value}', undefined]),\n${shape}`,
+            indent(`__typename: yup.mixed().oneOf(['${node.name.value}', undefined]),`, 2),
+            shape,
             indent('})'),
           ].join('\n')
         ).string;
-    },
+    }),
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
       importTypes.push(enumname);
@@ -146,7 +146,12 @@ const generateFieldTypeYupSchema = (
     return maybeLazy(type.type, nonNullGen);
   }
   if (isNamedType(type)) {
-    return generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
+    const gen = generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
+    const typ = schema.getType(type.name.value);
+    if (typ?.astNode?.kind === 'ObjectTypeDefinition') {
+      return `${gen}.optional()`;
+    }
+    return gen;
   }
   console.warn('unhandled type:', type);
   return '';
@@ -160,12 +165,17 @@ const generateNameNodeYupSchema = (
 ): string => {
   const typ = schema.getType(node.value);
 
-  if (typ && typ.astNode?.kind === 'InputObjectTypeDefinition') {
+  if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema()`;
   }
 
-  if (typ && typ.astNode?.kind === 'EnumTypeDefinition') {
+  if (typ?.astNode?.kind === 'ObjectTypeDefinition') {
+    const enumName = tsVisitor.convertName(typ.astNode.name.value);
+    return `${enumName}Schema()`;
+  }
+
+  if (typ?.astNode?.kind === 'EnumTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema`;
   }

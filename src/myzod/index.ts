@@ -1,4 +1,4 @@
-import { isInput, isNonNullType, isListType, isNamedType } from './../graphql';
+import { isInput, isNonNullType, isListType, isNamedType, ObjectTypeDefinitionBuilder } from './../graphql';
 import { ValidationSchemaPluginConfig } from '../config';
 import {
   InputValueDefinitionNode,
@@ -49,8 +49,7 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
         .withName(`${name}Schema(): myzod.Type<${name}>`)
         .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
     },
-    ObjectTypeDefinition: (node: ObjectTypeDefinitionNode) => {
-      if (!config.useObjectTypes) return;
+    ObjectTypeDefinition: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
 
@@ -65,11 +64,12 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
         .withBlock(
           [
             indent(`return myzod.object({`),
-            `    __typename: myzod.literal('${node.name.value}').optional(),\n${shape}`,
+            indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
+            shape,
             indent('})'),
           ].join('\n')
         ).string;
-    },
+    }),
     EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
       const enumname = tsVisitor.convertName(node.name.value);
       importTypes.push(enumname);
@@ -166,12 +166,17 @@ const generateNameNodeMyZodSchema = (
 ): string => {
   const typ = schema.getType(node.value);
 
-  if (typ && typ.astNode?.kind === 'InputObjectTypeDefinition') {
+  if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema()`;
   }
 
-  if (typ && typ.astNode?.kind === 'EnumTypeDefinition') {
+  if (typ?.astNode?.kind === 'ObjectTypeDefinition') {
+    const enumName = tsVisitor.convertName(typ.astNode.name.value);
+    return `${enumName}Schema()`;
+  }
+
+  if (typ?.astNode?.kind === 'EnumTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema`;
   }
