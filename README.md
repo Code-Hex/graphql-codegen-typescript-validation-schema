@@ -152,12 +152,6 @@ type: `ScalarSchemas`
 
 Extends or overrides validation schema for the built-in scalars and custom GraphQL scalars.
 
-### `withObjectType`
-
-type: `boolean` default: `false`
-
-Generates validation schema with GraphQL type objects. But excludes `Query`, `Mutation`, `Subscription` objects.
-
 #### yup schema
 
 ```yml
@@ -177,6 +171,16 @@ config:
     Date: z.date()
     Email: z.string().email()
 ```
+
+### `withObjectType`
+
+type: `boolean` default: `false`
+
+Generates validation schema with GraphQL type objects. But excludes `Query`, `Mutation`, `Subscription` objects.
+
+It is currently added for the purpose of using simple objects. See also [#20](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/issues/20#issuecomment-1058969191), [#107](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/issues/107).
+
+This option currently **does not support fragment** generation. If you are interested, send me PR would be greatly appreciated!
 
 ### `directives`
 
