@@ -511,6 +511,12 @@ describe('zod', () => {
     `);
 
     it('not generate if withObjectType false', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type User {
+          id: ID!
+          name: String
+        }
+      `);
       const result = await plugin(
         schema,
         [],
@@ -522,7 +528,77 @@ describe('zod', () => {
       expect(result.content).not.toContain('export function UserSchema(): z.ZodObject<Properties<User>>');
     });
 
+    it('generate object type contains object type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Book {
+          author: Author
+          title: String
+        }
+
+        type Author {
+          books: [Book]
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withObjectType: true,
+        },
+        {}
+      );
+      const wantContains = [
+        'export function AuthorSchema(): z.ZodObject<Properties<Author>> {',
+        "__typename: z.literal('Author').optional(),",
+        'books: z.array(BookSchema().nullable()).nullish(),',
+        'name: z.string().nullish()',
+
+        'export function BookSchema(): z.ZodObject<Properties<Book>> {',
+        "__typename: z.literal('Book').optional(),",
+        'author: AuthorSchema().nullish(),',
+        'title: z.string().nullish()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+        expect(result.content).not.toContain(wantNotContain);
+      }
+    });
+
     it('generate both input & type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        scalar Date
+        scalar Email
+        input UserCreateInput {
+          name: String!
+          date: Date!
+          email: Email!
+        }
+        type User {
+          id: ID!
+          name: String
+          age: Int
+          email: Email
+          isMember: Boolean
+          createdAt: Date!
+        }
+
+        type Mutation {
+          _empty: String
+        }
+
+        type Query {
+          _empty: String
+        }
+
+        type Subscription {
+          _empty: String
+        }
+      `);
       const result = await plugin(
         schema,
         [],
@@ -537,14 +613,10 @@ describe('zod', () => {
         {}
       );
       const wantContains = [
-        // ScalarsInput
-        'export function ScalarsInputSchema(): z.ZodObject<Properties<ScalarsInput>> {',
-        'return z.object({',
-        'date: z.date(),',
-        'email: z.string().email().nullish()',
         // User Create Input
         'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {',
         'name: z.string(),',
+        'date: z.date(),',
         'email: z.string().email()',
         // User
         'export function UserSchema(): z.ZodObject<Properties<User>> {',

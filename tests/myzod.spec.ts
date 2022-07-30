@@ -412,40 +412,13 @@ describe('myzod', () => {
   });
 
   describe('with withObjectType', () => {
-    const schema = buildSchema(/* GraphQL */ `
-      input ScalarsInput {
-        date: Date!
-        email: Email
-      }
-      scalar Date
-      scalar Email
-      input UserCreateInput {
-        name: String!
-        email: Email!
-      }
-      type User {
-        id: ID!
-        name: String
-        age: Int
-        email: Email
-        isMember: Boolean
-        createdAt: Date!
-      }
-
-      type Mutation {
-        _empty: String
-      }
-
-      type Query {
-        _empty: String
-      }
-
-      type Subscription {
-        _empty: String
-      }
-    `);
-
     it('not generate if withObjectType false', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type User {
+          id: ID!
+          name: String
+        }
+      `);
       const result = await plugin(
         schema,
         [],
@@ -457,7 +430,77 @@ describe('myzod', () => {
       expect(result.content).not.toContain('export function UserSchema(): myzod.Type<User> {');
     });
 
+    it('generate object type contains object type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Book {
+          author: Author
+          title: String
+        }
+
+        type Author {
+          books: [Book]
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withObjectType: true,
+        },
+        {}
+      );
+      const wantContains = [
+        'export function AuthorSchema(): myzod.Type<Author> {',
+        "__typename: myzod.literal('Author').optional(),",
+        'books: myzod.array(BookSchema().nullable()).optional().nullable(),',
+        'name: myzod.string().optional().nullable()',
+
+        'export function BookSchema(): myzod.Type<Book> {',
+        "__typename: myzod.literal('Book').optional(),",
+        'author: AuthorSchema().optional().nullable(),',
+        'title: myzod.string().optional().nullable()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+        expect(result.content).not.toContain(wantNotContain);
+      }
+    });
+
     it('generate both input & type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        scalar Date
+        scalar Email
+        input UserCreateInput {
+          name: String!
+          date: Date!
+          email: Email!
+        }
+        type User {
+          id: ID!
+          name: String
+          age: Int
+          email: Email
+          isMember: Boolean
+          createdAt: Date!
+        }
+
+        type Mutation {
+          _empty: String
+        }
+
+        type Query {
+          _empty: String
+        }
+
+        type Subscription {
+          _empty: String
+        }
+      `);
       const result = await plugin(
         schema,
         [],
@@ -472,14 +515,10 @@ describe('myzod', () => {
         {}
       );
       const wantContains = [
-        // ScalarsInput
-        'export const definedNonNullAnySchema = myzod.object({});',
-        'export function ScalarsInputSchema(): myzod.Type<ScalarsInput> {',
-        'date: myzod.date(),',
-        'email: myzod.string().email().optional().nullable(),',
         // User Create Input
         'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
         'name: myzod.string(),',
+        'date: myzod.date(),',
         'email: myzod.string().email()',
         // User
         'export function UserSchema(): myzod.Type<User> {',

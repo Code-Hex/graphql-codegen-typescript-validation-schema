@@ -165,12 +165,17 @@ const generateNameNodeMyZodSchema = (
 ): string => {
   const typ = schema.getType(node.value);
 
-  if (typ && typ.astNode?.kind === 'InputObjectTypeDefinition') {
+  if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema()`;
   }
 
-  if (typ && typ.astNode?.kind === 'EnumTypeDefinition') {
+  if (typ?.astNode?.kind === 'ObjectTypeDefinition') {
+    const enumName = tsVisitor.convertName(typ.astNode.name.value);
+    return `${enumName}Schema()`;
+  }
+
+  if (typ?.astNode?.kind === 'EnumTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema`;
   }

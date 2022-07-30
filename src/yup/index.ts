@@ -145,7 +145,12 @@ const generateFieldTypeYupSchema = (
     return maybeLazy(type.type, nonNullGen);
   }
   if (isNamedType(type)) {
-    return generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
+    const gen = generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
+    const typ = schema.getType(type.name.value);
+    if (typ?.astNode?.kind === 'ObjectTypeDefinition') {
+      return `${gen}.optional()`;
+    }
+    return gen;
   }
   console.warn('unhandled type:', type);
   return '';
@@ -159,12 +164,17 @@ const generateNameNodeYupSchema = (
 ): string => {
   const typ = schema.getType(node.value);
 
-  if (typ && typ.astNode?.kind === 'InputObjectTypeDefinition') {
+  if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema()`;
   }
 
-  if (typ && typ.astNode?.kind === 'EnumTypeDefinition') {
+  if (typ?.astNode?.kind === 'ObjectTypeDefinition') {
+    const enumName = tsVisitor.convertName(typ.astNode.name.value);
+    return `${enumName}Schema()`;
+  }
+
+  if (typ?.astNode?.kind === 'EnumTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema`;
   }
