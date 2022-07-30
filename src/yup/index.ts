@@ -54,7 +54,8 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withBlock(
           [
             indent(`return yup.object({`),
-            `    __typename: yup.mixed().oneOf(['${node.name.value}', undefined]),\n${shape}`,
+            indent(`__typename: yup.mixed().oneOf(['${node.name.value}', undefined]),`, 2),
+            shape,
             indent('})'),
           ].join('\n')
         ).string;

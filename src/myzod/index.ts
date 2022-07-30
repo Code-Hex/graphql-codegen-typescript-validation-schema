@@ -64,7 +64,8 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
         .withBlock(
           [
             indent(`return myzod.object({`),
-            `    __typename: myzod.literal('${node.name.value}').optional(),\n${shape}`,
+            indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
+            shape,
             indent('})'),
           ].join('\n')
         ).string;
