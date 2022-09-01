@@ -14,7 +14,7 @@ export const ObjectTypeDefinitionBuilder = (
 ): ObjectTypeDefinitionFn | undefined => {
   if (!useObjectTypes) return undefined;
   return node => {
-    if (/^Query|Mutation|Subscription$/.test(node.name.value)) {
+    if (/^(Query|Mutation|Subscription)$/.test(node.name.value)) {
       return;
     }
     return callback(node);
