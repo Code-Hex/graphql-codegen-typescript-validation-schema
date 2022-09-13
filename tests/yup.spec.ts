@@ -452,4 +452,38 @@ describe('yup', () => {
       }
     });
   });
+
+  it('properly generates custom directive values', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input UserCreateInput {
+        name: String! @constraint(startsWith: "Sir")
+        age: Int! @constraint(min: 0, max: 100)
+      }
+      directive @constraint(startsWith: String, min: Int, max: Int) on INPUT_FIELD_DEFINITION
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'yup',
+        directives: {
+          constraint: {
+            min: 'min',
+            max: 'max',
+            startsWith: ['matches', '/^$1/'],
+          },
+        },
+      },
+      {}
+    );
+    const wantContains = [
+      // User Create Input
+      'export function UserCreateInputSchema(): yup.SchemaOf<UserCreateInput> {',
+      'name: yup.string().defined().matches(/^Sir/),',
+      'age: yup.number().defined().min(0).max(100)',
+    ];
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
 });
