@@ -539,4 +539,38 @@ describe('myzod', () => {
       }
     });
   });
+
+  it('properly generates custom directive values', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input UserCreateInput {
+        name: String! @constraint(startsWith: "Sir")
+        age: Int! @constraint(min: 0, max: 100)
+      }
+      directive @constraint(startsWith: String, min: Int, max: Int) on INPUT_FIELD_DEFINITION
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        directives: {
+          constraint: {
+            min: 'min',
+            max: 'max',
+            startsWith: ['pattern', '/^$1/'],
+          },
+        },
+      },
+      {}
+    );
+    const wantContains = [
+      // User Create Input
+      'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
+      'name: myzod.string().pattern(/^Sir/),',
+      'age: myzod.number().min(0).max(100)',
+    ];
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
 });

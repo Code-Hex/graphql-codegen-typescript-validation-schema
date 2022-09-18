@@ -162,7 +162,7 @@ const applyArgToApiSchemaTemplate = (template: string, apiArgs: any[]): string =
     const placeholder = match[0]; // `$1`
     const idx = parseInt(match[1], 10) - 1; // start with `1 - 1`
     const apiArg = apiArgs[idx];
-    if (!apiArg) {
+    if (apiArg === undefined) {
       template = template.replace(placeholder, '');
       continue;
     }
