@@ -44,8 +44,8 @@
   "author": "codehex",
   "license": "MIT",
   "devDependencies": {
-    "@graphql-codegen/cli": "2.13.5",
-    "@graphql-codegen/typescript": "2.7.3",
+    "@graphql-codegen/cli": "2.13.6",
+    "@graphql-codegen/typescript": "2.7.4",
     "@tsconfig/recommended": "1.0.1",
     "@types/jest": "29.1.2",
     "@typescript-eslint/eslint-plugin": "5.40.0",
