@@ -8,6 +8,7 @@ import {
   InputObjectTypeDefinitionNode,
   ObjectTypeDefinitionNode,
   EnumTypeDefinitionNode,
+  UnionTypeDefinitionNode,
   FieldDefinitionNode,
 } from 'graphql';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
@@ -99,6 +100,18 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .asKind('const')
         .withName(`${enumname}Schema`)
         .withContent(`z.nativeEnum(${enumname})`).string;
+    },
+    UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
+      const unionName = tsVisitor.convertName(node.name.value);
+      const unionElements = node.types?.map(t => `${t.name.value}Schema()`).join(', ');
+
+      const result = new DeclarationBlock({})
+        .export()
+        .asKind('function')
+        .withName(`${unionName}Schema()`)
+        .withBlock(indent(`return z.union([${unionElements}])`));
+
+      return result.string;
     },
   };
 };
