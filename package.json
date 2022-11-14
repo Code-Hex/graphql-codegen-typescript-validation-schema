@@ -44,7 +44,7 @@
   "author": "codehex",
   "license": "MIT",
   "devDependencies": {
-    "@graphql-codegen/cli": "2.13.11",
+    "@graphql-codegen/cli": "2.13.12",
     "@graphql-codegen/typescript": "2.8.1",
     "@tsconfig/recommended": "1.0.1",
     "@types/jest": "29.2.2",
