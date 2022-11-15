@@ -45,7 +45,7 @@
   "license": "MIT",
   "devDependencies": {
     "@graphql-codegen/cli": "2.13.12",
-    "@graphql-codegen/typescript": "2.8.1",
+    "@graphql-codegen/typescript": "2.8.2",
     "@tsconfig/recommended": "1.0.1",
     "@types/jest": "29.2.3",
     "@typescript-eslint/eslint-plugin": "5.43.0",
