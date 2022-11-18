@@ -668,6 +668,72 @@ describe('zod', () => {
         expect(result.content).toContain(wantContain);
       }
     });
+
+    it('generate union types with single element', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+
+        type Geometry {
+          shape: Shape
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        'export function GeometrySchema(): z.ZodObject<Properties<Geometry>> {',
+        'return z.object({',
+        "__typename: z.literal('Geometry').optional(),",
+        'shape: ShapeSchema().nullish()',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('correctly reference generated union types', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        // Shape Schema
+        'export function ShapeSchema() {',
+        'CircleSchema()',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
   });
 
   it('properly generates custom directive values', async () => {
