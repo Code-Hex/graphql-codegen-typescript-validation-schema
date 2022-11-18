@@ -662,6 +662,7 @@ describe('zod', () => {
         // Shape Schema
         'export function ShapeSchema() {',
         'z.union([CircleSchema(), SquareSchema()])',
+        '}',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);

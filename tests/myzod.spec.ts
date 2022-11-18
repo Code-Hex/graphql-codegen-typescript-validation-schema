@@ -538,6 +538,38 @@ describe('myzod', () => {
         expect(result.content).not.toContain(wantNotContain);
       }
     });
+
+    it('generate union types', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        // Shape Schema
+        'export function ShapeSchema() {',
+        'myzod.union([CircleSchema(), SquareSchema()])',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
   });
 
   it('properly generates custom directive values', async () => {
