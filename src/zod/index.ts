@@ -61,7 +61,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .export()
         .asKind('function')
         .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
-        .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string;
+        .withBlock([indent(`return z.object<Properties<${name}>>({`), shape, indent('})')].join('\n')).string;
     },
     ObjectTypeDefinition: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
@@ -75,7 +75,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
         .withBlock(
           [
-            indent(`return z.object({`),
+            indent(`return z.object<Properties<${name}>>({`),
             indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
             shape,
             indent('})'),
