@@ -696,10 +696,8 @@ describe('zod', () => {
 
       const wantContains = [
         'export function GeometrySchema(): z.ZodObject<Properties<Geometry>> {',
-        'return z.object({',
         "__typename: z.literal('Geometry').optional(),",
         'shape: ShapeSchema().nullish()',
-        '}',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
