@@ -97,15 +97,11 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
       const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
       const unionElementsCount = node.types?.length ?? 0;
 
-      const union = unionElementsCount > 1 ? `myzod.union([${unionElements}])` : unionElements;
+      const union =
+        unionElementsCount > 1 ? indent(`return myzod.union([${unionElements}])`) : indent(`return ${unionElements}`);
 
-      const result = new DeclarationBlock({})
-        .export()
-        .asKind('const')
-        .withName(`${unionName}Schema`)
-        .withContent(union);
-
-      return result.string;
+      return new DeclarationBlock({}).export().asKind('function').withName(`${unionName}Schema()`).withBlock(union)
+        .string;
     },
   };
 };
@@ -201,7 +197,7 @@ const generateNameNodeMyZodSchema = (
 
   if (typ?.astNode?.kind === 'UnionTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema`;
+    return `${enumName}Schema()`;
   }
 
   return myzod4Scalar(config, tsVisitor, node.value);

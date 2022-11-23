@@ -108,15 +108,13 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       importTypes.push(unionName);
 
       const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
-      const unionElementsCount = node.types?.length ?? 0;
-
-      const union = unionElementsCount > 1 ? `union<${unionName}>(${unionElements})` : unionElements;
+      const union = indent(`return union<${unionName}>(${unionElements})`);
 
       return new DeclarationBlock({})
         .export()
-        .asKind('const')
-        .withName(`${unionName}Schema: yup.BaseSchema<${unionName}>`)
-        .withContent(union).string;
+        .asKind('function')
+        .withName(`${unionName}Schema(): yup.BaseSchema<${unionName}>`)
+        .withBlock(union).string;
     },
     // ScalarTypeDefinition: (node) => {
     //   const decl = new DeclarationBlock({})
@@ -211,7 +209,7 @@ const generateNameNodeYupSchema = (
 
   if (typ?.astNode?.kind === 'UnionTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema`;
+    return `${enumName}Schema()`;
   }
 
   const primitive = yup4Scalar(config, tsVisitor, node.value);
