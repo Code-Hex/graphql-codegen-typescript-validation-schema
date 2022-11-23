@@ -563,7 +563,7 @@ describe('myzod', () => {
       const wantContains = [
         // Shape Schema
         'export function ShapeSchema() {',
-        'myzod.union([CircleSchema(), SquareSchema()])',
+        'return myzod.union([CircleSchema(), SquareSchema()])',
         '}',
       ];
       for (const wantContain of wantContains) {
@@ -629,7 +629,7 @@ describe('myzod', () => {
       const wantContains = [
         // Shape Schema
         'export function ShapeSchema() {',
-        'CircleSchema()',
+        'return CircleSchema()',
         '}',
       ];
       for (const wantContain of wantContains) {

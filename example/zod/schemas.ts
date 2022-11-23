@@ -106,11 +106,13 @@ export function UserSchema(): z.ZodObject<Properties<User>> {
     createdAt: definedNonNullAnySchema.nullish(),
     email: z.string().nullish(),
     id: z.string().nullish(),
-    kind: UserKindSchema.nullish(),
+    kind: UserKindSchema().nullish(),
     name: z.string().nullish(),
     password: z.string().nullish(),
     updatedAt: definedNonNullAnySchema.nullish()
   })
 }
 
-export const UserKindSchema = z.union([AdminSchema(), GuestSchema()]);
+export function UserKindSchema() {
+  return AdminSchema()
+}

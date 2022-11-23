@@ -102,11 +102,13 @@ export function UserSchema(): yup.SchemaOf<User> {
     createdAt: yup.mixed(),
     email: yup.string(),
     id: yup.string(),
-    kind: UserKindSchema,
+    kind: UserKindSchema(),
     name: yup.string(),
     password: yup.string(),
     updatedAt: yup.mixed()
   })
 }
 
-export const UserKindSchema: yup.BaseSchema<UserKind> = union<UserKind>(AdminSchema(), GuestSchema());
+export function UserKindSchema(): yup.BaseSchema<UserKind> {
+  return union<UserKind>(AdminSchema())
+}

@@ -13,7 +13,7 @@ type Guest {
   lastLoggedIn: Date
 }
 
-union UserKind = Admin | Guest
+union UserKind = Admin
 
 type User {
   id: ID

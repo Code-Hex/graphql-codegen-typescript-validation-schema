@@ -108,4 +108,4 @@ export type User = {
   updatedAt?: Maybe<Scalars['Date']>;
 };
 
-export type UserKind = Admin | Guest;
+export type UserKind = Admin;
