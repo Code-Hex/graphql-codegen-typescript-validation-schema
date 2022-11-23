@@ -1,5 +1,18 @@
 import * as yup from 'yup'
-import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User, UserKind } from '../types'
+
+function union<T>(...schemas: ReadonlyArray<yup.SchemaOf<T>>): yup.BaseSchema<T> {
+  return yup.mixed().test({
+    test: (value) => schemas.some((schema) => schema.isValidSync(value))
+  })
+}
+
+export function AdminSchema(): yup.SchemaOf<Admin> {
+  return yup.object({
+    __typename: yup.mixed().oneOf(['Admin', undefined]),
+    lastModifiedAt: yup.mixed()
+  })
+}
 
 export function AttributeInputSchema(): yup.SchemaOf<AttributeInput> {
   return yup.object({
@@ -43,6 +56,13 @@ export function EventInputSchema(): yup.SchemaOf<EventInput> {
 
 export const EventOptionTypeSchema = yup.mixed().oneOf([EventOptionType.Reload, EventOptionType.Retry]);
 
+export function GuestSchema(): yup.SchemaOf<Guest> {
+  return yup.object({
+    __typename: yup.mixed().oneOf(['Guest', undefined]),
+    lastLoggedIn: yup.mixed()
+  })
+}
+
 export function HttpInputSchema(): yup.SchemaOf<HttpInput> {
   return yup.object({
     method: HttpMethodSchema,
@@ -82,8 +102,11 @@ export function UserSchema(): yup.SchemaOf<User> {
     createdAt: yup.mixed(),
     email: yup.string(),
     id: yup.string(),
+    kind: UserKindSchema,
     name: yup.string(),
     password: yup.string(),
     updatedAt: yup.mixed()
   })
 }
+
+export const UserKindSchema: yup.BaseSchema<UserKind> = union<UserKind>(AdminSchema(), GuestSchema());
