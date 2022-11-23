@@ -1,7 +1,14 @@
 import * as myzod from 'myzod'
-import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
 
 export const definedNonNullAnySchema = myzod.object({});
+
+export function AdminSchema(): myzod.Type<Admin> {
+  return myzod.object({
+    __typename: myzod.literal('Admin').optional(),
+    lastModifiedAt: definedNonNullAnySchema.optional().nullable()
+  })
+}
 
 export function AttributeInputSchema(): myzod.Type<AttributeInput> {
   return myzod.object({
@@ -45,6 +52,13 @@ export function EventInputSchema(): myzod.Type<EventInput> {
 
 export const EventOptionTypeSchema = myzod.enum(EventOptionType);
 
+export function GuestSchema(): myzod.Type<Guest> {
+  return myzod.object({
+    __typename: myzod.literal('Guest').optional(),
+    lastLoggedIn: definedNonNullAnySchema.optional().nullable()
+  })
+}
+
 export function HttpInputSchema(): myzod.Type<HttpInput> {
   return myzod.object({
     method: HttpMethodSchema.optional().nullable(),
@@ -84,8 +98,13 @@ export function UserSchema(): myzod.Type<User> {
     createdAt: definedNonNullAnySchema.optional().nullable(),
     email: myzod.string().optional().nullable(),
     id: myzod.string().optional().nullable(),
+    kind: UserKindSchema().optional().nullable(),
     name: myzod.string().optional().nullable(),
     password: myzod.string().optional().nullable(),
     updatedAt: definedNonNullAnySchema.optional().nullable()
   })
+}
+
+export function UserKindSchema() {
+  return myzod.union([AdminSchema(), GuestSchema()])
 }

@@ -513,7 +513,7 @@ describe('yup', () => {
         'export function GeometrySchema(): yup.SchemaOf<Geometry> {',
         'return yup.object({',
         "__typename: yup.mixed().oneOf(['Geometry', undefined]),",
-        'shape: yup.mixed()',
+        'shape: ShapeSchema()',
         '})',
       ];
       for (const wantContain of wantContains) {
@@ -542,7 +542,7 @@ describe('yup', () => {
       const wantContains = [
         // Shape Schema
         'export function ShapeSchema(): yup.BaseSchema<Shape> {',
-        'CircleSchema()',
+        'return union<Shape>(CircleSchema())',
         '}',
       ];
       for (const wantContain of wantContains) {

@@ -102,20 +102,17 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withContent(`z.nativeEnum(${enumname})`).string;
     },
     UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
+      if (!node.types) return;
+
       const unionName = tsVisitor.convertName(node.name.value);
-      const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
-      const unionElementsCount = node.types?.length ?? 0;
+      const unionElements = node.types.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
+      const unionElementsCount = node.types.length ?? 0;
 
       const union =
         unionElementsCount > 1 ? indent(`return z.union([${unionElements}])`) : indent(`return ${unionElements}`);
 
-      const result = new DeclarationBlock({})
-        .export()
-        .asKind('function')
-        .withName(`${unionName}Schema()`)
-        .withBlock(union);
-
-      return result.string;
+      return new DeclarationBlock({}).export().asKind('function').withName(`${unionName}Schema()`).withBlock(union)
+        .string;
     },
   };
 };

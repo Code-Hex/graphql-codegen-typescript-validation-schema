@@ -16,6 +16,9 @@
   ],
   "scripts": {
     "type-check": "tsc --noEmit",
+    "type-check:yup": "tsc --strict --noEmit example/yup/schemas.ts",
+    "type-check:zod": "tsc --strict --noEmit example/zod/schemas.ts",
+    "type-check:myzod": "tsc --strict --noEmit example/myzod/schemas.ts",
     "test": "jest --no-watchman",
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.main.json",

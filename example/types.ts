@@ -14,6 +14,11 @@ export type Scalars = {
   URL: any;
 };
 
+export type Admin = {
+  __typename?: 'Admin';
+  lastModifiedAt?: Maybe<Scalars['Date']>;
+};
+
 export type AttributeInput = {
   key?: InputMaybe<Scalars['String']>;
   val?: InputMaybe<Scalars['String']>;
@@ -51,6 +56,11 @@ export enum EventOptionType {
   Reload = 'RELOAD',
   Retry = 'RETRY'
 }
+
+export type Guest = {
+  __typename?: 'Guest';
+  lastLoggedIn?: Maybe<Scalars['Date']>;
+};
 
 export type HttpInput = {
   method?: InputMaybe<HttpMethod>;
@@ -92,7 +102,10 @@ export type User = {
   createdAt?: Maybe<Scalars['Date']>;
   email?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['ID']>;
+  kind?: Maybe<UserKind>;
   name?: Maybe<Scalars['String']>;
   password?: Maybe<Scalars['String']>;
   updatedAt?: Maybe<Scalars['Date']>;
 };
+
+export type UserKind = Admin | Guest;

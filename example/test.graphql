@@ -5,11 +5,22 @@ enum PageType {
   BASIC_AUTH
 }
 
+type Admin {
+  lastModifiedAt: Date
+}
+
+type Guest {
+  lastLoggedIn: Date
+}
+
+union UserKind = Admin | Guest
+
 type User {
   id: ID
   name: String
   email: String
   password: String
+  kind: UserKind
   createdAt: Date
   updatedAt: Date
 }

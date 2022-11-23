@@ -30,6 +30,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       return [importYup];
     },
     initialEmit: (): string =>
+      '\n' +
       new DeclarationBlock({})
         .asKind('function')
         .withName('union<T>(...schemas: ReadonlyArray<yup.SchemaOf<T>>): yup.BaseSchema<T>')
@@ -101,22 +102,19 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withContent(`yup.mixed().oneOf([${values}])`).string;
     },
     UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
+      if (!node.types) return;
+
       const unionName = tsVisitor.convertName(node.name.value);
+      importTypes.push(unionName);
+
       const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
-      const unionElementsCount = node.types?.length ?? 0;
+      const union = indent(`return union<${unionName}>(${unionElements})`);
 
-      const union =
-        unionElementsCount > 1
-          ? indent(`return union<${unionName}>(${unionElements})`)
-          : indent(`return ${unionElements}`);
-
-      const result = new DeclarationBlock({})
+      return new DeclarationBlock({})
         .export()
         .asKind('function')
         .withName(`${unionName}Schema(): yup.BaseSchema<${unionName}>`)
-        .withBlock(union);
-
-      return result.string;
+        .withBlock(union).string;
     },
     // ScalarTypeDefinition: (node) => {
     //   const decl = new DeclarationBlock({})
@@ -207,6 +205,11 @@ const generateNameNodeYupSchema = (
   if (typ?.astNode?.kind === 'EnumTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema`;
+  }
+
+  if (typ?.astNode?.kind === 'UnionTypeDefinition') {
+    const enumName = tsVisitor.convertName(typ.astNode.name.value);
+    return `${enumName}Schema()`;
   }
 
   const primitive = yup4Scalar(config, tsVisitor, node.value);

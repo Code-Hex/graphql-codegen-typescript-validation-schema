@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
 
 type Properties<T> = Required<{
   [K in keyof T]: z.ZodType<T[K], any, T[K]>;
@@ -10,6 +10,13 @@ type definedNonNullAny = {};
 export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
 
 export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
+export function AdminSchema(): z.ZodObject<Properties<Admin>> {
+  return z.object<Properties<Admin>>({
+    __typename: z.literal('Admin').optional(),
+    lastModifiedAt: definedNonNullAnySchema.nullish()
+  })
+}
 
 export function AttributeInputSchema(): z.ZodObject<Properties<AttributeInput>> {
   return z.object<Properties<AttributeInput>>({
@@ -53,6 +60,13 @@ export function EventInputSchema(): z.ZodObject<Properties<EventInput>> {
 
 export const EventOptionTypeSchema = z.nativeEnum(EventOptionType);
 
+export function GuestSchema(): z.ZodObject<Properties<Guest>> {
+  return z.object<Properties<Guest>>({
+    __typename: z.literal('Guest').optional(),
+    lastLoggedIn: definedNonNullAnySchema.nullish()
+  })
+}
+
 export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>> {
   return z.object<Properties<HttpInput>>({
     method: HttpMethodSchema.nullish(),
@@ -92,8 +106,13 @@ export function UserSchema(): z.ZodObject<Properties<User>> {
     createdAt: definedNonNullAnySchema.nullish(),
     email: z.string().nullish(),
     id: z.string().nullish(),
+    kind: UserKindSchema().nullish(),
     name: z.string().nullish(),
     password: z.string().nullish(),
     updatedAt: definedNonNullAnySchema.nullish()
   })
+}
+
+export function UserKindSchema() {
+  return z.union([AdminSchema(), GuestSchema()])
 }
