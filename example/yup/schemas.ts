@@ -110,5 +110,5 @@ export function UserSchema(): yup.SchemaOf<User> {
 }
 
 export function UserKindSchema(): yup.BaseSchema<UserKind> {
-  return union<UserKind>(AdminSchema())
+  return union<UserKind>(AdminSchema(), GuestSchema())
 }

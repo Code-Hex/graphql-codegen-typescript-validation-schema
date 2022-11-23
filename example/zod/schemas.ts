@@ -114,5 +114,5 @@ export function UserSchema(): z.ZodObject<Properties<User>> {
 }
 
 export function UserKindSchema() {
-  return AdminSchema()
+  return z.union([AdminSchema(), GuestSchema()])
 }

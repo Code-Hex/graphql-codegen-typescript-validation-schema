@@ -106,5 +106,5 @@ export function UserSchema(): myzod.Type<User> {
 }
 
 export function UserKindSchema() {
-  return AdminSchema()
+  return myzod.union([AdminSchema(), GuestSchema()])
 }
