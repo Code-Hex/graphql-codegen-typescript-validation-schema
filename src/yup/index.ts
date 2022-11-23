@@ -9,6 +9,7 @@ import {
   EnumTypeDefinitionNode,
   ObjectTypeDefinitionNode,
   FieldDefinitionNode,
+  UnionTypeDefinitionNode,
 } from 'graphql';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { TsVisitor } from '@graphql-codegen/typescript';
@@ -28,7 +29,17 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       }
       return [importYup];
     },
-    initialEmit: (): string => '',
+    initialEmit: (): string =>
+      new DeclarationBlock({})
+        .asKind('function')
+        .withName('union<T>(...schemas: ReadonlyArray<yup.SchemaOf<T>>): yup.BaseSchema<T>')
+        .withBlock(
+          [
+            indent('return yup.mixed().test({'),
+            indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
+            indent('})'),
+          ].join('\n')
+        ).string,
     InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
@@ -88,6 +99,24 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .asKind('const')
         .withName(`${enumname}Schema`)
         .withContent(`yup.mixed().oneOf([${values}])`).string;
+    },
+    UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
+      const unionName = tsVisitor.convertName(node.name.value);
+      const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
+      const unionElementsCount = node.types?.length ?? 0;
+
+      const union =
+        unionElementsCount > 1
+          ? indent(`return union<${unionName}>(${unionElements})`)
+          : indent(`return ${unionElements}`);
+
+      const result = new DeclarationBlock({})
+        .export()
+        .asKind('function')
+        .withName(`${unionName}Schema(): yup.BaseSchema<${unionName}>`)
+        .withBlock(union);
+
+      return result.string;
     },
     // ScalarTypeDefinition: (node) => {
     //   const decl = new DeclarationBlock({})

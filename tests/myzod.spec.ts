@@ -538,6 +538,104 @@ describe('myzod', () => {
         expect(result.content).not.toContain(wantNotContain);
       }
     });
+
+    it('generate union types', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        // Shape Schema
+        'export function ShapeSchema() {',
+        'myzod.union([CircleSchema(), SquareSchema()])',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('generate union types with single element', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+
+        type Geometry {
+          shape: Shape
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        'export function GeometrySchema(): myzod.Type<Geometry> {',
+        'return myzod.object({',
+        "__typename: myzod.literal('Geometry').optional(),",
+        'shape: ShapeSchema().optional().nullable()',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('correctly reference generated union types', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        // Shape Schema
+        'export function ShapeSchema() {',
+        'CircleSchema()',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
   });
 
   it('properly generates custom directive values', async () => {

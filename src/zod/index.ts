@@ -8,6 +8,7 @@ import {
   InputObjectTypeDefinitionNode,
   ObjectTypeDefinitionNode,
   EnumTypeDefinitionNode,
+  UnionTypeDefinitionNode,
   FieldDefinitionNode,
 } from 'graphql';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
@@ -100,6 +101,22 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withName(`${enumname}Schema`)
         .withContent(`z.nativeEnum(${enumname})`).string;
     },
+    UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
+      const unionName = tsVisitor.convertName(node.name.value);
+      const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
+      const unionElementsCount = node.types?.length ?? 0;
+
+      const union =
+        unionElementsCount > 1 ? indent(`return z.union([${unionElements}])`) : indent(`return ${unionElements}`);
+
+      const result = new DeclarationBlock({})
+        .export()
+        .asKind('function')
+        .withName(`${unionName}Schema()`)
+        .withBlock(union);
+
+      return result.string;
+    },
   };
 };
 
@@ -190,6 +207,11 @@ const generateNameNodeZodSchema = (
   if (typ?.astNode?.kind === 'EnumTypeDefinition') {
     const enumName = tsVisitor.convertName(typ.astNode.name.value);
     return `${enumName}Schema`;
+  }
+
+  if (typ?.astNode?.kind === 'UnionTypeDefinition') {
+    const enumName = tsVisitor.convertName(typ.astNode.name.value);
+    return `${enumName}Schema()`;
   }
 
   return zod4Scalar(config, tsVisitor, node.value);

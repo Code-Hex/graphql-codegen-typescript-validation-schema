@@ -451,6 +451,104 @@ describe('yup', () => {
         expect(result.content).not.toContain(wantNotContain);
       }
     });
+
+    it('generate union types', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        // Shape Schema
+        'export function ShapeSchema(): yup.BaseSchema<Shape> {',
+        'union<Shape>(CircleSchema(), SquareSchema())',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('generate union types with single element', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+
+        type Geometry {
+          shape: Shape
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        'export function GeometrySchema(): yup.SchemaOf<Geometry> {',
+        'return yup.object({',
+        "__typename: yup.mixed().oneOf(['Geometry', undefined]),",
+        'shape: yup.mixed()',
+        '})',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('correctly reference generated union types', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        // Shape Schema
+        'export function ShapeSchema(): yup.BaseSchema<Shape> {',
+        'CircleSchema()',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
   });
 
   it('properly generates custom directive values', async () => {
