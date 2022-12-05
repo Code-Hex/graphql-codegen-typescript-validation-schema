@@ -50,7 +50,7 @@
     "@graphql-codegen/cli": "2.15.0",
     "@graphql-codegen/typescript": "2.8.3",
     "@tsconfig/recommended": "1.0.1",
-    "@types/jest": "29.2.3",
+    "@types/jest": "29.2.4",
     "@typescript-eslint/eslint-plugin": "5.45.0",
     "@typescript-eslint/parser": "5.45.0",
     "eslint": "8.29.0",
