@@ -64,7 +64,7 @@
     "zod": "3.19.1"
   },
   "dependencies": {
-    "@graphql-codegen/plugin-helpers": "^2.3.2",
+    "@graphql-codegen/plugin-helpers": "^3.0.0",
     "@graphql-codegen/schema-ast": "^2.4.1",
     "@graphql-codegen/visitor-plugin-common": "^2.5.2",
     "@graphql-tools/utils": "^9.0.0",
