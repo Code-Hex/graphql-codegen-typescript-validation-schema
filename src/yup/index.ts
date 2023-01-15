@@ -29,18 +29,22 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       }
       return [importYup];
     },
-    initialEmit: (): string =>
-      '\n' +
-      new DeclarationBlock({})
-        .asKind('function')
-        .withName('union<T>(...schemas: ReadonlyArray<yup.SchemaOf<T>>): yup.BaseSchema<T>')
-        .withBlock(
-          [
-            indent('return yup.mixed().test({'),
-            indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
-            indent('})'),
-          ].join('\n')
-        ).string,
+    initialEmit: (): string => {
+      if (!config.withObjectType) return '';
+      return (
+        '\n' +
+        new DeclarationBlock({})
+          .asKind('function')
+          .withName('union<T>(...schemas: ReadonlyArray<yup.SchemaOf<T>>): yup.BaseSchema<T>')
+          .withBlock(
+            [
+              indent('return yup.mixed().test({'),
+              indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
+              indent('})'),
+            ].join('\n')
+          ).string
+      );
+    },
     InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
       const name = tsVisitor.convertName(node.name.value);
       importTypes.push(name);
@@ -102,7 +106,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withContent(`yup.mixed().oneOf([${values}])`).string;
     },
     UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
-      if (!node.types) return;
+      if (!node.types || !config.withObjectType) return;
 
       const unionName = tsVisitor.convertName(node.name.value);
       importTypes.push(unionName);

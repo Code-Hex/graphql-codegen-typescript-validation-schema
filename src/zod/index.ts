@@ -102,7 +102,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         .withContent(`z.nativeEnum(${enumname})`).string;
     },
     UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
-      if (!node.types) return;
+      if (!node.types || !config.withObjectType) return;
 
       const unionName = tsVisitor.convertName(node.name.value);
       const unionElements = node.types.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
