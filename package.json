@@ -48,7 +48,7 @@
   "license": "MIT",
   "devDependencies": {
     "@graphql-codegen/cli": "2.16.1",
-    "@graphql-codegen/typescript": "2.8.5",
+    "@graphql-codegen/typescript": "^2.8.7",
     "@tsconfig/recommended": "1.0.1",
     "@types/jest": "29.2.5",
     "@typescript-eslint/eslint-plugin": "5.46.1",
@@ -64,11 +64,11 @@
     "zod": "3.20.2"
   },
   "dependencies": {
-    "@graphql-codegen/plugin-helpers": "^3.0.0",
-    "@graphql-codegen/schema-ast": "^2.4.1",
-    "@graphql-codegen/visitor-plugin-common": "^2.5.2",
+    "@graphql-codegen/plugin-helpers": "2.4.2",
+    "@graphql-codegen/schema-ast": "2.6.1",
+    "@graphql-codegen/visitor-plugin-common": "^2.13.7",
     "@graphql-tools/utils": "^9.0.0",
-    "graphql": "^16.2.0"
+    "graphql": "16.5.0"
   },
   "peerDependencies": {
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0"
