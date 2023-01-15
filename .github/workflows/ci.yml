@@ -36,9 +36,11 @@ jobs:
         with:
           commit_message: Apply auto lint-fix changes
           branch: ${{ github.head_ref }}
-      - name: eslint
-        if: steps.auto-commit-action.outputs.changes_detected == 'false'
-        uses: reviewdog/action-eslint@v1
-        with:
-          level: warning
-          reporter: github-pr-review
+      # See: https://github.com/reviewdog/action-eslint/issues/152
+      # - name: eslint
+      #   if: steps.auto-commit-action.outputs.changes_detected == 'false'
+      #   uses: reviewdog/action-eslint@v1
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     level: warning
+      #     reporter: github-pr-review
