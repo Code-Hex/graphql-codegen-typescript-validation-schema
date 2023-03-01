@@ -4681,10 +4681,10 @@ mute-stream@0.0.8:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-myzod@1.9.2:
-  version "1.9.2"
-  resolved "https://registry.yarnpkg.com/myzod/-/myzod-1.9.2.tgz#a1b5d5bc46acb2ee53c2093e65f2ff3a7c0431ef"
-  integrity sha512-Jm8PDj1hPWGyxL50TYlMhaA+h7QBNXSLKesofg1RTOYmzhR0kaHByTZ62HrTF9Dy0K8z+Hs/ELXXUyUOYsl0FA==
+myzod@1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/myzod/-/myzod-1.10.0.tgz#b9dd32c3cf15eabd79bc8c5ec371fd7442a57066"
+  integrity sha512-f/r6a37bymBrgAhfESPidVy0/V0j4+p1hshvT+Hp2bwNNyKWWatiPGnievRg74srXw1gVacf6DPaHfpPD0B/zw==
 
 natural-compare-lite@^1.4.0:
   version "1.4.0"
