@@ -61,7 +61,7 @@
     "ts-jest": "29.0.5",
     "typescript": "4.9.5",
     "yup": "1.0.2",
-    "zod": "3.21.2"
+    "zod": "3.21.3"
   },
   "dependencies": {
     "@graphql-codegen/plugin-helpers": "2.4.2",
