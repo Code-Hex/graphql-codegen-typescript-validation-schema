@@ -6092,7 +6092,7 @@ yup@1.0.2:
     toposort "^2.0.2"
     type-fest "^2.19.0"
 
-zod@3.21.1:
-  version "3.21.1"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.21.1.tgz#ac5bb7cf68876281ebd02f95ac4bb9a080370282"
-  integrity sha512-+dTu2m6gmCbO9Ahm4ZBDapx2O6ZY9QSPXst2WXjcznPMwf2YNpn3RevLx4KkZp1OPW/ouFcoBtBzFz/LeY69oA==
+zod@3.21.2:
+  version "3.21.2"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.21.2.tgz#a25425916d63b74d5ddd0b2a1bf733ecc093964b"
+  integrity sha512-0Ygy2/IZNIxHterZdHjE5Vb8hp1fUHJD/BGvSHj8QJx+UipEVNvo9WLchoyBpz5JIaN6KmdGDGYdloGzpFK98g==
