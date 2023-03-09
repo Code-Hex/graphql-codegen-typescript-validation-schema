@@ -238,11 +238,11 @@ const maybeNonEmptyString = (
     const maybeScalarName = childType.name.value;
     const tsType = tsVisitor.scalars[maybeScalarName];
     if (tsType === 'string') {
-      return `${schema}.required()`;
+      return `${schema}.required(${config.errorMessage?.required})`;
     }
   }
   // fallback
-  return `${schema}.defined()`;
+  return `${schema}.defined(${config.errorMessage?.required})`;
 };
 
 const yup4Scalar = (config: ValidationSchemaPluginConfig, tsVisitor: TsVisitor, scalarName: string): string => {

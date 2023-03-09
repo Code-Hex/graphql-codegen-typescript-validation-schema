@@ -52,6 +52,26 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   importFrom?: string;
+    /**
+   * @description Overrides default validation schema error messages.
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/types.ts:
+   *     plugins:
+   *       - typescript
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: yup
+   *       errorMessage:
+   *         required: "This field is required"
+   *       importFrom: ./path/to/types
+   * ```
+   */
+  errorMessage?: Record<'required', string>;
   /**
    * @description Prefixes all import types from generated typescript type.
    * @default ""
