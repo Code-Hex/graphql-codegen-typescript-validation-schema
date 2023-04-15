@@ -14,10 +14,11 @@ import {
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { TsVisitor } from '@graphql-codegen/typescript';
 import { buildApi, formatDirectiveConfig } from '../directive';
+import { SchemaVisitor } from '../types';
 
 const importYup = `import * as yup from 'yup'`;
 
-export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
+export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
   const tsVisitor = new TsVisitor(schema, config);
 
   const importTypes: string[] = [];
@@ -45,80 +46,92 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           ).string
       );
     },
-    InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
-      const name = tsVisitor.convertName(node.name.value);
-      importTypes.push(name);
+    InputObjectTypeDefinition: {
+      leave: (node: InputObjectTypeDefinitionNode) => {
+        const name = tsVisitor.convertName(node.name.value);
+        importTypes.push(name);
 
-      const shape = node.fields?.map(field => generateFieldYupSchema(config, tsVisitor, schema, field, 2)).join(',\n');
+        const shape = node.fields
+          ?.map(field => generateFieldYupSchema(config, tsVisitor, schema, field, 2))
+          .join(',\n');
 
-      return new DeclarationBlock({})
-        .export()
-        .asKind('function')
-        .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
-        .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
+        return new DeclarationBlock({})
+          .export()
+          .asKind('function')
+          .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
+          .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
+      },
     },
-    ObjectTypeDefinition: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
-      const name = tsVisitor.convertName(node.name.value);
-      importTypes.push(name);
+    ObjectTypeDefinition: {
+      leave: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+        const name = tsVisitor.convertName(node.name.value);
+        importTypes.push(name);
 
-      const shape = node.fields?.map(field => generateFieldYupSchema(config, tsVisitor, schema, field, 2)).join(',\n');
+        const shape = node.fields
+          ?.map(field => generateFieldYupSchema(config, tsVisitor, schema, field, 2))
+          .join(',\n');
 
-      return new DeclarationBlock({})
-        .export()
-        .asKind('function')
-        .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
-        .withBlock(
-          [
-            indent(`return yup.object({`),
-            indent(`__typename: yup.mixed().oneOf(['${node.name.value}', undefined]),`, 2),
-            shape,
-            indent('})'),
-          ].join('\n')
-        ).string;
-    }),
-    EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
-      const enumname = tsVisitor.convertName(node.name.value);
-      importTypes.push(enumname);
+        return new DeclarationBlock({})
+          .export()
+          .asKind('function')
+          .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
+          .withBlock(
+            [
+              indent(`return yup.object({`),
+              indent(`__typename: yup.mixed().oneOf(['${node.name.value}', undefined]),`, 2),
+              shape,
+              indent('})'),
+            ].join('\n')
+          ).string;
+      }),
+    },
+    EnumTypeDefinition: {
+      leave: (node: EnumTypeDefinitionNode) => {
+        const enumname = tsVisitor.convertName(node.name.value);
+        importTypes.push(enumname);
 
-      if (config.enumsAsTypes) {
+        if (config.enumsAsTypes) {
+          return new DeclarationBlock({})
+            .export()
+            .asKind('const')
+            .withName(`${enumname}Schema`)
+            .withContent(
+              `yup.mixed().oneOf([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`
+            ).string;
+        }
+
+        const values = node.values
+          ?.map(
+            enumOption =>
+              `${enumname}.${tsVisitor.convertName(enumOption.name, {
+                useTypesPrefix: false,
+                transformUnderscore: true,
+              })}`
+          )
+          .join(', ');
         return new DeclarationBlock({})
           .export()
           .asKind('const')
           .withName(`${enumname}Schema`)
-          .withContent(
-            `yup.mixed().oneOf([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`
-          ).string;
-      }
-
-      const values = node.values
-        ?.map(
-          enumOption =>
-            `${enumname}.${tsVisitor.convertName(enumOption.name, {
-              useTypesPrefix: false,
-              transformUnderscore: true,
-            })}`
-        )
-        .join(', ');
-      return new DeclarationBlock({})
-        .export()
-        .asKind('const')
-        .withName(`${enumname}Schema`)
-        .withContent(`yup.mixed().oneOf([${values}])`).string;
+          .withContent(`yup.mixed().oneOf([${values}])`).string;
+      },
     },
-    UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
-      if (!node.types || !config.withObjectType) return;
+    UnionTypeDefinition: {
+      leave: (node: UnionTypeDefinitionNode) => {
+        if (!node.types || !config.withObjectType) return;
 
-      const unionName = tsVisitor.convertName(node.name.value);
-      importTypes.push(unionName);
+        const unionName = tsVisitor.convertName(node.name.value);
+        importTypes.push(unionName);
 
-      const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
-      const union = indent(`return union<${unionName}>(${unionElements})`);
+        const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
+        const union = indent(`return union<${unionName}>(${unionElements})`);
 
-      return new DeclarationBlock({})
-        .export()
-        .asKind('function')
-        .withName(`${unionName}Schema(): yup.BaseSchema<${unionName}>`)
-        .withBlock(union).string;
+        return new DeclarationBlock({})
+          .export()
+          .asKind('function')
+          .withName(`${unionName}Schema(): yup.BaseSchema<${unionName}>`)
+          .withBlock(union).string;
+      },
     },
     // ScalarTypeDefinition: (node) => {
     //   const decl = new DeclarationBlock({})

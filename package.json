@@ -64,11 +64,11 @@
     "zod": "3.21.4"
   },
   "dependencies": {
-    "@graphql-codegen/plugin-helpers": "2.7.2",
+    "@graphql-codegen/plugin-helpers": "^4.2.0",
     "@graphql-codegen/schema-ast": "2.6.1",
     "@graphql-codegen/visitor-plugin-common": "^2.13.7",
     "@graphql-tools/utils": "^9.0.0",
-    "graphql": "16.6.0"
+    "graphql": "^16.6.0"
   },
   "peerDependencies": {
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0"

@@ -28,7 +28,8 @@
       "rules": {
         "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": "off",
-        "import/no-extraneous-dependencies": "off"
+        "import/no-extraneous-dependencies": "off",
+        "prefer-object-has-own": "off"
       }
     }
   ],
