@@ -14,11 +14,12 @@ import {
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { TsVisitor } from '@graphql-codegen/typescript';
 import { buildApi, formatDirectiveConfig } from '../directive';
+import { SchemaVisitor } from '../types';
 
 const importZod = `import * as myzod from 'myzod'`;
 const anySchema = `definedNonNullAnySchema`;
 
-export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
+export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
   const tsVisitor = new TsVisitor(schema, config);
 
   const importTypes: string[] = [];
@@ -36,72 +37,80 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
         new DeclarationBlock({}).export().asKind('const').withName(`${anySchema}`).withContent(`myzod.object({})`)
           .string,
       ].join('\n'),
-    InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
-      const name = tsVisitor.convertName(node.name.value);
-      importTypes.push(name);
+    InputObjectTypeDefinition: {
+      leave: (node: InputObjectTypeDefinitionNode) => {
+        const name = tsVisitor.convertName(node.name.value);
+        importTypes.push(name);
 
-      const shape = node.fields
-        ?.map(field => generateFieldMyZodSchema(config, tsVisitor, schema, field, 2))
-        .join(',\n');
+        const shape = node.fields
+          ?.map(field => generateFieldMyZodSchema(config, tsVisitor, schema, field, 2))
+          .join(',\n');
 
-      return new DeclarationBlock({})
-        .export()
-        .asKind('function')
-        .withName(`${name}Schema(): myzod.Type<${name}>`)
-        .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
-    },
-    ObjectTypeDefinition: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
-      const name = tsVisitor.convertName(node.name.value);
-      importTypes.push(name);
-
-      const shape = node.fields
-        ?.map(field => generateFieldMyZodSchema(config, tsVisitor, schema, field, 2))
-        .join(',\n');
-
-      return new DeclarationBlock({})
-        .export()
-        .asKind('function')
-        .withName(`${name}Schema(): myzod.Type<${name}>`)
-        .withBlock(
-          [
-            indent(`return myzod.object({`),
-            indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
-            shape,
-            indent('})'),
-          ].join('\n')
-        ).string;
-    }),
-    EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
-      const enumname = tsVisitor.convertName(node.name.value);
-      importTypes.push(enumname);
-      // z.enum are basically myzod.literals
-      if (config.enumsAsTypes) {
         return new DeclarationBlock({})
           .export()
-          .asKind('type')
-          .withName(`${enumname}Schema`)
-          .withContent(`myzod.literals(${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')})`)
-          .string;
-      }
-
-      return new DeclarationBlock({})
-        .export()
-        .asKind('const')
-        .withName(`${enumname}Schema`)
-        .withContent(`myzod.enum(${enumname})`).string;
+          .asKind('function')
+          .withName(`${name}Schema(): myzod.Type<${name}>`)
+          .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
+      },
     },
-    UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
-      if (!node.types || !config.withObjectType) return;
+    ObjectTypeDefinition: {
+      leave: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+        const name = tsVisitor.convertName(node.name.value);
+        importTypes.push(name);
 
-      const unionName = tsVisitor.convertName(node.name.value);
-      const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
-      const unionElementsCount = node.types?.length ?? 0;
+        const shape = node.fields
+          ?.map(field => generateFieldMyZodSchema(config, tsVisitor, schema, field, 2))
+          .join(',\n');
 
-      const union =
-        unionElementsCount > 1 ? indent(`return myzod.union([${unionElements}])`) : indent(`return ${unionElements}`);
+        return new DeclarationBlock({})
+          .export()
+          .asKind('function')
+          .withName(`${name}Schema(): myzod.Type<${name}>`)
+          .withBlock(
+            [
+              indent(`return myzod.object({`),
+              indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
+              shape,
+              indent('})'),
+            ].join('\n')
+          ).string;
+      }),
+    },
+    EnumTypeDefinition: {
+      leave: (node: EnumTypeDefinitionNode) => {
+        const enumname = tsVisitor.convertName(node.name.value);
+        importTypes.push(enumname);
+        // z.enum are basically myzod.literals
+        if (config.enumsAsTypes) {
+          return new DeclarationBlock({})
+            .export()
+            .asKind('type')
+            .withName(`${enumname}Schema`)
+            .withContent(`myzod.literals(${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')})`)
+            .string;
+        }
 
-      return new DeclarationBlock({}).export().asKind('function').withName(`${unionName}Schema()`).withBlock(union)
-        .string;
+        return new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`${enumname}Schema`)
+          .withContent(`myzod.enum(${enumname})`).string;
+      },
+    },
+    UnionTypeDefinition: {
+      leave: (node: UnionTypeDefinitionNode) => {
+        if (!node.types || !config.withObjectType) return;
+
+        const unionName = tsVisitor.convertName(node.name.value);
+        const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
+        const unionElementsCount = node.types?.length ?? 0;
+
+        const union =
+          unionElementsCount > 1 ? indent(`return myzod.union([${unionElements}])`) : indent(`return ${unionElements}`);
+
+        return new DeclarationBlock({}).export().asKind('function').withName(`${unionName}Schema()`).withBlock(union)
+          .string;
+      },
     },
   };
 };

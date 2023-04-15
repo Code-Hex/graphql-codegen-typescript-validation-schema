@@ -14,11 +14,12 @@ import {
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { TsVisitor } from '@graphql-codegen/typescript';
 import { buildApi, formatDirectiveConfig } from '../directive';
+import { SchemaVisitor } from '../types';
 
 const importZod = `import { z } from 'zod'`;
 const anySchema = `definedNonNullAnySchema`;
 
-export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
+export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
   const tsVisitor = new TsVisitor(schema, config);
 
   const importTypes: string[] = [];
@@ -52,67 +53,79 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           .withName(`${anySchema}`)
           .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
       ].join('\n'),
-    InputObjectTypeDefinition: (node: InputObjectTypeDefinitionNode) => {
-      const name = tsVisitor.convertName(node.name.value);
-      importTypes.push(name);
+    InputObjectTypeDefinition: {
+      leave: (node: InputObjectTypeDefinitionNode) => {
+        const name = tsVisitor.convertName(node.name.value);
+        importTypes.push(name);
 
-      const shape = node.fields?.map(field => generateFieldZodSchema(config, tsVisitor, schema, field, 2)).join(',\n');
+        const shape = node.fields
+          ?.map(field => generateFieldZodSchema(config, tsVisitor, schema, field, 2))
+          .join(',\n');
 
-      return new DeclarationBlock({})
-        .export()
-        .asKind('function')
-        .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
-        .withBlock([indent(`return z.object<Properties<${name}>>({`), shape, indent('})')].join('\n')).string;
+        return new DeclarationBlock({})
+          .export()
+          .asKind('function')
+          .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
+          .withBlock([indent(`return z.object<Properties<${name}>>({`), shape, indent('})')].join('\n')).string;
+      },
     },
-    ObjectTypeDefinition: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
-      const name = tsVisitor.convertName(node.name.value);
-      importTypes.push(name);
+    ObjectTypeDefinition: {
+      leave: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+        const name = tsVisitor.convertName(node.name.value);
+        importTypes.push(name);
 
-      const shape = node.fields?.map(field => generateFieldZodSchema(config, tsVisitor, schema, field, 2)).join(',\n');
+        const shape = node.fields
+          ?.map(field => generateFieldZodSchema(config, tsVisitor, schema, field, 2))
+          .join(',\n');
 
-      return new DeclarationBlock({})
-        .export()
-        .asKind('function')
-        .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
-        .withBlock(
-          [
-            indent(`return z.object<Properties<${name}>>({`),
-            indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
-            shape,
-            indent('})'),
-          ].join('\n')
-        ).string;
-    }),
-    EnumTypeDefinition: (node: EnumTypeDefinitionNode) => {
-      const enumname = tsVisitor.convertName(node.name.value);
-      importTypes.push(enumname);
+        return new DeclarationBlock({})
+          .export()
+          .asKind('function')
+          .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
+          .withBlock(
+            [
+              indent(`return z.object<Properties<${name}>>({`),
+              indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
+              shape,
+              indent('})'),
+            ].join('\n')
+          ).string;
+      }),
+    },
+    EnumTypeDefinition: {
+      leave: (node: EnumTypeDefinitionNode) => {
+        const enumname = tsVisitor.convertName(node.name.value);
+        importTypes.push(enumname);
 
-      if (config.enumsAsTypes) {
+        if (config.enumsAsTypes) {
+          return new DeclarationBlock({})
+            .export()
+            .asKind('const')
+            .withName(`${enumname}Schema`)
+            .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`).string;
+        }
+
         return new DeclarationBlock({})
           .export()
           .asKind('const')
           .withName(`${enumname}Schema`)
-          .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`).string;
-      }
-
-      return new DeclarationBlock({})
-        .export()
-        .asKind('const')
-        .withName(`${enumname}Schema`)
-        .withContent(`z.nativeEnum(${enumname})`).string;
+          .withContent(`z.nativeEnum(${enumname})`).string;
+      },
     },
-    UnionTypeDefinition: (node: UnionTypeDefinitionNode) => {
-      if (!node.types || !config.withObjectType) return;
+    UnionTypeDefinition: {
+      leave: (node: UnionTypeDefinitionNode) => {
+        if (!node.types || !config.withObjectType) return;
 
-      const unionName = tsVisitor.convertName(node.name.value);
-      const unionElements = node.types.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
-      const unionElementsCount = node.types.length ?? 0;
+        const unionName = tsVisitor.convertName(node.name.value);
+        const unionElements = node.types.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
+        const unionElementsCount = node.types.length ?? 0;
 
-      const union =
-        unionElementsCount > 1 ? indent(`return z.union([${unionElements}])`) : indent(`return ${unionElements}`);
+        const union =
+          unionElementsCount > 1 ? indent(`return z.union([${unionElements}])`) : indent(`return ${unionElements}`);
 
-      return new DeclarationBlock({}).export().asKind('function').withName(`${unionName}Schema()`).withBlock(union)
-        .string;
+        return new DeclarationBlock({}).export().asKind('function').withName(`${unionName}Schema()`).withBlock(union)
+          .string;
+      },
     },
   };
 };

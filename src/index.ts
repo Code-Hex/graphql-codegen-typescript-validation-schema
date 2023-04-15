@@ -3,8 +3,9 @@ import { MyZodSchemaVisitor } from './myzod/index';
 import { transformSchemaAST } from '@graphql-codegen/schema-ast';
 import { YupSchemaVisitor } from './yup/index';
 import { ValidationSchemaPluginConfig } from './config';
-import { oldVisit, PluginFunction, Types } from '@graphql-codegen/plugin-helpers';
-import { GraphQLSchema } from 'graphql';
+import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers';
+import { GraphQLSchema, visit } from 'graphql';
+import { SchemaVisitor } from './types';
 
 export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,
@@ -14,9 +15,7 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
   const { schema: _schema, ast } = transformSchemaAST(schema, config);
   const { buildImports, initialEmit, ...visitor } = schemaVisitor(_schema, config);
 
-  const result = oldVisit(ast, {
-    leave: visitor,
-  });
+  const result = visit(ast, visitor);
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -28,7 +27,7 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
   };
 };
 
-const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
+const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
   if (config?.schema === 'zod') {
     return ZodSchemaVisitor(schema, config);
   } else if (config?.schema === 'myzod') {
