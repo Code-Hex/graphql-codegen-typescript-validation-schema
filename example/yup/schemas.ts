@@ -1,7 +1,7 @@
 import * as yup from 'yup'
 import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User, UserKind } from '../types'
 
-function union<T extends {}>(...schemas: ReadonlyArray<yup.ObjectSchema<T>>): yup.MixedSchema<T> {
+function union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T> {
   return yup.mixed<T>().test({
     test: (value) => schemas.some((schema) => schema.isValidSync(value))
   }).defined()

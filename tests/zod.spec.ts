@@ -320,6 +320,7 @@ describe('zod', () => {
     expect(result.prepend).toContain("import { SayI } from './types'");
     expect(result.content).toContain('export function SayISchema(): z.ZodObject<Properties<SayI>> {');
   });
+
   describe('issues #19', () => {
     it('string field', async () => {
       const schema = buildSchema(/* GraphQL */ `
@@ -351,6 +352,7 @@ describe('zod', () => {
         expect(result.content).toContain(wantContain);
       }
     });
+
     it('not null field', async () => {
       const schema = buildSchema(/* GraphQL */ `
         input UserCreateInput {
@@ -381,6 +383,7 @@ describe('zod', () => {
         expect(result.content).toContain(wantContain);
       }
     });
+
     it('list field', async () => {
       const schema = buildSchema(/* GraphQL */ `
         input UserCreateInput {
@@ -412,6 +415,7 @@ describe('zod', () => {
       }
     });
   });
+
   describe('PR #112', () => {
     it('with notAllowEmptyString', async () => {
       const schema = buildSchema(/* GraphQL */ `
@@ -476,6 +480,7 @@ describe('zod', () => {
       }
     });
   });
+
   describe('with withObjectType', () => {
     const schema = buildSchema(/* GraphQL */ `
       input ScalarsInput {
@@ -726,6 +731,41 @@ describe('zod', () => {
         // Shape Schema
         'export function ShapeSchema() {',
         'return CircleSchema()',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('generate enum union types', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum PageType {
+          PUBLIC
+          BASIC_AUTH
+        }
+
+        enum MethodType {
+          GET
+          POST
+        }
+
+        union AnyType = PageType | MethodType
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        'export function AnyTypeSchema() {',
+        'return z.union([PageTypeSchema, MethodTypeSchema])',
         '}',
       ];
       for (const wantContain of wantContains) {

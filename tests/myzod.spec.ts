@@ -636,6 +636,41 @@ describe('myzod', () => {
         expect(result.content).toContain(wantContain);
       }
     });
+
+    it('generate enum union types', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum PageType {
+          PUBLIC
+          BASIC_AUTH
+        }
+
+        enum MethodType {
+          GET
+          POST
+        }
+
+        union AnyType = PageType | MethodType
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withObjectType: true,
+        },
+        {}
+      );
+
+      const wantContains = [
+        'export function AnyTypeSchema() {',
+        'return myzod.union([PageTypeSchema, MethodTypeSchema])',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
   });
 
   it('properly generates custom directive values', async () => {

@@ -102,7 +102,16 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
         if (!node.types || !config.withObjectType) return;
 
         const unionName = tsVisitor.convertName(node.name.value);
-        const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
+        const unionElements = node.types
+          ?.map(t => {
+            const element = tsVisitor.convertName(t.name.value);
+            const typ = schema.getType(t.name.value);
+            if (typ?.astNode?.kind === 'EnumTypeDefinition') {
+              return `${element}Schema`;
+            }
+            return `${element}Schema()`;
+          })
+          .join(', ');
         const unionElementsCount = node.types?.length ?? 0;
 
         const union =

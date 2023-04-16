@@ -36,7 +36,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         '\n' +
         new DeclarationBlock({})
           .asKind('function')
-          .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.ObjectSchema<T>>): yup.MixedSchema<T>')
+          .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
           .withBlock(
             [
               indent('return yup.mixed<T>().test({'),
@@ -129,7 +129,16 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         const unionName = tsVisitor.convertName(node.name.value);
         importTypes.push(unionName);
 
-        const unionElements = node.types?.map(t => `${tsVisitor.convertName(t.name.value)}Schema()`).join(', ');
+        const unionElements = node.types
+          ?.map(t => {
+            const element = tsVisitor.convertName(t.name.value);
+            const typ = schema.getType(t.name.value);
+            if (typ?.astNode?.kind === 'EnumTypeDefinition') {
+              return `${element}Schema`;
+            }
+            return `${element}Schema()`;
+          })
+          .join(', ');
         const union = indent(`return union<${unionName}>(${unionElements})`);
 
         return new DeclarationBlock({})
