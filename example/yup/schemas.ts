@@ -1,114 +1,114 @@
 import * as yup from 'yup'
 import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User, UserKind } from '../types'
 
-function union<T>(...schemas: ReadonlyArray<yup.SchemaOf<T>>): yup.BaseSchema<T> {
-  return yup.mixed().test({
+function union<T extends {}>(...schemas: ReadonlyArray<yup.ObjectSchema<T>>): yup.MixedSchema<T> {
+  return yup.mixed<T>().test({
     test: (value) => schemas.some((schema) => schema.isValidSync(value))
-  })
+  }).defined()
 }
 
-export function AdminSchema(): yup.SchemaOf<Admin> {
+export function AdminSchema(): yup.ObjectSchema<Admin> {
   return yup.object({
-    __typename: yup.mixed().oneOf(['Admin', undefined]),
-    lastModifiedAt: yup.mixed()
+    __typename: yup.string<'Admin'>().optional(),
+    lastModifiedAt: yup.mixed().nullable().optional()
   })
 }
 
-export function AttributeInputSchema(): yup.SchemaOf<AttributeInput> {
+export function AttributeInputSchema(): yup.ObjectSchema<AttributeInput> {
   return yup.object({
-    key: yup.string(),
-    val: yup.string()
+    key: yup.string().defined().nullable().optional(),
+    val: yup.string().defined().nullable().optional()
   })
 }
 
-export const ButtonComponentTypeSchema = yup.mixed().oneOf([ButtonComponentType.Button, ButtonComponentType.Submit]);
+export const ButtonComponentTypeSchema = yup.string<ButtonComponentType>().oneOf([ButtonComponentType.Button, ButtonComponentType.Submit]).defined();
 
-export function ComponentInputSchema(): yup.SchemaOf<ComponentInput> {
+export function ComponentInputSchema(): yup.ObjectSchema<ComponentInput> {
   return yup.object({
-    child: yup.lazy(() => ComponentInputSchema()) as never,
-    childrens: yup.array().of(yup.lazy(() => ComponentInputSchema()) as never).optional(),
-    event: yup.lazy(() => EventInputSchema()) as never,
-    name: yup.string().defined(),
-    type: ButtonComponentTypeSchema.defined()
+    child: yup.lazy(() => ComponentInputSchema()).optional(),
+    childrens: yup.array(yup.lazy(() => ComponentInputSchema())).defined().nullable().optional(),
+    event: yup.lazy(() => EventInputSchema()).optional(),
+    name: yup.string().defined().nonNullable(),
+    type: ButtonComponentTypeSchema.nonNullable()
   })
 }
 
-export function DropDownComponentInputSchema(): yup.SchemaOf<DropDownComponentInput> {
+export function DropDownComponentInputSchema(): yup.ObjectSchema<DropDownComponentInput> {
   return yup.object({
-    dropdownComponent: yup.lazy(() => ComponentInputSchema()) as never,
-    getEvent: yup.lazy(() => EventInputSchema().defined()) as never
+    dropdownComponent: yup.lazy(() => ComponentInputSchema()).optional(),
+    getEvent: yup.lazy(() => EventInputSchema().nonNullable())
   })
 }
 
-export function EventArgumentInputSchema(): yup.SchemaOf<EventArgumentInput> {
+export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput> {
   return yup.object({
-    name: yup.string().defined().min(5),
-    value: yup.string().defined().matches(/^foo/)
+    name: yup.string().defined().nonNullable().min(5),
+    value: yup.string().defined().nonNullable().matches(/^foo/)
   })
 }
 
-export function EventInputSchema(): yup.SchemaOf<EventInput> {
+export function EventInputSchema(): yup.ObjectSchema<EventInput> {
   return yup.object({
-    arguments: yup.array().of(yup.lazy(() => EventArgumentInputSchema().defined()) as never).defined(),
-    options: yup.array().of(EventOptionTypeSchema.defined()).optional()
+    arguments: yup.array(yup.lazy(() => EventArgumentInputSchema().nonNullable())).defined(),
+    options: yup.array(EventOptionTypeSchema.nonNullable()).defined().nullable().optional()
   })
 }
 
-export const EventOptionTypeSchema = yup.mixed().oneOf([EventOptionType.Reload, EventOptionType.Retry]);
+export const EventOptionTypeSchema = yup.string<EventOptionType>().oneOf([EventOptionType.Reload, EventOptionType.Retry]).defined();
 
-export function GuestSchema(): yup.SchemaOf<Guest> {
+export function GuestSchema(): yup.ObjectSchema<Guest> {
   return yup.object({
-    __typename: yup.mixed().oneOf(['Guest', undefined]),
-    lastLoggedIn: yup.mixed()
+    __typename: yup.string<'Guest'>().optional(),
+    lastLoggedIn: yup.mixed().nullable().optional()
   })
 }
 
-export function HttpInputSchema(): yup.SchemaOf<HttpInput> {
+export function HttpInputSchema(): yup.ObjectSchema<HttpInput> {
   return yup.object({
-    method: HttpMethodSchema,
-    url: yup.mixed().defined()
+    method: HttpMethodSchema.nullable().optional(),
+    url: yup.mixed().nonNullable()
   })
 }
 
-export const HttpMethodSchema = yup.mixed().oneOf([HttpMethod.Get, HttpMethod.Post]);
+export const HttpMethodSchema = yup.string<HttpMethod>().oneOf([HttpMethod.Get, HttpMethod.Post]).defined();
 
-export function LayoutInputSchema(): yup.SchemaOf<LayoutInput> {
+export function LayoutInputSchema(): yup.ObjectSchema<LayoutInput> {
   return yup.object({
-    dropdown: yup.lazy(() => DropDownComponentInputSchema()) as never
+    dropdown: yup.lazy(() => DropDownComponentInputSchema()).optional()
   })
 }
 
-export function PageInputSchema(): yup.SchemaOf<PageInput> {
+export function PageInputSchema(): yup.ObjectSchema<PageInput> {
   return yup.object({
-    attributes: yup.array().of(yup.lazy(() => AttributeInputSchema().defined()) as never).optional(),
-    date: yup.mixed(),
-    height: yup.number().defined(),
-    id: yup.string().defined(),
-    layout: yup.lazy(() => LayoutInputSchema().defined()) as never,
-    pageType: PageTypeSchema.defined(),
-    postIDs: yup.array().of(yup.string().defined()).optional(),
-    show: yup.boolean().defined(),
-    tags: yup.array().of(yup.string()).optional(),
-    title: yup.string().defined(),
-    width: yup.number().defined()
+    attributes: yup.array(yup.lazy(() => AttributeInputSchema().nonNullable())).defined().nullable().optional(),
+    date: yup.mixed().nullable().optional(),
+    height: yup.number().defined().nonNullable(),
+    id: yup.string().defined().nonNullable(),
+    layout: yup.lazy(() => LayoutInputSchema().nonNullable()),
+    pageType: PageTypeSchema.nonNullable(),
+    postIDs: yup.array(yup.string().defined().nonNullable()).defined().nullable().optional(),
+    show: yup.boolean().defined().nonNullable(),
+    tags: yup.array(yup.string().defined().nullable()).defined().nullable().optional(),
+    title: yup.string().defined().nonNullable(),
+    width: yup.number().defined().nonNullable()
   })
 }
 
-export const PageTypeSchema = yup.mixed().oneOf([PageType.BasicAuth, PageType.Lp, PageType.Restricted, PageType.Service]);
+export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.BasicAuth, PageType.Lp, PageType.Restricted, PageType.Service]).defined();
 
-export function UserSchema(): yup.SchemaOf<User> {
+export function UserSchema(): yup.ObjectSchema<User> {
   return yup.object({
-    __typename: yup.mixed().oneOf(['User', undefined]),
-    createdAt: yup.mixed(),
-    email: yup.string(),
-    id: yup.string(),
-    kind: UserKindSchema(),
-    name: yup.string(),
-    password: yup.string(),
-    updatedAt: yup.mixed()
+    __typename: yup.string<'User'>().optional(),
+    createdAt: yup.mixed().nullable().optional(),
+    email: yup.string().defined().nullable().optional(),
+    id: yup.string().defined().nullable().optional(),
+    kind: UserKindSchema().nullable().optional(),
+    name: yup.string().defined().nullable().optional(),
+    password: yup.string().defined().nullable().optional(),
+    updatedAt: yup.mixed().nullable().optional()
   })
 }
 
-export function UserKindSchema(): yup.BaseSchema<UserKind> {
+export function UserKindSchema(): yup.MixedSchema<UserKind> {
   return union<UserKind>(AdminSchema(), GuestSchema())
 }
