@@ -36,12 +36,12 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         '\n' +
         new DeclarationBlock({})
           .asKind('function')
-          .withName('union<T>(...schemas: ReadonlyArray<yup.SchemaOf<T>>): yup.BaseSchema<T>')
+          .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.ObjectSchema<T>>): yup.MixedSchema<T>')
           .withBlock(
             [
-              indent('return yup.mixed().test({'),
+              indent('return yup.mixed<T>().test({'),
               indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
-              indent('})'),
+              indent('}).defined()'),
             ].join('\n')
           ).string
       );
@@ -52,13 +52,16 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         importTypes.push(name);
 
         const shape = node.fields
-          ?.map(field => generateFieldYupSchema(config, tsVisitor, schema, field, 2))
+          ?.map(field => {
+            const fieldSchema = generateFieldYupSchema(config, tsVisitor, schema, field, 2);
+            return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
+          })
           .join(',\n');
 
         return new DeclarationBlock({})
           .export()
           .asKind('function')
-          .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
+          .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
           .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
       },
     },
@@ -68,17 +71,20 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         importTypes.push(name);
 
         const shape = node.fields
-          ?.map(field => generateFieldYupSchema(config, tsVisitor, schema, field, 2))
+          ?.map(field => {
+            const fieldSchema = generateFieldYupSchema(config, tsVisitor, schema, field, 2);
+            return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
+          })
           .join(',\n');
 
         return new DeclarationBlock({})
           .export()
           .asKind('function')
-          .withName(`${name}Schema(): yup.SchemaOf<${name}>`)
+          .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
           .withBlock(
             [
               indent(`return yup.object({`),
-              indent(`__typename: yup.mixed().oneOf(['${node.name.value}', undefined]),`, 2),
+              indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
               shape,
               indent('})'),
             ].join('\n')
@@ -91,13 +97,13 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         importTypes.push(enumname);
 
         if (config.enumsAsTypes) {
+          const enums = node.values?.map(enumOption => `'${enumOption.name.value}'`);
+
           return new DeclarationBlock({})
             .export()
             .asKind('const')
             .withName(`${enumname}Schema`)
-            .withContent(
-              `yup.mixed().oneOf([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`
-            ).string;
+            .withContent(`yup.string().oneOf([${enums?.join(', ')}]).defined()`).string;
         }
 
         const values = node.values
@@ -113,7 +119,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           .export()
           .asKind('const')
           .withName(`${enumname}Schema`)
-          .withContent(`yup.mixed().oneOf([${values}])`).string;
+          .withContent(`yup.string<${enumname}>().oneOf([${values}]).defined()`).string;
       },
     },
     UnionTypeDefinition: {
@@ -129,7 +135,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         return new DeclarationBlock({})
           .export()
           .asKind('function')
-          .withName(`${unionName}Schema(): yup.BaseSchema<${unionName}>`)
+          .withName(`${unionName}Schema(): yup.MixedSchema<${unionName}>`)
           .withBlock(union).string;
       },
     },
@@ -180,22 +186,28 @@ const generateFieldTypeYupSchema = (
   if (isListType(type)) {
     const gen = generateFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
     if (!isNonNullType(parentType)) {
-      return `yup.array().of(${maybeLazy(type.type, gen)}).optional()`;
+      return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
     }
-    return `yup.array().of(${maybeLazy(type.type, gen)})`;
+    return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
   }
   if (isNonNullType(type)) {
     const gen = generateFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
-    const nonNullGen = maybeNonEmptyString(config, tsVisitor, gen, type.type);
-    return maybeLazy(type.type, nonNullGen);
+    return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
-    const typ = schema.getType(type.name.value);
-    if (typ?.astNode?.kind === 'ObjectTypeDefinition') {
-      return `${gen}.optional()`;
+    if (isNonNullType(parentType)) {
+      if (config.notAllowEmptyString === true) {
+        const tsType = tsVisitor.scalars[type.name.value];
+        if (tsType === 'string') return `${gen}.required()`;
+      }
+      return `${gen}.nonNullable()`;
     }
-    return gen;
+    const typ = schema.getType(type.name.value);
+    if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
+      return `${gen}`;
+    }
+    return `${gen}.nullable()`;
   }
   console.warn('unhandled type:', type);
   return '';
@@ -236,40 +248,23 @@ const generateNameNodeYupSchema = (
 const maybeLazy = (type: TypeNode, schema: string): string => {
   if (isNamedType(type) && isInput(type.name.value)) {
     // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
-    return `yup.lazy(() => ${schema}) as never`;
+    return `yup.lazy(() => ${schema})`;
   }
   return schema;
 };
 
-const maybeNonEmptyString = (
-  config: ValidationSchemaPluginConfig,
-  tsVisitor: TsVisitor,
-  schema: string,
-  childType: TypeNode
-): string => {
-  if (config.notAllowEmptyString === true && isNamedType(childType)) {
-    const maybeScalarName = childType.name.value;
-    const tsType = tsVisitor.scalars[maybeScalarName];
-    if (tsType === 'string') {
-      return `${schema}.required()`;
-    }
-  }
-  // fallback
-  return `${schema}.defined()`;
-};
-
 const yup4Scalar = (config: ValidationSchemaPluginConfig, tsVisitor: TsVisitor, scalarName: string): string => {
   if (config.scalarSchemas?.[scalarName]) {
-    return config.scalarSchemas[scalarName];
+    return `${config.scalarSchemas[scalarName]}.defined()`;
   }
   const tsType = tsVisitor.scalars[scalarName];
   switch (tsType) {
     case 'string':
-      return `yup.string()`;
+      return `yup.string().defined()`;
     case 'number':
-      return `yup.number()`;
+      return `yup.number().defined()`;
     case 'boolean':
-      return `yup.boolean()`;
+      return `yup.boolean().defined()`;
   }
   console.warn('unhandled name:', scalarName);
   return `yup.mixed()`;
