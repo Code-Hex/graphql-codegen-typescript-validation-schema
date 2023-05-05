@@ -276,3 +276,18 @@ export function ExampleInputSchema(): z.ZodSchema<ExampleInput> {
 #### other schema
 
 Please see [example](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) directory.
+
+## Notes
+
+Their is currently a compatibility issue with the client-preset. A workaround for this is to split the generation into two (one for client-preset and one for typescript-validation-schema).
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript-validation-schema
+  /path/to/graphql/:
+    preset: 'client',
+      plugins:
+      ...
+```
