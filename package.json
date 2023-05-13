@@ -8,7 +8,7 @@
   },
   "main": "dist/main/index.js",
   "typings": "dist/main/index.d.ts",
-  "module": "dist/module/index.mjs",
+  "module": "dist/module/index.js",
   "files": [
     "dist/**/*.{js,ts}",
     "LICENSE",
