@@ -47,8 +47,8 @@
   "author": "codehex",
   "license": "MIT",
   "devDependencies": {
-    "@graphql-codegen/cli": "3.3.1",
-    "@graphql-codegen/typescript": "^3.0.0",
+    "@graphql-codegen/cli": "4.0.0",
+    "@graphql-codegen/typescript": "^4.0.0",
     "@tsconfig/recommended": "1.0.2",
     "@types/jest": "29.5.1",
     "@types/node": "^20.1.3",
@@ -65,9 +65,9 @@
     "zod": "3.21.4"
   },
   "dependencies": {
-    "@graphql-codegen/plugin-helpers": "^4.2.0",
-    "@graphql-codegen/schema-ast": "3.0.1",
-    "@graphql-codegen/visitor-plugin-common": "^3.0.0",
+    "@graphql-codegen/plugin-helpers": "^5.0.0",
+    "@graphql-codegen/schema-ast": "4.0.0",
+    "@graphql-codegen/visitor-plugin-common": "^4.0.0",
     "@graphql-tools/utils": "^10.0.0",
     "graphql": "^16.6.0"
   },
