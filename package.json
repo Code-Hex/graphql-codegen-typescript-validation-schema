@@ -61,7 +61,7 @@
     "prettier": "2.8.8",
     "ts-jest": "29.1.0",
     "typescript": "5.0.4",
-    "yup": "1.1.1",
+    "yup": "1.2.0",
     "zod": "3.21.4"
   },
   "dependencies": {
