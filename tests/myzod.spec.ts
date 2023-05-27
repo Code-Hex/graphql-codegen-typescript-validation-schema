@@ -222,6 +222,26 @@ describe('myzod', () => {
     expect(result.content).toContain('phrase: myzod.string()');
   });
 
+  it('with importFrom & useTypeImports', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        importFrom: './types',
+        useTypeImports: true,
+      },
+      {}
+    );
+    expect(result.prepend).toContain("import type { Say } from './types'");
+    expect(result.content).toContain('phrase: myzod.string()');
+  });
+
   it('with enumsAsTypes', async () => {
     const schema = buildSchema(/* GraphQL */ `
       enum PageType {
