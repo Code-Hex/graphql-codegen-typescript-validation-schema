@@ -508,6 +508,10 @@ describe('myzod', () => {
           date: Date!
           email: Email!
         }
+        input UsernameUpdateInput {
+          updateInputId: ID!
+          updateName: String!
+        }
         type User {
           id: ID!
           name: String
@@ -539,6 +543,12 @@ describe('myzod', () => {
             Date: 'myzod.date()',
             Email: 'myzod.string().email()',
           },
+          scalars: {
+            ID: {
+              input: 'number',
+              output: 'string',
+            },
+          },
         },
         {}
       );
@@ -548,6 +558,10 @@ describe('myzod', () => {
         'name: myzod.string(),',
         'date: myzod.date(),',
         'email: myzod.string().email()',
+        // Username Update Input
+        'export function UsernameUpdateInputSchema(): myzod.Type<UsernameUpdateInput> {',
+        'updateInputId: myzod.number(),',
+        'updateName: myzod.string()',
         // User
         'export function UserSchema(): myzod.Type<User> {',
         "__typename: myzod.literal('User').optional(),",

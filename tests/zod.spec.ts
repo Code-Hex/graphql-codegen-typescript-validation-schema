@@ -511,39 +511,6 @@ describe('zod', () => {
   });
 
   describe('with withObjectType', () => {
-    const schema = buildSchema(/* GraphQL */ `
-      input ScalarsInput {
-        date: Date!
-        email: Email
-      }
-      scalar Date
-      scalar Email
-      input UserCreateInput {
-        name: String!
-        email: Email!
-      }
-      type User {
-        id: ID!
-        name: String
-        age: Int
-        email: Email
-        isMember: Boolean
-        createdAt: Date!
-      }
-
-      type Mutation {
-        _empty: String
-      }
-
-      type Query {
-        _empty: String
-      }
-
-      type Subscription {
-        _empty: String
-      }
-    `);
-
     it('not generate if withObjectType false', async () => {
       const schema = buildSchema(/* GraphQL */ `
         type User {
@@ -612,6 +579,10 @@ describe('zod', () => {
           date: Date!
           email: Email!
         }
+        input UsernameUpdateInput {
+          updateInputId: ID!
+          updateName: String!
+        }
         type User {
           id: ID!
           name: String
@@ -643,6 +614,12 @@ describe('zod', () => {
             Date: 'z.date()',
             Email: 'z.string().email()',
           },
+          scalars: {
+            ID: {
+              input: 'number',
+              output: 'string',
+            },
+          },
         },
         {}
       );
@@ -652,6 +629,10 @@ describe('zod', () => {
         'name: z.string(),',
         'date: z.date(),',
         'email: z.string().email()',
+        // Username Update Input
+        'export function UsernameUpdateInputSchema(): z.ZodObject<Properties<UsernameUpdateInput>> {',
+        'updateInputId: z.number(),',
+        'updateName: z.string()',
         // User
         'export function UserSchema(): z.ZodObject<Properties<User>> {',
         "__typename: z.literal('User').optional()",

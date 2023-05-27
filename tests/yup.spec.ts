@@ -422,6 +422,10 @@ describe('yup', () => {
           date: Date!
           email: Email!
         }
+        input UsernameUpdateInput {
+          updateInputId: ID!
+          updateName: String!
+        }
         type User {
           id: ID!
           name: String
@@ -454,6 +458,12 @@ describe('yup', () => {
             Date: 'yup.date()',
             Email: 'yup.string().email()',
           },
+          scalars: {
+            ID: {
+              input: 'number',
+              output: 'string',
+            },
+          },
         },
         {}
       );
@@ -463,6 +473,10 @@ describe('yup', () => {
         'name: yup.string().defined().nonNullable(),',
         'date: yup.date().defined().nonNullable(),',
         'email: yup.string().email().defined().nonNullable()',
+        // Username Update Input
+        'export function UsernameUpdateInputSchema(): yup.ObjectSchema<UsernameUpdateInput> {',
+        'updateInputId: yup.number().defined().nonNullable(),',
+        'updateName: yup.string().defined().nonNullable()',
         // User
         'export function UserSchema(): yup.ObjectSchema<User> {',
         "__typename: yup.string<'User'>().optional(),",
