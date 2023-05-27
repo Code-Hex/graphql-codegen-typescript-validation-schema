@@ -34,6 +34,8 @@ generates:
       schema: yup # or zod
 ```
 
+It is recommended to write `scalars` config for built-in type `ID`, as in the yaml example shown above. For more information: [#375](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/pull/375)
+
 You can check [example](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) directory if you want to see more complex config example or how is generated some files.
 
 The Q&A for each schema is written in the README in the respective example directory.
