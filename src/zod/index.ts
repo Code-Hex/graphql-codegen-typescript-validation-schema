@@ -12,7 +12,7 @@ import {
   FieldDefinitionNode,
 } from 'graphql';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
-import { TsVisitor } from '@graphql-codegen/typescript';
+import { Visitor } from '../visitor';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { SchemaVisitor } from '../types';
 
@@ -20,8 +20,6 @@ const importZod = `import { z } from 'zod'`;
 const anySchema = `definedNonNullAnySchema`;
 
 export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
-  const tsVisitor = new TsVisitor(schema, config);
-
   const importTypes: string[] = [];
 
   return {
@@ -55,12 +53,11 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       ].join('\n'),
     InputObjectTypeDefinition: {
       leave: (node: InputObjectTypeDefinitionNode) => {
-        const name = tsVisitor.convertName(node.name.value);
+        const visitor = new Visitor('input', schema, config);
+        const name = visitor.convertName(node.name.value);
         importTypes.push(name);
 
-        const shape = node.fields
-          ?.map(field => generateFieldZodSchema(config, tsVisitor, schema, field, 2))
-          .join(',\n');
+        const shape = node.fields?.map(field => generateFieldZodSchema(config, visitor, field, 2)).join(',\n');
 
         return new DeclarationBlock({})
           .export()
@@ -71,12 +68,11 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     },
     ObjectTypeDefinition: {
       leave: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
-        const name = tsVisitor.convertName(node.name.value);
+        const visitor = new Visitor('output', schema, config);
+        const name = visitor.convertName(node.name.value);
         importTypes.push(name);
 
-        const shape = node.fields
-          ?.map(field => generateFieldZodSchema(config, tsVisitor, schema, field, 2))
-          .join(',\n');
+        const shape = node.fields?.map(field => generateFieldZodSchema(config, visitor, field, 2)).join(',\n');
 
         return new DeclarationBlock({})
           .export()
@@ -94,7 +90,8 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     },
     EnumTypeDefinition: {
       leave: (node: EnumTypeDefinitionNode) => {
-        const enumname = tsVisitor.convertName(node.name.value);
+        const visitor = new Visitor('both', schema, config);
+        const enumname = visitor.convertName(node.name.value);
         importTypes.push(enumname);
 
         if (config.enumsAsTypes) {
@@ -115,12 +112,12 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     UnionTypeDefinition: {
       leave: (node: UnionTypeDefinitionNode) => {
         if (!node.types || !config.withObjectType) return;
-
-        const unionName = tsVisitor.convertName(node.name.value);
+        const visitor = new Visitor('output', schema, config);
+        const unionName = visitor.convertName(node.name.value);
         const unionElements = node.types
           .map(t => {
-            const element = tsVisitor.convertName(t.name.value);
-            const typ = schema.getType(t.name.value);
+            const element = visitor.convertName(t.name.value);
+            const typ = visitor.getType(t.name.value);
             if (typ?.astNode?.kind === 'EnumTypeDefinition') {
               return `${element}Schema`;
             }
@@ -141,25 +138,23 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
 
 const generateFieldZodSchema = (
   config: ValidationSchemaPluginConfig,
-  tsVisitor: TsVisitor,
-  schema: GraphQLSchema,
+  visitor: Visitor,
   field: InputValueDefinitionNode | FieldDefinitionNode,
   indentCount: number
 ): string => {
-  const gen = generateFieldTypeZodSchema(config, tsVisitor, schema, field, field.type);
+  const gen = generateFieldTypeZodSchema(config, visitor, field, field.type);
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };
 
 const generateFieldTypeZodSchema = (
   config: ValidationSchemaPluginConfig,
-  tsVisitor: TsVisitor,
-  schema: GraphQLSchema,
+  visitor: Visitor,
   field: InputValueDefinitionNode | FieldDefinitionNode,
   type: TypeNode,
   parentType?: TypeNode
 ): string => {
   if (isListType(type)) {
-    const gen = generateFieldTypeZodSchema(config, tsVisitor, schema, field, type.type, type);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
     if (!isNonNullType(parentType)) {
       const arrayGen = `z.array(${maybeLazy(type.type, gen)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
@@ -168,18 +163,18 @@ const generateFieldTypeZodSchema = (
     return `z.array(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeZodSchema(config, tsVisitor, schema, field, type.type, type);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
-    const gen = generateNameNodeZodSchema(config, tsVisitor, schema, type.name);
+    const gen = generateNameNodeZodSchema(config, visitor, type.name);
     if (isListType(parentType)) {
       return `${gen}.nullable()`;
     }
     const appliedDirectivesGen = applyDirectives(config, field, gen);
     if (isNonNullType(parentType)) {
       if (config.notAllowEmptyString === true) {
-        const tsType = tsVisitor.scalars[type.name.value];
+        const tsType = visitor.getScalarType(type.name.value);
         if (tsType === 'string') return `${appliedDirectivesGen}.min(1)`;
       }
       return appliedDirectivesGen;
@@ -205,35 +200,30 @@ const applyDirectives = (
   return gen;
 };
 
-const generateNameNodeZodSchema = (
-  config: ValidationSchemaPluginConfig,
-  tsVisitor: TsVisitor,
-  schema: GraphQLSchema,
-  node: NameNode
-): string => {
-  const typ = schema.getType(node.value);
+const generateNameNodeZodSchema = (config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string => {
+  const converter = visitor.getNameNodeConverter(node);
 
-  if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
-    const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema()`;
+  if (converter?.targetKind === 'InputObjectTypeDefinition') {
+    const name = converter.convertName();
+    return `${name}Schema()`;
   }
 
-  if (typ?.astNode?.kind === 'ObjectTypeDefinition') {
-    const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema()`;
+  if (converter?.targetKind === 'ObjectTypeDefinition') {
+    const name = converter.convertName();
+    return `${name}Schema()`;
   }
 
-  if (typ?.astNode?.kind === 'EnumTypeDefinition') {
-    const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema`;
+  if (converter?.targetKind === 'EnumTypeDefinition') {
+    const name = converter.convertName();
+    return `${name}Schema`;
   }
 
-  if (typ?.astNode?.kind === 'UnionTypeDefinition') {
-    const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema()`;
+  if (converter?.targetKind === 'UnionTypeDefinition') {
+    const name = converter.convertName();
+    return `${name}Schema()`;
   }
 
-  return zod4Scalar(config, tsVisitor, node.value);
+  return zod4Scalar(config, visitor, node.value);
 };
 
 const maybeLazy = (type: TypeNode, schema: string): string => {
@@ -243,11 +233,11 @@ const maybeLazy = (type: TypeNode, schema: string): string => {
   return schema;
 };
 
-const zod4Scalar = (config: ValidationSchemaPluginConfig, tsVisitor: TsVisitor, scalarName: string): string => {
+const zod4Scalar = (config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string => {
   if (config.scalarSchemas?.[scalarName]) {
     return config.scalarSchemas[scalarName];
   }
-  const tsType = tsVisitor.scalars[scalarName];
+  const tsType = visitor.getScalarType(scalarName);
   switch (tsType) {
     case 'string':
       return `z.string()`;
