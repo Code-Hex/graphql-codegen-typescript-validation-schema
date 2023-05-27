@@ -24,7 +24,10 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
   return {
     buildImports: (): string[] => {
       if (config.importFrom && importTypes.length > 0) {
-        return [importYup, `import { ${importTypes.join(', ')} } from '${config.importFrom}'`];
+        return [
+          importYup,
+          `import ${config.useTypeImports ? 'type ' : ''}{ ${importTypes.join(', ')} } from '${config.importFrom}'`,
+        ];
       }
       return [importYup];
     },

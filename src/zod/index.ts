@@ -25,7 +25,10 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
   return {
     buildImports: (): string[] => {
       if (config.importFrom && importTypes.length > 0) {
-        return [importZod, `import { ${importTypes.join(', ')} } from '${config.importFrom}'`];
+        return [
+          importZod,
+          `import ${config.useTypeImports ? 'type ' : ''}{ ${importTypes.join(', ')} } from '${config.importFrom}'`,
+        ];
       }
       return [importZod];
     },
