@@ -1,150 +1,176 @@
 import { buildSchema } from 'graphql';
 import { plugin } from '../src/index';
+import { ScalarsMap } from '@graphql-codegen/visitor-plugin-common';
 
 describe('zod', () => {
   test.each([
     [
       'non-null and defined',
-      /* GraphQL */ `
-        input PrimitiveInput {
-          a: ID!
-          b: String!
-          c: Boolean!
-          d: Int!
-          e: Float!
-        }
-      `,
-      [
-        'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
-        'a: z.string()',
-        'b: z.string()',
-        'c: z.boolean()',
-        'd: z.number()',
-        'e: z.number()',
-      ],
+      {
+        textSchema: /* GraphQL */ `
+          input PrimitiveInput {
+            a: ID!
+            b: String!
+            c: Boolean!
+            d: Int!
+            e: Float!
+          }
+        `,
+        wantContains: [
+          'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
+          'a: z.string()',
+          'b: z.string()',
+          'c: z.boolean()',
+          'd: z.number()',
+          'e: z.number()',
+        ],
+        scalars: {
+          ID: 'string',
+        },
+      },
     ],
     [
       'nullish',
-      /* GraphQL */ `
-        input PrimitiveInput {
-          a: ID
-          b: String
-          c: Boolean
-          d: Int
-          e: Float
-          z: String! # no defined check
-        }
-      `,
-      [
-        'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
-        // alphabet order
-        'a: z.string().nullish(),',
-        'b: z.string().nullish(),',
-        'c: z.boolean().nullish(),',
-        'd: z.number().nullish(),',
-        'e: z.number().nullish(),',
-      ],
+      {
+        textSchema: /* GraphQL */ `
+          input PrimitiveInput {
+            a: ID
+            b: String
+            c: Boolean
+            d: Int
+            e: Float
+            z: String! # no defined check
+          }
+        `,
+        wantContains: [
+          'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
+          // alphabet order
+          'a: z.string().nullish(),',
+          'b: z.string().nullish(),',
+          'c: z.boolean().nullish(),',
+          'd: z.number().nullish(),',
+          'e: z.number().nullish(),',
+        ],
+        scalars: {
+          ID: 'string',
+        },
+      },
     ],
     [
       'array',
-      /* GraphQL */ `
-        input ArrayInput {
-          a: [String]
-          b: [String!]
-          c: [String!]!
-          d: [[String]]
-          e: [[String]!]
-          f: [[String]!]!
-        }
-      `,
-      [
-        'export function ArrayInputSchema(): z.ZodObject<Properties<ArrayInput>>',
-        'a: z.array(z.string().nullable()).nullish(),',
-        'b: z.array(z.string()).nullish(),',
-        'c: z.array(z.string()),',
-        'd: z.array(z.array(z.string().nullable()).nullish()).nullish(),',
-        'e: z.array(z.array(z.string().nullable())).nullish(),',
-        'f: z.array(z.array(z.string().nullable()))',
-      ],
+      {
+        textSchema: /* GraphQL */ `
+          input ArrayInput {
+            a: [String]
+            b: [String!]
+            c: [String!]!
+            d: [[String]]
+            e: [[String]!]
+            f: [[String]!]!
+          }
+        `,
+        wantContains: [
+          'export function ArrayInputSchema(): z.ZodObject<Properties<ArrayInput>>',
+          'a: z.array(z.string().nullable()).nullish(),',
+          'b: z.array(z.string()).nullish(),',
+          'c: z.array(z.string()),',
+          'd: z.array(z.array(z.string().nullable()).nullish()).nullish(),',
+          'e: z.array(z.array(z.string().nullable())).nullish(),',
+          'f: z.array(z.array(z.string().nullable()))',
+        ],
+        scalars: undefined,
+      },
     ],
     [
       'ref input object',
-      /* GraphQL */ `
-        input AInput {
-          b: BInput!
-        }
-        input BInput {
-          c: CInput!
-        }
-        input CInput {
-          a: AInput!
-        }
-      `,
-      [
-        'export function AInputSchema(): z.ZodObject<Properties<AInput>>',
-        'b: z.lazy(() => BInputSchema())',
-        'export function BInputSchema(): z.ZodObject<Properties<BInput>>',
-        'c: z.lazy(() => CInputSchema())',
-        'export function CInputSchema(): z.ZodObject<Properties<CInput>>',
-        'a: z.lazy(() => AInputSchema())',
-      ],
+      {
+        textSchema: /* GraphQL */ `
+          input AInput {
+            b: BInput!
+          }
+          input BInput {
+            c: CInput!
+          }
+          input CInput {
+            a: AInput!
+          }
+        `,
+        wantContains: [
+          'export function AInputSchema(): z.ZodObject<Properties<AInput>>',
+          'b: z.lazy(() => BInputSchema())',
+          'export function BInputSchema(): z.ZodObject<Properties<BInput>>',
+          'c: z.lazy(() => CInputSchema())',
+          'export function CInputSchema(): z.ZodObject<Properties<CInput>>',
+          'a: z.lazy(() => AInputSchema())',
+        ],
+        scalars: undefined,
+      },
     ],
     [
       'nested input object',
-      /* GraphQL */ `
-        input NestedInput {
-          child: NestedInput
-          childrens: [NestedInput]
-        }
-      `,
-      [
-        'export function NestedInputSchema(): z.ZodObject<Properties<NestedInput>>',
-        'child: z.lazy(() => NestedInputSchema().nullish()),',
-        'childrens: z.array(z.lazy(() => NestedInputSchema().nullable())).nullish()',
-      ],
+      {
+        textSchema: /* GraphQL */ `
+          input NestedInput {
+            child: NestedInput
+            childrens: [NestedInput]
+          }
+        `,
+        wantContains: [
+          'export function NestedInputSchema(): z.ZodObject<Properties<NestedInput>>',
+          'child: z.lazy(() => NestedInputSchema().nullish()),',
+          'childrens: z.array(z.lazy(() => NestedInputSchema().nullable())).nullish()',
+        ],
+        scalars: undefined,
+      },
     ],
     [
       'enum',
-      /* GraphQL */ `
-        enum PageType {
-          PUBLIC
-          BASIC_AUTH
-        }
-        input PageInput {
-          pageType: PageType!
-        }
-      `,
-      [
-        'export const PageTypeSchema = z.nativeEnum(PageType)',
-        'export function PageInputSchema(): z.ZodObject<Properties<PageInput>>',
-        'pageType: PageTypeSchema',
-      ],
+      {
+        textSchema: /* GraphQL */ `
+          enum PageType {
+            PUBLIC
+            BASIC_AUTH
+          }
+          input PageInput {
+            pageType: PageType!
+          }
+        `,
+        wantContains: [
+          'export const PageTypeSchema = z.nativeEnum(PageType)',
+          'export function PageInputSchema(): z.ZodObject<Properties<PageInput>>',
+          'pageType: PageTypeSchema',
+        ],
+        scalars: undefined,
+      },
     ],
     [
       'camelcase',
-      /* GraphQL */ `
-        input HTTPInput {
-          method: HTTPMethod
-          url: URL!
-        }
+      {
+        textSchema: /* GraphQL */ `
+          input HTTPInput {
+            method: HTTPMethod
+            url: URL!
+          }
 
-        enum HTTPMethod {
-          GET
-          POST
-        }
+          enum HTTPMethod {
+            GET
+            POST
+          }
 
-        scalar URL # unknown scalar, should be any (definedNonNullAnySchema)
-      `,
-      [
-        'export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>>',
-        'export const HttpMethodSchema = z.nativeEnum(HttpMethod)',
-        'method: HttpMethodSchema',
-        'url: definedNonNullAnySchema',
-      ],
+          scalar URL # unknown scalar, should be any (definedNonNullAnySchema)
+        `,
+        wantContains: [
+          'export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>>',
+          'export const HttpMethodSchema = z.nativeEnum(HttpMethod)',
+          'method: HttpMethodSchema',
+          'url: definedNonNullAnySchema',
+        ],
+        scalars: undefined,
+      },
     ],
-  ])('%s', async (_, textSchema, wantContains) => {
+  ])('%s', async (_, { textSchema, wantContains, scalars }) => {
     const schema = buildSchema(textSchema);
-    const result = await plugin(schema, [], { schema: 'zod' }, {});
+    const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
     expect(result.prepend).toContain("import { z } from 'zod'");
 
     for (const wantContain of wantContains) {
@@ -232,6 +258,9 @@ describe('zod', () => {
       {
         schema: 'zod',
         notAllowEmptyString: true,
+        scalars: {
+          ID: 'string',
+        },
       },
       {}
     );
@@ -482,39 +511,6 @@ describe('zod', () => {
   });
 
   describe('with withObjectType', () => {
-    const schema = buildSchema(/* GraphQL */ `
-      input ScalarsInput {
-        date: Date!
-        email: Email
-      }
-      scalar Date
-      scalar Email
-      input UserCreateInput {
-        name: String!
-        email: Email!
-      }
-      type User {
-        id: ID!
-        name: String
-        age: Int
-        email: Email
-        isMember: Boolean
-        createdAt: Date!
-      }
-
-      type Mutation {
-        _empty: String
-      }
-
-      type Query {
-        _empty: String
-      }
-
-      type Subscription {
-        _empty: String
-      }
-    `);
-
     it('not generate if withObjectType false', async () => {
       const schema = buildSchema(/* GraphQL */ `
         type User {
@@ -583,6 +579,10 @@ describe('zod', () => {
           date: Date!
           email: Email!
         }
+        input UsernameUpdateInput {
+          updateInputId: ID!
+          updateName: String!
+        }
         type User {
           id: ID!
           name: String
@@ -614,6 +614,12 @@ describe('zod', () => {
             Date: 'z.date()',
             Email: 'z.string().email()',
           },
+          scalars: {
+            ID: {
+              input: 'number',
+              output: 'string',
+            },
+          },
         },
         {}
       );
@@ -623,6 +629,10 @@ describe('zod', () => {
         'name: z.string(),',
         'date: z.date(),',
         'email: z.string().email()',
+        // Username Update Input
+        'export function UsernameUpdateInputSchema(): z.ZodObject<Properties<UsernameUpdateInput>> {',
+        'updateInputId: z.number(),',
+        'updateName: z.string()',
         // User
         'export function UserSchema(): z.ZodObject<Properties<User>> {',
         "__typename: z.literal('User').optional()",

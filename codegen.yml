@@ -4,6 +4,9 @@ generates:
   example/types.ts:
     plugins:
       - typescript
+    config:
+      scalars:
+        ID: string
   example/yup/schemas.ts:
     plugins:
       - ./dist/main/index.js:
@@ -38,6 +41,8 @@ generates:
               max: ['max', '$1 + 1']
               exclusiveMin: min
               exclusiveMax: max
+          scalars:
+            ID: string
   example/zod/schemas.ts:
     plugins:
       - ./dist/main/index.js:
@@ -59,6 +64,8 @@ generates:
               startsWith: ['regex', '/^$1/', 'message']
               format:
                 email: email
+          scalars:
+            ID: string
   example/myzod/schemas.ts:
     plugins:
       - ./dist/main/index.js:
@@ -72,3 +79,5 @@ generates:
               startsWith: ['pattern', '/^$1/']
               format:
                 email: email
+          scalars:
+            ID: string

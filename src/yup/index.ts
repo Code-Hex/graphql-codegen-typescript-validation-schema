@@ -12,15 +12,13 @@ import {
   UnionTypeDefinitionNode,
 } from 'graphql';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
-import { TsVisitor } from '@graphql-codegen/typescript';
+import { Visitor } from '../visitor';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { SchemaVisitor } from '../types';
 
 const importYup = `import * as yup from 'yup'`;
 
 export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
-  const tsVisitor = new TsVisitor(schema, config);
-
   const importTypes: string[] = [];
 
   return {
@@ -48,12 +46,13 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     },
     InputObjectTypeDefinition: {
       leave: (node: InputObjectTypeDefinitionNode) => {
-        const name = tsVisitor.convertName(node.name.value);
+        const visitor = new Visitor('input', schema, config);
+        const name = visitor.convertName(node.name.value);
         importTypes.push(name);
 
         const shape = node.fields
           ?.map(field => {
-            const fieldSchema = generateFieldYupSchema(config, tsVisitor, schema, field, 2);
+            const fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
             return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
           })
           .join(',\n');
@@ -67,12 +66,13 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     },
     ObjectTypeDefinition: {
       leave: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
-        const name = tsVisitor.convertName(node.name.value);
+        const visitor = new Visitor('output', schema, config);
+        const name = visitor.convertName(node.name.value);
         importTypes.push(name);
 
         const shape = node.fields
           ?.map(field => {
-            const fieldSchema = generateFieldYupSchema(config, tsVisitor, schema, field, 2);
+            const fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
             return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
           })
           .join(',\n');
@@ -93,7 +93,8 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     },
     EnumTypeDefinition: {
       leave: (node: EnumTypeDefinitionNode) => {
-        const enumname = tsVisitor.convertName(node.name.value);
+        const visitor = new Visitor('both', schema, config);
+        const enumname = visitor.convertName(node.name.value);
         importTypes.push(enumname);
 
         if (config.enumsAsTypes) {
@@ -109,7 +110,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         const values = node.values
           ?.map(
             enumOption =>
-              `${enumname}.${tsVisitor.convertName(enumOption.name, {
+              `${enumname}.${visitor.convertName(enumOption.name, {
                 useTypesPrefix: false,
                 transformUnderscore: true,
               })}`
@@ -125,14 +126,15 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
     UnionTypeDefinition: {
       leave: (node: UnionTypeDefinitionNode) => {
         if (!node.types || !config.withObjectType) return;
+        const visitor = new Visitor('output', schema, config);
 
-        const unionName = tsVisitor.convertName(node.name.value);
+        const unionName = visitor.convertName(node.name.value);
         importTypes.push(unionName);
 
         const unionElements = node.types
           ?.map(t => {
-            const element = tsVisitor.convertName(t.name.value);
-            const typ = schema.getType(t.name.value);
+            const element = visitor.convertName(t.name.value);
+            const typ = visitor.getType(t.name.value);
             if (typ?.astNode?.kind === 'EnumTypeDefinition') {
               return `${element}Schema`;
             }
@@ -172,12 +174,11 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
 
 const generateFieldYupSchema = (
   config: ValidationSchemaPluginConfig,
-  tsVisitor: TsVisitor,
-  schema: GraphQLSchema,
+  visitor: Visitor,
   field: InputValueDefinitionNode | FieldDefinitionNode,
   indentCount: number
 ): string => {
-  let gen = generateFieldTypeYupSchema(config, tsVisitor, schema, field.type);
+  let gen = generateFieldTypeYupSchema(config, visitor, field.type);
   if (config.directives && field.directives) {
     const formatted = formatDirectiveConfig(config.directives);
     gen += buildApi(formatted, field.directives);
@@ -187,32 +188,31 @@ const generateFieldYupSchema = (
 
 const generateFieldTypeYupSchema = (
   config: ValidationSchemaPluginConfig,
-  tsVisitor: TsVisitor,
-  schema: GraphQLSchema,
+  visitor: Visitor,
   type: TypeNode,
   parentType?: TypeNode
 ): string => {
   if (isListType(type)) {
-    const gen = generateFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
+    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
     if (!isNonNullType(parentType)) {
       return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
     }
     return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeYupSchema(config, tsVisitor, schema, type.type, type);
+    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
-    const gen = generateNameNodeYupSchema(config, tsVisitor, schema, type.name);
+    const gen = generateNameNodeYupSchema(config, visitor, type.name);
     if (isNonNullType(parentType)) {
       if (config.notAllowEmptyString === true) {
-        const tsType = tsVisitor.scalars[type.name.value];
+        const tsType = visitor.getScalarType(type.name.value);
         if (tsType === 'string') return `${gen}.required()`;
       }
       return `${gen}.nonNullable()`;
     }
-    const typ = schema.getType(type.name.value);
+    const typ = visitor.getType(type.name.value);
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
       return `${gen}`;
     }
@@ -222,35 +222,30 @@ const generateFieldTypeYupSchema = (
   return '';
 };
 
-const generateNameNodeYupSchema = (
-  config: ValidationSchemaPluginConfig,
-  tsVisitor: TsVisitor,
-  schema: GraphQLSchema,
-  node: NameNode
-): string => {
-  const typ = schema.getType(node.value);
+const generateNameNodeYupSchema = (config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string => {
+  const converter = visitor.getNameNodeConverter(node);
 
-  if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
-    const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema()`;
+  if (converter?.targetKind === 'InputObjectTypeDefinition') {
+    const name = converter.convertName();
+    return `${name}Schema()`;
   }
 
-  if (typ?.astNode?.kind === 'ObjectTypeDefinition') {
-    const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema()`;
+  if (converter?.targetKind === 'ObjectTypeDefinition') {
+    const name = converter.convertName();
+    return `${name}Schema()`;
   }
 
-  if (typ?.astNode?.kind === 'EnumTypeDefinition') {
-    const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema`;
+  if (converter?.targetKind === 'EnumTypeDefinition') {
+    const name = converter.convertName();
+    return `${name}Schema`;
   }
 
-  if (typ?.astNode?.kind === 'UnionTypeDefinition') {
-    const enumName = tsVisitor.convertName(typ.astNode.name.value);
-    return `${enumName}Schema()`;
+  if (converter?.targetKind === 'UnionTypeDefinition') {
+    const name = converter.convertName();
+    return `${name}Schema()`;
   }
 
-  const primitive = yup4Scalar(config, tsVisitor, node.value);
+  const primitive = yup4Scalar(config, visitor, node.value);
   return primitive;
 };
 
@@ -262,11 +257,11 @@ const maybeLazy = (type: TypeNode, schema: string): string => {
   return schema;
 };
 
-const yup4Scalar = (config: ValidationSchemaPluginConfig, tsVisitor: TsVisitor, scalarName: string): string => {
+const yup4Scalar = (config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string => {
   if (config.scalarSchemas?.[scalarName]) {
     return `${config.scalarSchemas[scalarName]}.defined()`;
   }
-  const tsType = tsVisitor.scalars[scalarName];
+  const tsType = visitor.getScalarType(scalarName);
   switch (tsType) {
     case 'string':
       return `yup.string().defined()`;
