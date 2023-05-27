@@ -26,6 +26,10 @@ generates:
       # You can put the config for typescript plugin here
       # see: https://www.graphql-code-generator.com/plugins/typescript
       strictScalars: true
+      # Overrides built-in ID scalar to both input and output types as string.
+      # see: https://the-guild.dev/graphql/codegen/plugins/typescript/typescript#scalars
+      scalars:
+        ID: string
       # You can also write the config for this plugin together
       schema: yup # or zod
 ```
