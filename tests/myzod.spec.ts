@@ -733,6 +733,43 @@ describe('myzod', () => {
         expect(result.content).toContain(wantContain);
       }
     });
+
+    it('generate union types with single element, export as const', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+
+        type Geometry {
+          shape: Shape
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withObjectType: true,
+          validationSchemaExportType: 'const',
+        },
+        {}
+      );
+
+      const wantContains = [
+        'export const GeometrySchema: myzod.Type<Geometry> = myzod.object({',
+        "__typename: myzod.literal('Geometry').optional(),",
+        'shape: ShapeSchema.optional().nullable()',
+        '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
   });
 
   it('properly generates custom directive values', async () => {

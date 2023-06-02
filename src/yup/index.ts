@@ -1,20 +1,20 @@
-import { isInput, isNonNullType, isListType, isNamedType, ObjectTypeDefinitionBuilder } from './../graphql';
-import { ValidationSchemaPluginConfig } from '../config';
+import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import {
-  InputValueDefinitionNode,
-  NameNode,
-  TypeNode,
+  EnumTypeDefinitionNode,
+  FieldDefinitionNode,
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
-  EnumTypeDefinitionNode,
+  InputValueDefinitionNode,
+  NameNode,
   ObjectTypeDefinitionNode,
-  FieldDefinitionNode,
+  TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
-import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
-import { Visitor } from '../visitor';
+import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { SchemaVisitor } from '../types';
+import { Visitor } from '../visitor';
+import { ObjectTypeDefinitionBuilder, isInput, isListType, isNamedType, isNonNullType } from './../graphql';
 
 const importYup = `import * as yup from 'yup'`;
 
@@ -178,16 +178,32 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
             if (typ?.astNode?.kind === 'EnumTypeDefinition') {
               return `${element}Schema`;
             }
-            return `${element}Schema()`;
+            switch (config.validationSchemaExportType) {
+              case 'const':
+                return `${element}Schema`;
+              case 'function':
+              default:
+                return `${element}Schema()`;
+            }
           })
           .join(', ');
         const union = indent(`return union<${unionName}>(${unionElements})`);
 
-        return new DeclarationBlock({})
-          .export()
-          .asKind('function')
-          .withName(`${unionName}Schema(): yup.MixedSchema<${unionName}>`)
-          .withBlock(union).string;
+        switch (config.validationSchemaExportType) {
+          case 'const':
+            return new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${unionName}Schema: yup.MixedSchema<${unionName}>`)
+              .withBlock(union).string;
+          case 'function':
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${unionName}Schema(): yup.MixedSchema<${unionName}>`)
+              .withBlock(union).string;
+        }
       },
     },
     // ScalarTypeDefinition: (node) => {

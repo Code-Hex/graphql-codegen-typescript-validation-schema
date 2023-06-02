@@ -1,20 +1,20 @@
-import { isInput, isNonNullType, isListType, isNamedType, ObjectTypeDefinitionBuilder } from './../graphql';
-import { ValidationSchemaPluginConfig } from '../config';
+import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import {
-  InputValueDefinitionNode,
-  NameNode,
-  TypeNode,
-  GraphQLSchema,
-  InputObjectTypeDefinitionNode,
-  ObjectTypeDefinitionNode,
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
+  GraphQLSchema,
+  InputObjectTypeDefinitionNode,
+  InputValueDefinitionNode,
+  NameNode,
+  ObjectTypeDefinitionNode,
+  TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
-import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
-import { Visitor } from '../visitor';
+import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { SchemaVisitor } from '../types';
+import { Visitor } from '../visitor';
+import { ObjectTypeDefinitionBuilder, isInput, isListType, isNamedType, isNonNullType } from './../graphql';
 
 const importZod = `import * as myzod from 'myzod'`;
 const anySchema = `definedNonNullAnySchema`;
@@ -144,7 +144,13 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
             if (typ?.astNode?.kind === 'EnumTypeDefinition') {
               return `${element}Schema`;
             }
-            return `${element}Schema()`;
+            switch (config.validationSchemaExportType) {
+              case 'const':
+                return `${element}Schema`;
+              case 'function':
+              default:
+                return `${element}Schema()`;
+            }
           })
           .join(', ');
         const unionElementsCount = node.types?.length ?? 0;
@@ -152,8 +158,18 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
         const union =
           unionElementsCount > 1 ? indent(`return myzod.union([${unionElements}])`) : indent(`return ${unionElements}`);
 
-        return new DeclarationBlock({}).export().asKind('function').withName(`${unionName}Schema()`).withBlock(union)
-          .string;
+        switch (config.validationSchemaExportType) {
+          case 'const':
+            return new DeclarationBlock({}).export().asKind('const').withName(`${unionName}Schema`).withBlock(union)
+              .string;
+          case 'function':
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${unionName}Schema()`)
+              .withBlock(union).string;
+        }
       },
     },
   };

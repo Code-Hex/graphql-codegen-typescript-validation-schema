@@ -1,6 +1,5 @@
 import { buildSchema } from 'graphql';
 import { plugin } from '../src/index';
-import { ScalarsMap } from '@graphql-codegen/visitor-plugin-common';
 
 describe('zod', () => {
   test.each([
@@ -797,6 +796,42 @@ describe('zod', () => {
         'export function AnyTypeSchema() {',
         'return z.union([PageTypeSchema, MethodTypeSchema])',
         '}',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('generate union types with single element, export as const', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+
+        type Geometry {
+          shape: Shape
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withObjectType: true,
+          validationSchemaExportType: 'const',
+        },
+        {}
+      );
+
+      const wantContains = [
+        'export const GeometrySchema: z.ZodObject<Properties<Geometry>> = z.object({',
+        "__typename: z.literal('Geometry').optional(),",
+        'shape: ShapeSchema.nullish()',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
