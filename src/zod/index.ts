@@ -21,6 +21,7 @@ const anySchema = `definedNonNullAnySchema`;
 
 export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
   const importTypes: string[] = [];
+  const enumDeclarations: string[] = [];
 
   return {
     buildImports: (): string[] => {
@@ -53,6 +54,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           .asKind('const')
           .withName(`${anySchema}`)
           .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
+        ...enumDeclarations,
       ].join('\n'),
     InputObjectTypeDefinition: {
       leave: (node: InputObjectTypeDefinitionNode) => {
@@ -62,11 +64,22 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
 
         const shape = node.fields?.map(field => generateFieldZodSchema(config, visitor, field, 2)).join(',\n');
 
-        return new DeclarationBlock({})
-          .export()
-          .asKind('function')
-          .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
-          .withBlock([indent(`return z.object<Properties<${name}>>({`), shape, indent('})')].join('\n')).string;
+        switch (config.validationSchemaExportType) {
+          case 'const':
+            return new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema: z.ZodObject<Properties<${name}>>`)
+              .withContent(['z.object({', shape, '})'].join('\n')).string;
+
+          case 'function':
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
+              .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string;
+        }
       },
     },
     ObjectTypeDefinition: {
@@ -77,18 +90,33 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
 
         const shape = node.fields?.map(field => generateFieldZodSchema(config, visitor, field, 2)).join(',\n');
 
-        return new DeclarationBlock({})
-          .export()
-          .asKind('function')
-          .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
-          .withBlock(
-            [
-              indent(`return z.object<Properties<${name}>>({`),
-              indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
-              shape,
-              indent('})'),
-            ].join('\n')
-          ).string;
+        switch (config.validationSchemaExportType) {
+          case 'const':
+            return new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema: z.ZodObject<Properties<${name}>>`)
+              .withContent(
+                [`z.object({`, indent(`__typename: z.literal('${node.name.value}').optional(),`, 2), shape, '})'].join(
+                  '\n'
+                )
+              ).string;
+
+          case 'function':
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
+              .withBlock(
+                [
+                  indent(`return z.object({`),
+                  indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
+                  shape,
+                  indent('})'),
+                ].join('\n')
+              ).string;
+        }
       }),
     },
     EnumTypeDefinition: {
@@ -97,19 +125,21 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         const enumname = visitor.convertName(node.name.value);
         importTypes.push(enumname);
 
-        if (config.enumsAsTypes) {
-          return new DeclarationBlock({})
-            .export()
-            .asKind('const')
-            .withName(`${enumname}Schema`)
-            .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`).string;
-        }
-
-        return new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`${enumname}Schema`)
-          .withContent(`z.nativeEnum(${enumname})`).string;
+        // hoist enum declarations
+        enumDeclarations.push(
+          config.enumsAsTypes
+            ? new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${enumname}Schema`)
+                .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`)
+                .string
+            : new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${enumname}Schema`)
+                .withContent(`z.nativeEnum(${enumname})`).string
+        );
       },
     },
     UnionTypeDefinition: {
@@ -206,27 +236,23 @@ const applyDirectives = (
 const generateNameNodeZodSchema = (config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string => {
   const converter = visitor.getNameNodeConverter(node);
 
-  if (converter?.targetKind === 'InputObjectTypeDefinition') {
-    const name = converter.convertName();
-    return `${name}Schema()`;
+  switch (converter?.targetKind) {
+    case 'InputObjectTypeDefinition':
+    case 'ObjectTypeDefinition':
+    case 'UnionTypeDefinition':
+      // using switch-case rather than if-else to allow for future expansion
+      switch (config.validationSchemaExportType) {
+        case 'const':
+          return `${converter.convertName()}Schema`;
+        case 'function':
+        default:
+          return `${converter.convertName()}Schema()`;
+      }
+    case 'EnumTypeDefinition':
+      return `${converter.convertName()}Schema`;
+    default:
+      return zod4Scalar(config, visitor, node.value);
   }
-
-  if (converter?.targetKind === 'ObjectTypeDefinition') {
-    const name = converter.convertName();
-    return `${name}Schema()`;
-  }
-
-  if (converter?.targetKind === 'EnumTypeDefinition') {
-    const name = converter.convertName();
-    return `${name}Schema`;
-  }
-
-  if (converter?.targetKind === 'UnionTypeDefinition') {
-    const name = converter.convertName();
-    return `${name}Schema()`;
-  }
-
-  return zod4Scalar(config, visitor, node.value);
 };
 
 const maybeLazy = (type: TypeNode, schema: string): string => {

@@ -837,4 +837,88 @@ describe('zod', () => {
       expect(result.content).toContain(wantContain);
     }
   });
+
+  it('exports as const instead of func', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        validationSchemaExportType: 'const',
+      },
+      {}
+    );
+    expect(result.content).toContain('export const SaySchema: z.ZodObject<Properties<Say>> = z.object({');
+  });
+
+  it('generate both input & type, export as const', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      scalar Date
+      scalar Email
+      input UserCreateInput {
+        name: String!
+        date: Date!
+        email: Email!
+      }
+      type User {
+        id: ID!
+        name: String
+        age: Int
+        email: Email
+        isMember: Boolean
+        createdAt: Date!
+      }
+      type Mutation {
+        _empty: String
+      }
+      type Query {
+        _empty: String
+      }
+      type Subscription {
+        _empty: String
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        withObjectType: true,
+        scalarSchemas: {
+          Date: 'z.date()',
+          Email: 'z.string().email()',
+        },
+        validationSchemaExportType: 'const',
+      },
+      {}
+    );
+    const wantContains = [
+      // User Create Input
+      'export const UserCreateInputSchema: z.ZodObject<Properties<UserCreateInput>> = z.object({',
+      'name: z.string(),',
+      'date: z.date(),',
+      'email: z.string().email()',
+      // User
+      'export const UserSchema: z.ZodObject<Properties<User>> = z.object({',
+      "__typename: z.literal('User').optional()",
+      'id: z.string(),',
+      'name: z.string().nullish(),',
+      'age: z.number().nullish(),',
+      'isMember: z.boolean().nullish(),',
+      'email: z.string().email().nullish(),',
+      'createdAt: z.date()',
+    ];
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+
+    for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+      expect(result.content).not.toContain(wantNotContain);
+    }
+  });
 });
