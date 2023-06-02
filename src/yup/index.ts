@@ -20,6 +20,7 @@ const importYup = `import * as yup from 'yup'`;
 
 export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
   const importTypes: string[] = [];
+  const enumDeclarations: string[] = [];
 
   return {
     buildImports: (): string[] => {
@@ -32,8 +33,10 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
       return [importYup];
     },
     initialEmit: (): string => {
-      if (!config.withObjectType) return '';
+      if (!config.withObjectType) return '\n' + enumDeclarations.join('\n');
       return (
+        '\n' +
+        enumDeclarations.join('\n') +
         '\n' +
         new DeclarationBlock({})
           .asKind('function')
@@ -60,11 +63,22 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           })
           .join(',\n');
 
-        return new DeclarationBlock({})
-          .export()
-          .asKind('function')
-          .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
-          .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
+        switch (config.validationSchemaExportType) {
+          case 'const':
+            return new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
+              .withContent(['yup.object({', shape, '})'].join('\n')).string;
+
+          case 'function':
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
+              .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
+        }
       },
     },
     ObjectTypeDefinition: {
@@ -80,18 +94,36 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           })
           .join(',\n');
 
-        return new DeclarationBlock({})
-          .export()
-          .asKind('function')
-          .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
-          .withBlock(
-            [
-              indent(`return yup.object({`),
-              indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
-              shape,
-              indent('})'),
-            ].join('\n')
-          ).string;
+        switch (config.validationSchemaExportType) {
+          case 'const':
+            return new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
+              .withContent(
+                [
+                  `yup.object({`,
+                  indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
+                  shape,
+                  '})',
+                ].join('\n')
+              ).string;
+
+          case 'function':
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
+              .withBlock(
+                [
+                  indent(`return yup.object({`),
+                  indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
+                  shape,
+                  indent('})'),
+                ].join('\n')
+              ).string;
+        }
       }),
     },
     EnumTypeDefinition: {
@@ -100,30 +132,35 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         const enumname = visitor.convertName(node.name.value);
         importTypes.push(enumname);
 
+        // hoise enum declarations
         if (config.enumsAsTypes) {
           const enums = node.values?.map(enumOption => `'${enumOption.name.value}'`);
 
-          return new DeclarationBlock({})
-            .export()
-            .asKind('const')
-            .withName(`${enumname}Schema`)
-            .withContent(`yup.string().oneOf([${enums?.join(', ')}]).defined()`).string;
+          enumDeclarations.push(
+            new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${enumname}Schema`)
+              .withContent(`yup.string().oneOf([${enums?.join(', ')}]).defined()`).string
+          );
+        } else {
+          const values = node.values
+            ?.map(
+              enumOption =>
+                `${enumname}.${visitor.convertName(enumOption.name, {
+                  useTypesPrefix: false,
+                  transformUnderscore: true,
+                })}`
+            )
+            .join(', ');
+          enumDeclarations.push(
+            new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${enumname}Schema`)
+              .withContent(`yup.string<${enumname}>().oneOf([${values}]).defined()`).string
+          );
         }
-
-        const values = node.values
-          ?.map(
-            enumOption =>
-              `${enumname}.${visitor.convertName(enumOption.name, {
-                useTypesPrefix: false,
-                transformUnderscore: true,
-              })}`
-          )
-          .join(', ');
-        return new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`${enumname}Schema`)
-          .withContent(`yup.string<${enumname}>().oneOf([${values}]).defined()`).string;
       },
     },
     UnionTypeDefinition: {
@@ -228,28 +265,23 @@ const generateFieldTypeYupSchema = (
 const generateNameNodeYupSchema = (config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string => {
   const converter = visitor.getNameNodeConverter(node);
 
-  if (converter?.targetKind === 'InputObjectTypeDefinition') {
-    const name = converter.convertName();
-    return `${name}Schema()`;
+  switch (converter?.targetKind) {
+    case 'InputObjectTypeDefinition':
+    case 'ObjectTypeDefinition':
+    case 'UnionTypeDefinition':
+      // using switch-case rather than if-else to allow for future expansion
+      switch (config.validationSchemaExportType) {
+        case 'const':
+          return `${converter.convertName()}Schema`;
+        case 'function':
+        default:
+          return `${converter.convertName()}Schema()`;
+      }
+    case 'EnumTypeDefinition':
+      return `${converter.convertName()}Schema`;
+    default:
+      return yup4Scalar(config, visitor, node.value);
   }
-
-  if (converter?.targetKind === 'ObjectTypeDefinition') {
-    const name = converter.convertName();
-    return `${name}Schema()`;
-  }
-
-  if (converter?.targetKind === 'EnumTypeDefinition') {
-    const name = converter.convertName();
-    return `${name}Schema`;
-  }
-
-  if (converter?.targetKind === 'UnionTypeDefinition') {
-    const name = converter.convertName();
-    return `${name}Schema()`;
-  }
-
-  const primitive = yup4Scalar(config, visitor, node.value);
-  return primitive;
 };
 
 const maybeLazy = (type: TypeNode, schema: string): string => {
