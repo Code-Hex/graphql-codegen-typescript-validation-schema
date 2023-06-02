@@ -1,6 +1,7 @@
 import { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 
 export type ValidationSchema = 'yup' | 'zod' | 'myzod';
+export type ValidationSchemaExportType = 'function' | 'const';
 
 export interface DirectiveConfig {
   [directive: string]: {
@@ -234,4 +235,20 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   directives?: DirectiveConfig;
+  /**
+   * @description Specify validation schema export type
+   * @default function
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - typescript
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       validationSchemaExportType: const
+   * ```
+   */
+  validationSchemaExportType?: ValidationSchemaExportType;
 }
