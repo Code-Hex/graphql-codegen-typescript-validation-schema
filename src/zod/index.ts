@@ -165,12 +165,11 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           .join(', ');
         const unionElementsCount = node.types.length ?? 0;
 
-        const union =
-          unionElementsCount > 1 ? indent(`return z.union([${unionElements}])`) : indent(`return ${unionElements}`);
+        const union = unionElementsCount > 1 ? `z.union([${unionElements}])` : unionElements;
 
         switch (config.validationSchemaExportType) {
           case 'const':
-            return new DeclarationBlock({}).export().asKind('const').withName(`${unionName}Schema`).withBlock(union)
+            return new DeclarationBlock({}).export().asKind('const').withName(`${unionName}Schema`).withContent(union)
               .string;
           case 'function':
           default:
@@ -178,7 +177,7 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
               .export()
               .asKind('function')
               .withName(`${unionName}Schema()`)
-              .withBlock(union).string;
+              .withBlock(indent(`return ${union}`)).string;
         }
       },
     },

@@ -187,7 +187,6 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
             }
           })
           .join(', ');
-        const union = indent(`return union<${unionName}>(${unionElements})`);
 
         switch (config.validationSchemaExportType) {
           case 'const':
@@ -195,14 +194,14 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
               .export()
               .asKind('const')
               .withName(`${unionName}Schema: yup.MixedSchema<${unionName}>`)
-              .withBlock(union).string;
+              .withContent(`union<${unionName}>(${unionElements})`).string;
           case 'function':
           default:
             return new DeclarationBlock({})
               .export()
               .asKind('function')
               .withName(`${unionName}Schema(): yup.MixedSchema<${unionName}>`)
-              .withBlock(union).string;
+              .withBlock(indent(`return union<${unionName}>(${unionElements})`)).string;
         }
       },
     },
