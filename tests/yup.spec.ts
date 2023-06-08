@@ -647,6 +647,43 @@ describe('yup', () => {
         expect(result.content).toContain(wantContain);
       }
     });
+
+    it('generate union types with single element, export as const', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+
+        type Geometry {
+          shape: Shape
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+          withObjectType: true,
+          validationSchemaExportType: 'const',
+        },
+        {}
+      );
+
+      const wantContains = [
+        'export const GeometrySchema: yup.ObjectSchema<Geometry> = yup.object({',
+        "__typename: yup.string<'Geometry'>().optional(),",
+        'shape: ShapeSchema.nullable().optional()',
+        '})',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
   });
 
   it('properly generates custom directive values', async () => {
@@ -680,6 +717,90 @@ describe('yup', () => {
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
+    }
+  });
+
+  it('exports as const instead of func', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'yup',
+        validationSchemaExportType: 'const',
+      },
+      {}
+    );
+    expect(result.content).toContain('export const SaySchema: yup.ObjectSchema<Say> = yup.object({');
+  });
+
+  it('generate both input & type, export as const', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      scalar Date
+      scalar Email
+      input UserCreateInput {
+        name: String!
+        date: Date!
+        email: Email!
+      }
+      type User {
+        id: ID!
+        name: String
+        age: Int
+        email: Email
+        isMember: Boolean
+        createdAt: Date!
+      }
+      type Mutation {
+        _empty: String
+      }
+      type Query {
+        _empty: String
+      }
+      type Subscription {
+        _empty: String
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'yup',
+        withObjectType: true,
+        scalarSchemas: {
+          Date: 'yup.date()',
+          Email: 'yup.string().email()',
+        },
+        validationSchemaExportType: 'const',
+      },
+      {}
+    );
+    const wantContains = [
+      // User Create Input
+      'export const UserCreateInputSchema: yup.ObjectSchema<UserCreateInput> = yup.object({',
+      'name: yup.string().defined().nonNullable(),',
+      'date: yup.date().defined().nonNullable(),',
+      'email: yup.string().email().defined().nonNullable()',
+      // User
+      'export const UserSchema: yup.ObjectSchema<User> = yup.object({',
+      "__typename: yup.string<'User'>().optional(),",
+      'id: yup.string().defined().nonNullable(),',
+      'name: yup.string().defined().nullable().optional(),',
+      'age: yup.number().defined().nullable().optional(),',
+      'email: yup.string().email().defined().nullable().optional(),',
+      'isMember: yup.boolean().defined().nullable().optional(),',
+      'createdAt: yup.date().defined().nonNullable()',
+    ];
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+
+    for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+      expect(result.content).not.toContain(wantNotContain);
     }
   });
 });

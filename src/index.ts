@@ -6,13 +6,14 @@ import { ValidationSchemaPluginConfig } from './config';
 import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers';
 import { GraphQLSchema, visit } from 'graphql';
 import { SchemaVisitor } from './types';
+import { topologicalSortAST } from './graphql';
 
 export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,
   _documents: Types.DocumentFile[],
   config: ValidationSchemaPluginConfig
 ): Types.ComplexPluginOutput => {
-  const { schema: _schema, ast } = transformSchemaAST(schema, config);
+  const { schema: _schema, ast } = _transformSchemaAST(schema, config);
   const { buildImports, initialEmit, ...visitor } = schemaVisitor(_schema, config);
 
   const result = visit(ast, visitor);
@@ -34,4 +35,20 @@ const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConf
     return MyZodSchemaVisitor(schema, config);
   }
   return YupSchemaVisitor(schema, config);
+};
+
+const _transformSchemaAST = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
+  const { schema: _schema, ast } = transformSchemaAST(schema, config);
+  // This affects the performance of code generation, so it is
+  // enabled only when this option is selected.
+  if (config.validationSchemaExportType === 'const') {
+    return {
+      schema: _schema,
+      ast: topologicalSortAST(_schema, ast),
+    };
+  }
+  return {
+    schema: _schema,
+    ast,
+  };
 };
