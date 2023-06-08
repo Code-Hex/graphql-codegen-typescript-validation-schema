@@ -1,6 +1,7 @@
-import { ValidationSchemaPluginConfig } from './config';
 import { TsVisitor } from '@graphql-codegen/typescript';
-import { NameNode, GraphQLSchema } from 'graphql';
+import { GraphQLSchema, NameNode } from 'graphql';
+
+import { ValidationSchemaPluginConfig } from './config';
 
 export class Visitor extends TsVisitor {
   constructor(

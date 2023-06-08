@@ -1,17 +1,17 @@
-import {
-  ListTypeNode,
-  NonNullTypeNode,
-  NamedTypeNode,
-  TypeNode,
-  ObjectTypeDefinitionNode,
-  visit,
-  DocumentNode,
-  DefinitionNode,
-  NameNode,
-  ASTNode,
-  GraphQLSchema,
-} from 'graphql';
 import { Graph } from 'graphlib';
+import {
+  ASTNode,
+  DefinitionNode,
+  DocumentNode,
+  GraphQLSchema,
+  ListTypeNode,
+  NamedTypeNode,
+  NameNode,
+  NonNullTypeNode,
+  ObjectTypeDefinitionNode,
+  TypeNode,
+  visit,
+} from 'graphql';
 
 export const isListType = (typ?: TypeNode): typ is ListTypeNode => typ?.kind === 'ListType';
 export const isNonNullType = (typ?: TypeNode): typ is NonNullTypeNode => typ?.kind === 'NonNullType';

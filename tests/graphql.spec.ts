@@ -1,7 +1,8 @@
-import { Kind, ObjectTypeDefinitionNode, buildSchema, parse, print } from 'graphql';
-import { ObjectTypeDefinitionBuilder, topsort, topologicalSortAST } from '../src/graphql';
 import { Graph } from 'graphlib';
+import { buildSchema, Kind, ObjectTypeDefinitionNode, parse, print } from 'graphql';
 import dedent from 'ts-dedent';
+
+import { ObjectTypeDefinitionBuilder, topologicalSortAST, topsort } from '../src/graphql';
 
 describe('graphql', () => {
   describe('ObjectTypeDefinitionBuilder', () => {

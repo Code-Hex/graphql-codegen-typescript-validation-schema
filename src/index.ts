@@ -1,12 +1,13 @@
-import { ZodSchemaVisitor } from './zod/index';
-import { MyZodSchemaVisitor } from './myzod/index';
-import { transformSchemaAST } from '@graphql-codegen/schema-ast';
-import { YupSchemaVisitor } from './yup/index';
-import { ValidationSchemaPluginConfig } from './config';
 import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers';
+import { transformSchemaAST } from '@graphql-codegen/schema-ast';
 import { GraphQLSchema, visit } from 'graphql';
-import { SchemaVisitor } from './types';
+
+import { ValidationSchemaPluginConfig } from './config';
 import { topologicalSortAST } from './graphql';
+import { MyZodSchemaVisitor } from './myzod/index';
+import { SchemaVisitor } from './types';
+import { YupSchemaVisitor } from './yup/index';
+import { ZodSchemaVisitor } from './zod/index';
 
 export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,
