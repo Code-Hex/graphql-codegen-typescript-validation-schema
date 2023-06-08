@@ -39,6 +39,8 @@ const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConf
 
 const _transformSchemaAST = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
   const { schema: _schema, ast } = transformSchemaAST(schema, config);
+  // This affects the performance of code generation, so it is
+  // enabled only when this option is selected.
   if (config.validationSchemaExportType === 'const') {
     return {
       schema: _schema,
