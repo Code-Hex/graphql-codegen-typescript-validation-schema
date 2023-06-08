@@ -99,7 +99,12 @@ export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): Do
 
   // Create a map of definitions for quick access, using the definition's name as the key.
   const definitionsMap: Map<string, DefinitionNode> = new Map();
-  ast.definitions.forEach(definition => {
+
+  // SCHEMA_DEFINITION does not have name.
+  // https://spec.graphql.org/October2021/#sec-Schema
+  const astDefinitions = ast.definitions.filter(def => def.kind !== 'SchemaDefinition');
+
+  astDefinitions.forEach(definition => {
     if (hasNameField(definition) && definition.name) {
       definitionsMap.set(definition.name.value, definition);
     }
@@ -122,17 +127,17 @@ export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): Do
   // Add them to notSortedDefinitions.
   definitionsMap.forEach(definition => notSortedDefinitions.push(definition));
 
-  const definitions = [...sortedDefinitions, ...notSortedDefinitions];
+  const newDefinitions = [...sortedDefinitions, ...notSortedDefinitions];
 
-  if (definitions.length !== ast.definitions.length) {
+  if (newDefinitions.length !== astDefinitions.length) {
     throw new Error(
-      `unexpected definition length after sorted: want ${ast.definitions.length} but got ${definitions.length}`
+      `unexpected definition length after sorted: want ${astDefinitions.length} but got ${newDefinitions.length}`
     );
   }
 
   return {
     ...ast,
-    definitions: definitions as ReadonlyArray<DefinitionNode>,
+    definitions: newDefinitions as ReadonlyArray<DefinitionNode>,
   };
 };
 
