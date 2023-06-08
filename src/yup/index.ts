@@ -15,7 +15,7 @@ import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { SchemaVisitor } from '../types';
 import { Visitor } from '../visitor';
-import { isInput, isListType, isNamedType, isNonNullType,ObjectTypeDefinitionBuilder } from './../graphql';
+import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
 
 const importYup = `import * as yup from 'yup'`;
 

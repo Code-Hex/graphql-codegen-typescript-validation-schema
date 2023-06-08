@@ -1,5 +1,5 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
-import { GraphQLSchema,NameNode } from 'graphql';
+import { GraphQLSchema, NameNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
 

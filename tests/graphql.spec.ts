@@ -2,7 +2,7 @@ import { Graph } from 'graphlib';
 import { buildSchema, Kind, ObjectTypeDefinitionNode, parse, print } from 'graphql';
 import dedent from 'ts-dedent';
 
-import { ObjectTypeDefinitionBuilder, topologicalSortAST,topsort } from '../src/graphql';
+import { ObjectTypeDefinitionBuilder, topologicalSortAST, topsort } from '../src/graphql';
 
 describe('graphql', () => {
   describe('ObjectTypeDefinitionBuilder', () => {
