@@ -83,13 +83,13 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         return new DeclarationBlock({})
           .export()
           .asKind('function')
-          .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
+          .withName(`${name}Schema(): yup.Schema`)
           .withBlock(
             [
               indent(`return yup.object({`),
               indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
               shape,
-              indent('})'),
+              indent(`}) satisfies yup.ObjectSchema<${name}>`),
             ].join('\n')
           ).string;
       }),

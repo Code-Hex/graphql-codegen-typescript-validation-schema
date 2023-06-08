@@ -15,6 +15,16 @@ type Guest {
 
 union UserKind = Admin | Guest
 
+type InnerType {
+  testScalar: MyScalar!
+}
+
+type OuterType {
+  inner: InnerType
+}
+
+scalar MyScalar
+
 type User {
   id: ID
   name: String
