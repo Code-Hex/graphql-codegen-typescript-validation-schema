@@ -408,20 +408,23 @@ describe('yup', () => {
         {}
       );
       const wantContains = [
-        'export function AuthorSchema(): yup.ObjectSchema<Author> {',
+        'export function AuthorSchema(): yup.Schema {',
         "__typename: yup.string<'Author'>().optional(),",
         'books: yup.array(BookSchema().nullable()).defined().nullable().optional(),',
         'name: yup.string().defined().nullable().optional()',
+        '}) satisfies yup.ObjectSchema<Author>',
 
-        'export function BookSchema(): yup.ObjectSchema<Book> {',
+        'export function BookSchema(): yup.Schema {',
         "__typename: yup.string<'Book'>().optional(),",
         'author: AuthorSchema().nullable().optional(),',
         'title: yup.string().defined().nonNullable()',
+        '}) satisfies yup.ObjectSchema<Book>',
 
-        'export function Book2Schema(): yup.ObjectSchema<Book2> {',
+        'export function Book2Schema(): yup.Schema {',
         "__typename: yup.string<'Book2'>().optional(),",
         'author: AuthorSchema().nonNullable(),',
         'title: yup.string().defined().nullable().optional()',
+        '}) satisfies yup.ObjectSchema<Book2>',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
@@ -497,7 +500,7 @@ describe('yup', () => {
         'updateInputId: yup.number().defined().nonNullable(),',
         'updateName: yup.string().defined().nonNullable()',
         // User
-        'export function UserSchema(): yup.ObjectSchema<User> {',
+        'export function UserSchema(): yup.Schema {',
         "__typename: yup.string<'User'>().optional(),",
         'id: yup.string().defined().nonNullable(),',
         'name: yup.string().defined().nullable().optional(),',
@@ -505,6 +508,7 @@ describe('yup', () => {
         'isMember: yup.boolean().defined().nullable().optional(),',
         'email: yup.string().email().defined().nullable().optional(),',
         'createdAt: yup.date().defined().nonNullable()',
+        '}) satisfies yup.ObjectSchema<User>'
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
@@ -573,11 +577,11 @@ describe('yup', () => {
       );
 
       const wantContains = [
-        'export function GeometrySchema(): yup.ObjectSchema<Geometry> {',
+        'export function GeometrySchema(): yup.Schema {',
         'return yup.object({',
         "__typename: yup.string<'Geometry'>().optional(),",
         'shape: ShapeSchema().nullable().optional()',
-        '})',
+        '}) satisfies yup.ObjectSchema<Geometry>',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
