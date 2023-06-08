@@ -1,5 +1,7 @@
-import { Kind, ObjectTypeDefinitionNode } from 'graphql';
-import { ObjectTypeDefinitionBuilder } from '../src/graphql';
+import { Kind, ObjectTypeDefinitionNode, buildSchema, parse, print } from 'graphql';
+import { ObjectTypeDefinitionBuilder, topsort, topologicalSortAST } from '../src/graphql';
+import { Graph } from 'graphlib';
+import dedent from 'ts-dedent';
 
 describe('graphql', () => {
   describe('ObjectTypeDefinitionBuilder', () => {
@@ -42,5 +44,196 @@ describe('graphql', () => {
         expect(objectTypeDefFn).toBeUndefined();
       });
     });
+  });
+});
+
+describe('topsort', () => {
+  it('should correctly sort nodes based on their dependencies', () => {
+    const g = new Graph();
+
+    // Setting up the graph
+    g.setNode('A');
+    g.setNode('B');
+    g.setNode('C');
+    g.setEdge('A', 'B');
+    g.setEdge('B', 'C');
+
+    const sortedNodes = topsort(g);
+    expect(sortedNodes).toEqual(['C', 'B', 'A']);
+  });
+
+  it('should correctly handle graph with no edges', () => {
+    const g = new Graph();
+
+    // Setting up the graph
+    g.setNode('A');
+    g.setNode('B');
+    g.setNode('C');
+
+    const sortedNodes = topsort(g);
+    const isCorrectOrder = ['A', 'B', 'C'].every(node => sortedNodes.includes(node));
+    expect(isCorrectOrder).toBe(true);
+  });
+
+  it('should correctly handle an empty graph', () => {
+    const g = new Graph();
+
+    const sortedNodes = topsort(g);
+    expect(sortedNodes).toEqual([]);
+  });
+
+  it('should correctly handle graph with multiple dependencies', () => {
+    const g = new Graph();
+
+    // Setting up the graph
+    g.setNode('A');
+    g.setNode('B');
+    g.setNode('C');
+    g.setNode('D');
+    g.setEdge('A', 'B');
+    g.setEdge('A', 'C');
+    g.setEdge('B', 'D');
+    g.setEdge('C', 'D');
+
+    const sortedNodes = topsort(g);
+    expect(sortedNodes).toEqual(['D', 'C', 'B', 'A']);
+  });
+});
+
+describe('topologicalSortAST', () => {
+  const getSortedSchema = (schema: string): string => {
+    const ast = parse(schema);
+    const sortedAst = topologicalSortAST(buildSchema(schema), ast);
+    return print(sortedAst);
+  };
+
+  it('should correctly sort nodes based on their input type dependencies', () => {
+    const schema = /* GraphQL */ `
+      input A {
+        b: B
+      }
+
+      input B {
+        c: C
+      }
+
+      input C {
+        d: String
+      }
+    `;
+
+    const sortedSchema = getSortedSchema(schema);
+
+    const expectedSortedSchema = dedent/* GraphQL */ `
+      input C {
+        d: String
+      }
+
+      input B {
+        c: C
+      }
+
+      input A {
+        b: B
+      }
+    `;
+
+    expect(sortedSchema).toBe(expectedSortedSchema);
+  });
+
+  it('should correctly sort nodes based on their objet type dependencies', () => {
+    const schema = /* GraphQL */ `
+      type D {
+        e: UserKind
+      }
+
+      union UserKind = A | B
+
+      type A {
+        b: B
+      }
+
+      type B {
+        c: C
+      }
+
+      type C {
+        d: String
+      }
+    `;
+
+    const sortedSchema = getSortedSchema(schema);
+
+    const expectedSortedSchema = dedent/* GraphQL */ `
+      type C {
+        d: String
+      }
+
+      type B {
+        c: C
+      }
+
+      type A {
+        b: B
+      }
+
+      union UserKind = A | B
+
+      type D {
+        e: UserKind
+      }
+    `;
+
+    expect(sortedSchema).toBe(expectedSortedSchema);
+  });
+
+  it('should correctly handle schema with circular dependencies', () => {
+    const schema = /* GraphQL */ `
+      input A {
+        b: B
+      }
+
+      input B {
+        a: A
+      }
+    `;
+    const sortedSchema = getSortedSchema(schema);
+
+    const expectedSortedSchema = dedent/* GraphQL */ `
+      input A {
+        b: B
+      }
+
+      input B {
+        a: A
+      }
+    `;
+
+    expect(sortedSchema).toBe(expectedSortedSchema);
+  });
+
+  it('should correctly handle schema with self circular dependencies', () => {
+    const schema = /* GraphQL */ `
+      input A {
+        a: A
+      }
+
+      input B {
+        b: B
+      }
+    `;
+    const sortedSchema = getSortedSchema(schema);
+
+    const expectedSortedSchema = dedent/* GraphQL */ `
+      input A {
+        a: A
+      }
+
+      input B {
+        b: B
+      }
+    `;
+
+    expect(sortedSchema).toBe(expectedSortedSchema);
   });
 });
