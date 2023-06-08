@@ -13,6 +13,7 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   Date: { input: any; output: any; }
+  MyScalar: { input: any; output: any; }
   URL: { input: any; output: any; }
 };
 
@@ -74,8 +75,18 @@ export enum HttpMethod {
   Post = 'POST'
 }
 
+export type InnerType = {
+  __typename?: 'InnerType';
+  testScalar: Scalars['MyScalar']['output'];
+};
+
 export type LayoutInput = {
   dropdown?: InputMaybe<DropDownComponentInput>;
+};
+
+export type OuterType = {
+  __typename?: 'OuterType';
+  inner?: Maybe<InnerType>;
 };
 
 export type PageInput = {

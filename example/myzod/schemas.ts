@@ -1,5 +1,5 @@
 import * as myzod from 'myzod'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, InnerType, LayoutInput, OuterType, PageInput, PageType, User } from '../types'
 
 export const definedNonNullAnySchema = myzod.object({});
 
@@ -68,9 +68,23 @@ export function HttpInputSchema(): myzod.Type<HttpInput> {
 
 export const HttpMethodSchema = myzod.enum(HttpMethod);
 
+export function InnerTypeSchema(): myzod.Type<InnerType> {
+  return myzod.object({
+    __typename: myzod.literal('InnerType').optional(),
+    testScalar: definedNonNullAnySchema
+  })
+}
+
 export function LayoutInputSchema(): myzod.Type<LayoutInput> {
   return myzod.object({
     dropdown: myzod.lazy(() => DropDownComponentInputSchema().optional().nullable())
+  })
+}
+
+export function OuterTypeSchema(): myzod.Type<OuterType> {
+  return myzod.object({
+    __typename: myzod.literal('OuterType').optional(),
+    inner: InnerTypeSchema().optional().nullable()
   })
 }
 

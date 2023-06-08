@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, InnerType, LayoutInput, OuterType, PageInput, PageType, User } from '../types'
 
 type Properties<T> = Required<{
   [K in keyof T]: z.ZodType<T[K], any, T[K]>;
@@ -76,9 +76,23 @@ export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>> {
 
 export const HttpMethodSchema = z.nativeEnum(HttpMethod);
 
+export function InnerTypeSchema(): z.ZodObject<Properties<InnerType>> {
+  return z.object<Properties<InnerType>>({
+    __typename: z.literal('InnerType').optional(),
+    testScalar: definedNonNullAnySchema
+  })
+}
+
 export function LayoutInputSchema(): z.ZodObject<Properties<LayoutInput>> {
   return z.object<Properties<LayoutInput>>({
     dropdown: z.lazy(() => DropDownComponentInputSchema().nullish())
+  })
+}
+
+export function OuterTypeSchema(): z.ZodObject<Properties<OuterType>> {
+  return z.object<Properties<OuterType>>({
+    __typename: z.literal('OuterType').optional(),
+    inner: InnerTypeSchema().nullish()
   })
 }
 

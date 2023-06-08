@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User, UserKind } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, InnerType, LayoutInput, OuterType, PageInput, PageType, User, UserKind } from '../types'
 
 function union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T> {
   return yup.mixed<T>().test({
@@ -7,11 +7,11 @@ function union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.Mixe
   }).defined()
 }
 
-export function AdminSchema(): yup.ObjectSchema<Admin> {
+export function AdminSchema(): yup.Schema {
   return yup.object({
     __typename: yup.string<'Admin'>().optional(),
     lastModifiedAt: yup.mixed().nullable().optional()
-  })
+  }) satisfies yup.ObjectSchema<Admin>
 }
 
 export function AttributeInputSchema(): yup.ObjectSchema<AttributeInput> {
@@ -56,11 +56,11 @@ export function EventInputSchema(): yup.ObjectSchema<EventInput> {
 
 export const EventOptionTypeSchema = yup.string<EventOptionType>().oneOf([EventOptionType.Reload, EventOptionType.Retry]).defined();
 
-export function GuestSchema(): yup.ObjectSchema<Guest> {
+export function GuestSchema(): yup.Schema {
   return yup.object({
     __typename: yup.string<'Guest'>().optional(),
     lastLoggedIn: yup.mixed().nullable().optional()
-  })
+  }) satisfies yup.ObjectSchema<Guest>
 }
 
 export function HttpInputSchema(): yup.ObjectSchema<HttpInput> {
@@ -72,10 +72,24 @@ export function HttpInputSchema(): yup.ObjectSchema<HttpInput> {
 
 export const HttpMethodSchema = yup.string<HttpMethod>().oneOf([HttpMethod.Get, HttpMethod.Post]).defined();
 
+export function InnerTypeSchema(): yup.Schema {
+  return yup.object({
+    __typename: yup.string<'InnerType'>().optional(),
+    testScalar: yup.mixed().nonNullable()
+  }) satisfies yup.ObjectSchema<InnerType>
+}
+
 export function LayoutInputSchema(): yup.ObjectSchema<LayoutInput> {
   return yup.object({
     dropdown: yup.lazy(() => DropDownComponentInputSchema()).optional()
   })
+}
+
+export function OuterTypeSchema(): yup.Schema {
+  return yup.object({
+    __typename: yup.string<'OuterType'>().optional(),
+    inner: InnerTypeSchema().nullable().optional()
+  }) satisfies yup.ObjectSchema<OuterType>
 }
 
 export function PageInputSchema(): yup.ObjectSchema<PageInput> {
@@ -96,7 +110,7 @@ export function PageInputSchema(): yup.ObjectSchema<PageInput> {
 
 export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.BasicAuth, PageType.Lp, PageType.Restricted, PageType.Service]).defined();
 
-export function UserSchema(): yup.ObjectSchema<User> {
+export function UserSchema(): yup.Schema {
   return yup.object({
     __typename: yup.string<'User'>().optional(),
     createdAt: yup.mixed().nullable().optional(),
@@ -106,7 +120,7 @@ export function UserSchema(): yup.ObjectSchema<User> {
     name: yup.string().defined().nullable().optional(),
     password: yup.string().defined().nullable().optional(),
     updatedAt: yup.mixed().nullable().optional()
-  })
+  }) satisfies yup.ObjectSchema<User>
 }
 
 export function UserKindSchema(): yup.MixedSchema<UserKind> {
