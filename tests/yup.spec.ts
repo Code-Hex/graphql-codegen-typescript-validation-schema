@@ -508,7 +508,7 @@ describe('yup', () => {
         'isMember: yup.boolean().defined().nullable().optional(),',
         'email: yup.string().email().defined().nullable().optional(),',
         'createdAt: yup.date().defined().nonNullable()',
-        '}) satisfies yup.ObjectSchema<User>'
+        '}) satisfies yup.ObjectSchema<User>',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
