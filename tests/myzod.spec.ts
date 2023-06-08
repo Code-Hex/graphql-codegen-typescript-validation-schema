@@ -1,4 +1,5 @@
 import { buildSchema } from 'graphql';
+
 import { plugin } from '../src/index';
 
 describe('myzod', () => {

@@ -1,14 +1,15 @@
+import { ConstArgumentNode, ConstDirectiveNode, ConstValueNode, Kind, NameNode, parseConstValue } from 'graphql';
+
 import { DirectiveConfig, DirectiveObjectArguments } from '../src/config';
 import {
-  FormattedDirectiveConfig,
-  FormattedDirectiveObjectArguments,
+  buildApi,
+  exportedForTesting,
   formatDirectiveConfig,
   formatDirectiveObjectArguments,
   FormattedDirectiveArguments,
-  exportedForTesting,
-  buildApi,
+  FormattedDirectiveConfig,
+  FormattedDirectiveObjectArguments,
 } from '../src/directive';
-import { ConstArgumentNode, ConstDirectiveNode, ConstValueNode, Kind, NameNode, parseConstValue } from 'graphql';
 
 const { applyArgToApiSchemaTemplate, buildApiFromDirectiveObjectArguments, buildApiFromDirectiveArguments } =
   exportedForTesting;

@@ -1,4 +1,5 @@
 import { ConstArgumentNode, ConstDirectiveNode, ConstValueNode, Kind, valueFromASTUntyped } from 'graphql';
+
 import { DirectiveConfig, DirectiveObjectArguments } from './config';
 import { isConvertableRegexp } from './regexp';
 
