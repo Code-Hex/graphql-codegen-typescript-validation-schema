@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User } from '../types'
+import { PageType, HttpMethod, HttpInput, EventOptionType, EventArgumentInput, EventInput, ComponentInput, DropDownComponentInput, LayoutInput, ButtonComponentType, AttributeInput, PageInput, Guest, Admin, User } from '../types'
 
 type Properties<T> = Required<{
   [K in keyof T]: z.ZodType<T[K], any, T[K]>;
@@ -11,22 +11,27 @@ export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== und
 
 export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
 
-export const ButtonComponentTypeSchema = z.nativeEnum(ButtonComponentType);
-
-export const EventOptionTypeSchema = z.nativeEnum(EventOptionType);
+export const PageTypeSchema = z.nativeEnum(PageType);
 
 export const HttpMethodSchema = z.nativeEnum(HttpMethod);
 
-export const PageTypeSchema = z.nativeEnum(PageType);
+export const EventOptionTypeSchema = z.nativeEnum(EventOptionType);
 
-export const AdminSchema: z.ZodObject<Properties<Admin>> = z.object({
-    __typename: z.literal('Admin').optional(),
-    lastModifiedAt: definedNonNullAnySchema.nullish()
+export const ButtonComponentTypeSchema = z.nativeEnum(ButtonComponentType);
+
+export const HttpInputSchema: z.ZodObject<Properties<HttpInput>> = z.object({
+    method: HttpMethodSchema.nullish(),
+    url: definedNonNullAnySchema
 });
 
-export const AttributeInputSchema: z.ZodObject<Properties<AttributeInput>> = z.object({
-    key: z.string().nullish(),
-    val: z.string().nullish()
+export const EventArgumentInputSchema: z.ZodObject<Properties<EventArgumentInput>> = z.object({
+    name: z.string().min(5),
+    value: z.string().regex(/^foo/, "message")
+});
+
+export const EventInputSchema: z.ZodObject<Properties<EventInput>> = z.object({
+    arguments: z.array(z.lazy(() => EventArgumentInputSchema)),
+    options: z.array(EventOptionTypeSchema).nullish()
 });
 
 export const ComponentInputSchema: z.ZodObject<Properties<ComponentInput>> = z.object({
@@ -42,28 +47,13 @@ export const DropDownComponentInputSchema: z.ZodObject<Properties<DropDownCompon
     getEvent: z.lazy(() => EventInputSchema)
 });
 
-export const EventArgumentInputSchema: z.ZodObject<Properties<EventArgumentInput>> = z.object({
-    name: z.string().min(5),
-    value: z.string().regex(/^foo/, "message")
-});
-
-export const EventInputSchema: z.ZodObject<Properties<EventInput>> = z.object({
-    arguments: z.array(z.lazy(() => EventArgumentInputSchema)),
-    options: z.array(EventOptionTypeSchema).nullish()
-});
-
-export const GuestSchema: z.ZodObject<Properties<Guest>> = z.object({
-    __typename: z.literal('Guest').optional(),
-    lastLoggedIn: definedNonNullAnySchema.nullish()
-});
-
-export const HttpInputSchema: z.ZodObject<Properties<HttpInput>> = z.object({
-    method: HttpMethodSchema.nullish(),
-    url: definedNonNullAnySchema
-});
-
 export const LayoutInputSchema: z.ZodObject<Properties<LayoutInput>> = z.object({
     dropdown: z.lazy(() => DropDownComponentInputSchema.nullish())
+});
+
+export const AttributeInputSchema: z.ZodObject<Properties<AttributeInput>> = z.object({
+    key: z.string().nullish(),
+    val: z.string().nullish()
 });
 
 export const PageInputSchema: z.ZodObject<Properties<PageInput>> = z.object({
@@ -80,6 +70,18 @@ export const PageInputSchema: z.ZodObject<Properties<PageInput>> = z.object({
     width: z.number()
 });
 
+export const GuestSchema: z.ZodObject<Properties<Guest>> = z.object({
+    __typename: z.literal('Guest').optional(),
+    lastLoggedIn: definedNonNullAnySchema.nullish()
+});
+
+export const AdminSchema: z.ZodObject<Properties<Admin>> = z.object({
+    __typename: z.literal('Admin').optional(),
+    lastModifiedAt: definedNonNullAnySchema.nullish()
+});
+
+export const UserKindSchema = z.union([AdminSchema, GuestSchema]);
+
 export const UserSchema: z.ZodObject<Properties<User>> = z.object({
     __typename: z.literal('User').optional(),
     createdAt: definedNonNullAnySchema.nullish(),
@@ -90,5 +92,3 @@ export const UserSchema: z.ZodObject<Properties<User>> = z.object({
     password: z.string().nullish(),
     updatedAt: definedNonNullAnySchema.nullish()
 });
-
-export const UserKindSchema = z.union([AdminSchema, GuestSchema]);
