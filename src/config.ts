@@ -195,6 +195,22 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   withObjectType?: boolean;
   /**
+   * @description Specify validation schema export type.
+   * @default function
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - typescript
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       validationSchemaExportType: const
+   * ```
+   */
+  validationSchemaExportType?: ValidationSchemaExportType;
+  /**
    * @description Generates validation schema with more API based on directive schema.
    * @exampleMarkdown
    * ```yml
@@ -235,20 +251,4 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   directives?: DirectiveConfig;
-  /**
-   * @description Specify validation schema export type
-   * @default function
-   *
-   * @exampleMarkdown
-   * ```yml
-   * generates:
-   *   path/to/file.ts:
-   *     plugins:
-   *       - typescript
-   *       - graphql-codegen-validation-schema
-   *     config:
-   *       validationSchemaExportType: const
-   * ```
-   */
-  validationSchemaExportType?: ValidationSchemaExportType;
 }

@@ -13,7 +13,6 @@ generates:
           schema: yup
           importFrom: ../types
           withObjectType: true
-          validationSchemaExportType: const
           directives:
             required:
               msg: required
@@ -50,7 +49,6 @@ generates:
           schema: zod
           importFrom: ../types
           withObjectType: true
-          validationSchemaExportType: const
           directives:
             # Write directives like
             #
@@ -74,7 +72,6 @@ generates:
           schema: myzod
           importFrom: ../types
           withObjectType: true
-          validationSchemaExportType: const
           directives:
             constraint:
               minLength: min

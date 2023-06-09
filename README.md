@@ -188,6 +188,12 @@ It is currently added for the purpose of using simple objects. See also [#20](ht
 
 This option currently **does not support fragment** generation. If you are interested, send me PR would be greatly appreciated!
 
+### `validationSchemaExportType`
+
+type: `ValidationSchemaExportType` default: `'function'`
+
+Specify validation schema export type.
+
 ### `directives`
 
 type: `DirectiveConfig`
