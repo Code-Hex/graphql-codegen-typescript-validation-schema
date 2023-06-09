@@ -262,9 +262,8 @@ const generateFieldTypeYupSchema = (
   if (isNamedType(type)) {
     const gen = generateNameNodeYupSchema(config, visitor, type.name);
     if (isNonNullType(parentType)) {
-      if (config.notAllowEmptyString === true) {
-        const tsType = visitor.getScalarType(type.name.value);
-        if (tsType === 'string') return `${gen}.required()`;
+      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
+        return `${gen}.required()`;
       }
       return `${gen}.nonNullable()`;
     }

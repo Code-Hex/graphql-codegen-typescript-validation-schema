@@ -222,9 +222,8 @@ const generateFieldTypeZodSchema = (
     }
     const appliedDirectivesGen = applyDirectives(config, field, gen);
     if (isNonNullType(parentType)) {
-      if (config.notAllowEmptyString === true) {
-        const tsType = visitor.getScalarType(type.name.value);
-        if (tsType === 'string') return `${appliedDirectivesGen}.min(1)`;
+      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
+        return `${appliedDirectivesGen}.min(1)`;
       }
       return appliedDirectivesGen;
     }
