@@ -1,4 +1,5 @@
 import { buildSchema } from 'graphql';
+import dedent from 'ts-dedent';
 
 import { plugin } from '../src/index';
 
@@ -295,6 +296,37 @@ describe('myzod', () => {
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
     }
+  });
+
+  it('with notAllowEmptyString issue #386', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input InputOne {
+        field: InputNested!
+      }
+
+      input InputNested {
+        field: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        notAllowEmptyString: true,
+        scalars: {
+          ID: 'string',
+        },
+      },
+      {}
+    );
+    const wantContain = dedent`
+    export function InputNestedSchema(): myzod.Type<InputNested> {
+      return myzod.object({
+        field: myzod.string().min(1)
+      })
+    }`;
+    expect(result.content).toContain(wantContain);
   });
 
   it('with scalarSchemas', async () => {
