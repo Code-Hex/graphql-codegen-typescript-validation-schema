@@ -86,6 +86,14 @@ import { GeneratedInput } from './graphql'
 /* generates validation schema here */
 ```
 
+### `useTypeImports`
+
+type: `boolean` default: `false`
+
+Will use `import type {}` rather than `import {}` when importing generated TypeScript types.
+This gives compatibility with TypeScript's "importsNotUsedAsValues": "error" option.
+Should used in conjunction with `importFrom` option.
+
 ### `typesPrefix`
 
 type: `string` default: (empty)
