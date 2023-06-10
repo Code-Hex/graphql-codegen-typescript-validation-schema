@@ -1,9 +1,9 @@
 import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers';
 import { transformSchemaAST } from '@graphql-codegen/schema-ast';
-import { GraphQLSchema, visit } from 'graphql';
+import { buildSchema, GraphQLSchema, printSchema, visit } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
-import { topologicalSortAST } from './graphql';
+import { isGeneratedByIntrospection, topologicalSortAST } from './graphql';
 import { MyZodSchemaVisitor } from './myzod/index';
 import { SchemaVisitor } from './types';
 import { YupSchemaVisitor } from './yup/index';
@@ -40,16 +40,20 @@ const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConf
 
 const _transformSchemaAST = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {
   const { schema: _schema, ast } = transformSchemaAST(schema, config);
+
+  // See: https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/issues/394
+  const __schema = isGeneratedByIntrospection(_schema) ? buildSchema(printSchema(_schema)) : _schema;
+
   // This affects the performance of code generation, so it is
   // enabled only when this option is selected.
   if (config.validationSchemaExportType === 'const') {
     return {
-      schema: _schema,
-      ast: topologicalSortAST(_schema, ast),
+      schema: __schema,
+      ast: topologicalSortAST(__schema, ast),
     };
   }
   return {
-    schema: _schema,
+    schema: __schema,
     ast,
   };
 };

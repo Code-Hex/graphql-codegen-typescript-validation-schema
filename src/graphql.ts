@@ -4,6 +4,7 @@ import {
   DefinitionNode,
   DocumentNode,
   GraphQLSchema,
+  isSpecifiedScalarType,
   ListTypeNode,
   NamedTypeNode,
   NameNode,
@@ -169,3 +170,8 @@ export const topsort = (g: Graph): string[] => {
 
   return results.reverse();
 };
+
+export const isGeneratedByIntrospection = (schema: GraphQLSchema): boolean =>
+  Object.entries(schema.getTypeMap())
+    .filter(([name, type]) => !name.startsWith('__') && !isSpecifiedScalarType(type))
+    .every(([, type]) => type.astNode === undefined);
