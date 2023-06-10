@@ -1,4 +1,5 @@
-import { buildSchema } from 'graphql';
+import { getCachedDocumentNodeFromSchema } from '@graphql-codegen/plugin-helpers';
+import { buildClientSchema, buildSchema, introspectionFromSchema, isSpecifiedScalarType } from 'graphql';
 import { dedent } from 'ts-dedent';
 
 import { plugin } from '../src/index';
@@ -988,5 +989,42 @@ describe('zod', () => {
     for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
       expect(result.content).not.toContain(wantNotContain);
     }
+  });
+
+  it('issue #394', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum Test {
+        A
+        B
+      }
+
+      type Query {
+        _dummy: Test
+      }
+
+      input QueryInput {
+        _dummy: Test
+      }
+    `);
+    const query = introspectionFromSchema(schema);
+    const clientSchema = buildClientSchema(query);
+    const result = await plugin(
+      clientSchema,
+      [],
+      {
+        schema: 'zod',
+        scalars: {
+          ID: 'string',
+        },
+      },
+      {}
+    );
+    const wantContain = dedent`
+    export function QueryInputSchema(): z.ZodObject<Properties<QueryInput>> {
+      return z.object({
+        _dummy: TestSchema.nullish()
+      })
+    }`;
+    expect(result.content).toContain(wantContain);
   });
 });

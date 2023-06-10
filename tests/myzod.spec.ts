@@ -1,4 +1,4 @@
-import { buildSchema } from 'graphql';
+import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import dedent from 'ts-dedent';
 
 import { plugin } from '../src/index';
@@ -921,5 +921,42 @@ describe('myzod', () => {
     for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
       expect(result.content).not.toContain(wantNotContain);
     }
+  });
+
+  it('issue #394', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum Test {
+        A
+        B
+      }
+
+      type Query {
+        _dummy: Test
+      }
+
+      input QueryInput {
+        _dummy: Test
+      }
+    `);
+    const query = introspectionFromSchema(schema);
+    const clientSchema = buildClientSchema(query);
+    const result = await plugin(
+      clientSchema,
+      [],
+      {
+        schema: 'myzod',
+        scalars: {
+          ID: 'string',
+        },
+      },
+      {}
+    );
+    const wantContain = dedent`
+    export function QueryInputSchema(): myzod.Type<QueryInput> {
+      return myzod.object({
+        _dummy: TestSchema.optional().nullable()
+      })
+    }`;
+    expect(result.content).toContain(wantContain);
   });
 });
