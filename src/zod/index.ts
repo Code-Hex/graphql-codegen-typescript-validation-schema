@@ -5,6 +5,7 @@ import {
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
   InputValueDefinitionNode,
+  Kind,
   NameNode,
   ObjectTypeDefinitionNode,
   TypeNode,
@@ -130,16 +131,16 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         enumDeclarations.push(
           config.enumsAsTypes
             ? new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${enumname}Schema`)
-                .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`)
-                .string
+              .export()
+              .asKind('const')
+              .withName(`${enumname}Schema`)
+              .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`)
+              .string
             : new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${enumname}Schema`)
-                .withContent(`z.nativeEnum(${enumname})`).string
+              .export()
+              .asKind('const')
+              .withName(`${enumname}Schema`)
+              .withContent(`z.nativeEnum(${enumname})`).string
         );
       },
     },
@@ -220,7 +221,19 @@ const generateFieldTypeZodSchema = (
     if (isListType(parentType)) {
       return `${gen}.nullable()`;
     }
-    const appliedDirectivesGen = applyDirectives(config, field, gen);
+    let appliedDirectivesGen = applyDirectives(config, field, gen);
+
+    if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
+      const { defaultValue } = field;
+
+      if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN) {
+        appliedDirectivesGen = `${appliedDirectivesGen}.default(${defaultValue.value})`;
+      }
+      if ((defaultValue?.kind === Kind.STRING) || (defaultValue?.kind === Kind.ENUM)) {
+        appliedDirectivesGen = `${appliedDirectivesGen}.default("${defaultValue.value}")`;
+      }
+    }
+
     if (isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
         return `${appliedDirectivesGen}.min(1)`;
