@@ -403,6 +403,40 @@ describe('zod', () => {
     expect(result.content).toContain('export function SayISchema(): z.ZodObject<Properties<SayI>> {');
   });
 
+  it('with default input values', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType! = PUBLIC
+        greeting: String = "Hello"
+        score: Int = 100
+        ratio: Float = 0.5
+        isMember: Boolean = true
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        importFrom: './types',
+      },
+      {}
+    );
+
+    expect(result.content).toContain('export const PageTypeSchema = z.nativeEnum(PageType)');
+    expect(result.content).toContain('export function PageInputSchema(): z.ZodObject<Properties<PageInput>>');
+
+    expect(result.content).toContain('pageType: PageTypeSchema.default("PUBLIC")');
+    expect(result.content).toContain('greeting: z.string().default("Hello").nullish()');
+    expect(result.content).toContain('score: z.number().default(100).nullish()');
+    expect(result.content).toContain('ratio: z.number().default(0.5).nullish()');
+    expect(result.content).toContain('isMember: z.boolean().default(true).nullish()');
+  });
+
   describe('issues #19', () => {
     it('string field', async () => {
       const schema = buildSchema(/* GraphQL */ `
