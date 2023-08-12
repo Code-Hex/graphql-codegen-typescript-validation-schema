@@ -4,3 +4,4 @@ dist
 package-lock.json
 .DS_Store
 tsconfig.tsbuildinfo
+yarn-error.log
