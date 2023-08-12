@@ -9,27 +9,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: current
-          cache: 'yarn'
-      - run: yarn install --frozen-lockfile
-      - run: yarn test
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
         env:
           CI: true
   eslint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: current
-          cache: 'yarn'
-      - run: yarn install --frozen-lockfile
-      - run: yarn lint-fix
-      - run: yarn prettier
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint-fix
+      - run: pnpm prettier
       - name: Auto commit fixed code
         id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v4
