@@ -74,10 +74,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         this.importTypes.push(name);
 
         // Building schema for field arguments.
-        const argumentBlocks = visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
-          this.importTypes.push(typeName);
-          return this.buildInputFields(field.arguments ?? [], visitor, typeName);
-        });
+        const argumentBlocks = this.buildObjectTypeDefinitionArguments(node, visitor);
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
         // Building schema for fields.
@@ -189,7 +186,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
     };
   }
 
-  private buildInputFields(
+  protected buildInputFields(
     fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[],
     visitor: Visitor,
     name: string
