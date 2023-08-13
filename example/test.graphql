@@ -94,6 +94,10 @@ enum HTTPMethod {
 scalar Date
 scalar URL
 
+type MyType {
+  foo(a: String, b: Int!, c: Boolean, d: Float!): String
+}
+
 # https://github.com/confuser/graphql-constraint-directive
 directive @constraint(
   # String constraints

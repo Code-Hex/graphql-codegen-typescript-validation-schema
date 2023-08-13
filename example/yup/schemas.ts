@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, PageInput, PageType, User, UserKind } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, PageInput, PageType, User, UserKind } from '../types'
 
 export const ButtonComponentTypeSchema = yup.string<ButtonComponentType>().oneOf([ButtonComponentType.Button, ButtonComponentType.Submit]).defined();
 
@@ -77,6 +77,22 @@ export function HttpInputSchema(): yup.ObjectSchema<HttpInput> {
 export function LayoutInputSchema(): yup.ObjectSchema<LayoutInput> {
   return yup.object({
     dropdown: yup.lazy(() => DropDownComponentInputSchema()).optional()
+  })
+}
+
+export function MyTypeSchema(): yup.ObjectSchema<MyType> {
+  return yup.object({
+    __typename: yup.string<'MyType'>().optional(),
+    foo: yup.string().defined().nullable().optional()
+  })
+}
+
+export function MyTypeFooArgsSchema(): yup.ObjectSchema<MyTypeFooArgs> {
+  return yup.object({
+    a: yup.string().defined().nullable(),
+    b: yup.number().defined().nonNullable(),
+    c: yup.boolean().defined().nullable(),
+    d: yup.number().defined().nonNullable()
   })
 }
 
