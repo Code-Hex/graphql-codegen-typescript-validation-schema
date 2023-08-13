@@ -89,34 +89,66 @@ export const ZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         const name = visitor.convertName(node.name.value);
         importTypes.push(name);
 
+        // Building schema for field arguments.
+        const argumentBlocks = visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
+          importTypes.push(typeName);
+          const args = field.arguments ?? [];
+          const shape = args.map(field => generateFieldZodSchema(config, visitor, field, 2)).join(',\n');
+          switch (config.validationSchemaExportType) {
+            case 'const':
+              return new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${typeName}Schema: z.ZodObject<Properties<${typeName}>>`)
+                .withContent([`z.object({`, shape, '})'].join('\n')).string;
+
+            case 'function':
+            default:
+              return new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${typeName}Schema(): z.ZodObject<Properties<${typeName}>>`)
+                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string;
+          }
+        });
+        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+
+        // Building schema for fields.
         const shape = node.fields?.map(field => generateFieldZodSchema(config, visitor, field, 2)).join(',\n');
 
         switch (config.validationSchemaExportType) {
           case 'const':
-            return new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${name}Schema: z.ZodObject<Properties<${name}>>`)
-              .withContent(
-                [`z.object({`, indent(`__typename: z.literal('${node.name.value}').optional(),`, 2), shape, '})'].join(
-                  '\n'
-                )
-              ).string;
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${name}Schema: z.ZodObject<Properties<${name}>>`)
+                .withContent(
+                  [
+                    `z.object({`,
+                    indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
+                    shape,
+                    '})',
+                  ].join('\n')
+                ).string + appendArguments
+            );
 
           case 'function':
           default:
-            return new DeclarationBlock({})
-              .export()
-              .asKind('function')
-              .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
-              .withBlock(
-                [
-                  indent(`return z.object({`),
-                  indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
-                  shape,
-                  indent('})'),
-                ].join('\n')
-              ).string;
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
+                .withBlock(
+                  [
+                    indent(`return z.object({`),
+                    indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
+                    shape,
+                    indent('})'),
+                  ].join('\n')
+                ).string + appendArguments
+            );
         }
       }),
     },

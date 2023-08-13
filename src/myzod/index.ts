@@ -73,37 +73,66 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
         const name = visitor.convertName(node.name.value);
         importTypes.push(name);
 
+        // Building schema for field arguments.
+        const argumentBlocks = visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
+          importTypes.push(typeName);
+          const args = field.arguments ?? [];
+          const shape = args.map(field => generateFieldMyZodSchema(config, visitor, field, 2)).join(',\n');
+          switch (config.validationSchemaExportType) {
+            case 'const':
+              return new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${typeName}Schema: myzod.Type<${typeName}>`)
+                .withContent([`myzod.object({`, shape, '})'].join('\n')).string;
+
+            case 'function':
+            default:
+              return new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${typeName}Schema(): myzod.Type<${typeName}>`)
+                .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
+          }
+        });
+        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+
+        // Building schema for fields.
         const shape = node.fields?.map(field => generateFieldMyZodSchema(config, visitor, field, 2)).join(',\n');
 
         switch (config.validationSchemaExportType) {
           case 'const':
-            return new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${name}Schema: myzod.Type<${name}>`)
-              .withContent(
-                [
-                  `myzod.object({`,
-                  indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
-                  shape,
-                  '})',
-                ].join('\n')
-              ).string;
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${name}Schema: myzod.Type<${name}>`)
+                .withContent(
+                  [
+                    `myzod.object({`,
+                    indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
+                    shape,
+                    '})',
+                  ].join('\n')
+                ).string + appendArguments
+            );
 
           case 'function':
           default:
-            return new DeclarationBlock({})
-              .export()
-              .asKind('function')
-              .withName(`${name}Schema(): myzod.Type<${name}>`)
-              .withBlock(
-                [
-                  indent(`return myzod.object({`),
-                  indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
-                  shape,
-                  indent('})'),
-                ].join('\n')
-              ).string;
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${name}Schema(): myzod.Type<${name}>`)
+                .withBlock(
+                  [
+                    indent(`return myzod.object({`),
+                    indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
+                    shape,
+                    indent('})'),
+                  ].join('\n')
+                ).string + appendArguments
+            );
         }
       }),
     },

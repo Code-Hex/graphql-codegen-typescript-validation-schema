@@ -88,6 +88,32 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         const name = visitor.convertName(node.name.value);
         importTypes.push(name);
 
+        // Building schema for field arguments.
+        const argumentBlocks = visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
+          importTypes.push(typeName);
+          const args = field.arguments ?? [];
+          const shape = args.map(field => generateFieldYupSchema(config, visitor, field, 2)).join(',\n');
+          switch (config.validationSchemaExportType) {
+            case 'const':
+              return new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${typeName}Schema: yup.ObjectSchema<${typeName}>`)
+                .withContent([`yup.object({`, shape, '})'].join('\n')).string;
+
+            case 'function':
+            default:
+              return new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${typeName}Schema(): yup.ObjectSchema<${typeName}>`)
+                .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
+          }
+        });
+        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+
+        // Building schema for fields.
+
         const shape = node.fields
           ?.map(field => {
             const fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
@@ -97,33 +123,37 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
 
         switch (config.validationSchemaExportType) {
           case 'const':
-            return new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
-              .withContent(
-                [
-                  `yup.object({`,
-                  indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
-                  shape,
-                  '})',
-                ].join('\n')
-              ).string;
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
+                .withContent(
+                  [
+                    `yup.object({`,
+                    indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
+                    shape,
+                    '})',
+                  ].join('\n')
+                ).string + appendArguments
+            );
 
           case 'function':
           default:
-            return new DeclarationBlock({})
-              .export()
-              .asKind('function')
-              .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
-              .withBlock(
-                [
-                  indent(`return yup.object({`),
-                  indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
-                  shape,
-                  indent('})'),
-                ].join('\n')
-              ).string;
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
+                .withBlock(
+                  [
+                    indent(`return yup.object({`),
+                    indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
+                    shape,
+                    indent('})'),
+                  ].join('\n')
+                ).string + appendArguments
+            );
         }
       }),
     },
