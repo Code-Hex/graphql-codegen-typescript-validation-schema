@@ -89,9 +89,9 @@ export function MyTypeSchema(): yup.ObjectSchema<MyType> {
 
 export function MyTypeFooArgsSchema(): yup.ObjectSchema<MyTypeFooArgs> {
   return yup.object({
-    a: yup.string().defined().nullable(),
+    a: yup.string().defined().nullable().optional(),
     b: yup.number().defined().nonNullable(),
-    c: yup.boolean().defined().nullable(),
+    c: yup.boolean().defined().nullable().optional(),
     d: yup.number().defined().nonNullable()
   })
 }

@@ -45,25 +45,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         const visitor = this.createVisitor('input');
         const name = visitor.convertName(node.name.value);
         this.importTypes.push(name);
-
-        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
-
-        switch (this.config.validationSchemaExportType) {
-          case 'const':
-            return new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${name}Schema: myzod.Type<${name}>`)
-              .withContent(['myzod.object({', shape, '})'].join('\n')).string;
-
-          case 'function':
-          default:
-            return new DeclarationBlock({})
-              .export()
-              .asKind('function')
-              .withName(`${name}Schema(): myzod.Type<${name}>`)
-              .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
-        }
+        return this.buildInputFields(node.fields ?? [], visitor, name);
       },
     };
   }
@@ -78,24 +60,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         // Building schema for field arguments.
         const argumentBlocks = visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
           this.importTypes.push(typeName);
-          const args = field.arguments ?? [];
-          const shape = args.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
-          switch (this.config.validationSchemaExportType) {
-            case 'const':
-              return new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${typeName}Schema: myzod.Type<${typeName}>`)
-                .withContent([`myzod.object({`, shape, '})'].join('\n')).string;
-
-            case 'function':
-            default:
-              return new DeclarationBlock({})
-                .export()
-                .asKind('function')
-                .withName(`${typeName}Schema(): myzod.Type<${typeName}>`)
-                .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
-          }
+          return this.buildInputFields(field.arguments ?? [], visitor, typeName);
         });
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
@@ -209,6 +174,31 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         }
       },
     };
+  }
+
+  private buildInputFields(
+    fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[],
+    visitor: Visitor,
+    name: string
+  ) {
+    const shape = fields.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
+
+    switch (this.config.validationSchemaExportType) {
+      case 'const':
+        return new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`${name}Schema: myzod.Type<${name}>`)
+          .withContent(['myzod.object({', shape, '})'].join('\n')).string;
+
+      case 'function':
+      default:
+        return new DeclarationBlock({})
+          .export()
+          .asKind('function')
+          .withName(`${name}Schema(): myzod.Type<${name}>`)
+          .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
+    }
   }
 }
 
