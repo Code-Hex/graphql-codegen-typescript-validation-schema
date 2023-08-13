@@ -10,10 +10,10 @@ import {
   TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
-import { BaseSchemaVisitor } from 'src/schema_visitor';
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
+import { BaseSchemaVisitor } from '../schema_visitor';
 import { Visitor } from '../visitor';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
 
