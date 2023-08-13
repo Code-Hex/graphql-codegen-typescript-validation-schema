@@ -15,7 +15,7 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
   config: ValidationSchemaPluginConfig
 ): Types.ComplexPluginOutput => {
   const { schema: _schema, ast } = _transformSchemaAST(schema, config);
-  const { buildImports, initialEmit, ...visitor } = schemaVisitor(_schema, config);
+  const visitor = schemaVisitor(_schema, config);
 
   const result = visit(ast, visitor);
 
@@ -24,18 +24,18 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
   const generated = result.definitions.filter(def => typeof def === 'string');
 
   return {
-    prepend: buildImports(),
-    content: [initialEmit(), ...generated].join('\n'),
+    prepend: visitor.buildImports(),
+    content: [visitor.initialEmit(), ...generated].join('\n'),
   };
 };
 
 const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
   if (config?.schema === 'zod') {
-    return ZodSchemaVisitor(schema, config);
+    return new ZodSchemaVisitor(schema, config);
   } else if (config?.schema === 'myzod') {
-    return MyZodSchemaVisitor(schema, config);
+    return new MyZodSchemaVisitor(schema, config);
   }
-  return YupSchemaVisitor(schema, config);
+  return new YupSchemaVisitor(schema, config);
 };
 
 const _transformSchemaAST = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {

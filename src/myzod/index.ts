@@ -13,94 +13,58 @@ import {
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
-import { SchemaVisitor } from '../types';
+import { BaseSchemaVisitor } from '../schema_visitor';
 import { Visitor } from '../visitor';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
 
-const importZod = `import * as myzod from 'myzod'`;
 const anySchema = `definedNonNullAnySchema`;
 
-export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
-  const importTypes: string[] = [];
-  const enumDeclarations: string[] = [];
+export class MyZodSchemaVisitor extends BaseSchemaVisitor {
+  constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
+    super(schema, config);
+  }
 
-  return {
-    buildImports: (): string[] => {
-      if (config.importFrom && importTypes.length > 0) {
-        return [
-          importZod,
-          `import ${config.useTypeImports ? 'type ' : ''}{ ${importTypes.join(', ')} } from '${config.importFrom}'`,
-        ];
-      }
-      return [importZod];
-    },
-    initialEmit: (): string =>
+  importValidationSchema(): string {
+    return `import * as myzod from 'myzod'`;
+  }
+
+  initialEmit(): string {
+    return (
       '\n' +
       [
         new DeclarationBlock({}).export().asKind('const').withName(`${anySchema}`).withContent(`myzod.object({})`)
           .string,
-        ...enumDeclarations,
-      ].join('\n'),
-    InputObjectTypeDefinition: {
+        ...this.enumDeclarations,
+      ].join('\n')
+    );
+  }
+
+  get InputObjectTypeDefinition() {
+    return {
       leave: (node: InputObjectTypeDefinitionNode) => {
-        const visitor = new Visitor('input', schema, config);
+        const visitor = this.createVisitor('input');
         const name = visitor.convertName(node.name.value);
-        importTypes.push(name);
-
-        const shape = node.fields?.map(field => generateFieldMyZodSchema(config, visitor, field, 2)).join(',\n');
-
-        switch (config.validationSchemaExportType) {
-          case 'const':
-            return new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${name}Schema: myzod.Type<${name}>`)
-              .withContent(['myzod.object({', shape, '})'].join('\n')).string;
-
-          case 'function':
-          default:
-            return new DeclarationBlock({})
-              .export()
-              .asKind('function')
-              .withName(`${name}Schema(): myzod.Type<${name}>`)
-              .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
-        }
+        this.importTypes.push(name);
+        return this.buildInputFields(node.fields ?? [], visitor, name);
       },
-    },
-    ObjectTypeDefinition: {
-      leave: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
-        const visitor = new Visitor('output', schema, config);
+    };
+  }
+
+  get ObjectTypeDefinition() {
+    return {
+      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+        const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
-        importTypes.push(name);
+        this.importTypes.push(name);
 
         // Building schema for field arguments.
-        const argumentBlocks = visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
-          importTypes.push(typeName);
-          const args = field.arguments ?? [];
-          const shape = args.map(field => generateFieldMyZodSchema(config, visitor, field, 2)).join(',\n');
-          switch (config.validationSchemaExportType) {
-            case 'const':
-              return new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${typeName}Schema: myzod.Type<${typeName}>`)
-                .withContent([`myzod.object({`, shape, '})'].join('\n')).string;
-
-            case 'function':
-            default:
-              return new DeclarationBlock({})
-                .export()
-                .asKind('function')
-                .withName(`${typeName}Schema(): myzod.Type<${typeName}>`)
-                .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
-          }
-        });
+        const argumentBlocks = this.buildObjectTypeDefinitionArguments(node, visitor);
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldMyZodSchema(config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
 
-        switch (config.validationSchemaExportType) {
+        switch (this.config.validationSchemaExportType) {
           case 'const':
             return (
               new DeclarationBlock({})
@@ -135,16 +99,19 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
             );
         }
       }),
-    },
-    EnumTypeDefinition: {
+    };
+  }
+
+  get EnumTypeDefinition() {
+    return {
       leave: (node: EnumTypeDefinitionNode) => {
-        const visitor = new Visitor('both', schema, config);
+        const visitor = this.createVisitor('both');
         const enumname = visitor.convertName(node.name.value);
-        importTypes.push(enumname);
+        this.importTypes.push(enumname);
         // z.enum are basically myzod.literals
         // hoist enum declarations
-        enumDeclarations.push(
-          config.enumsAsTypes
+        this.enumDeclarations.push(
+          this.config.enumsAsTypes
             ? new DeclarationBlock({})
                 .export()
                 .asKind('type')
@@ -159,12 +126,15 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
                 .withContent(`myzod.enum(${enumname})`).string
         );
       },
-    },
-    UnionTypeDefinition: {
-      leave: (node: UnionTypeDefinitionNode) => {
-        if (!node.types || !config.withObjectType) return;
+    };
+  }
 
-        const visitor = new Visitor('output', schema, config);
+  get UnionTypeDefinition() {
+    return {
+      leave: (node: UnionTypeDefinitionNode) => {
+        if (!node.types || !this.config.withObjectType) return;
+
+        const visitor = this.createVisitor('output');
 
         const unionName = visitor.convertName(node.name.value);
         const unionElements = node.types
@@ -174,7 +144,7 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
             if (typ?.astNode?.kind === 'EnumTypeDefinition') {
               return `${element}Schema`;
             }
-            switch (config.validationSchemaExportType) {
+            switch (this.config.validationSchemaExportType) {
               case 'const':
                 return `${element}Schema`;
               case 'function':
@@ -187,7 +157,7 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
 
         const union = unionElementsCount > 1 ? `myzod.union([${unionElements}])` : unionElements;
 
-        switch (config.validationSchemaExportType) {
+        switch (this.config.validationSchemaExportType) {
           case 'const':
             return new DeclarationBlock({}).export().asKind('const').withName(`${unionName}Schema`).withContent(union)
               .string;
@@ -200,9 +170,34 @@ export const MyZodSchemaVisitor = (schema: GraphQLSchema, config: ValidationSche
               .withBlock(indent(`return ${union}`)).string;
         }
       },
-    },
-  };
-};
+    };
+  }
+
+  protected buildInputFields(
+    fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[],
+    visitor: Visitor,
+    name: string
+  ) {
+    const shape = fields.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
+
+    switch (this.config.validationSchemaExportType) {
+      case 'const':
+        return new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`${name}Schema: myzod.Type<${name}>`)
+          .withContent(['myzod.object({', shape, '})'].join('\n')).string;
+
+      case 'function':
+      default:
+        return new DeclarationBlock({})
+          .export()
+          .asKind('function')
+          .withName(`${name}Schema(): myzod.Type<${name}>`)
+          .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
+    }
+  }
+}
 
 const generateFieldMyZodSchema = (
   config: ValidationSchemaPluginConfig,
