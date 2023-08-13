@@ -5,7 +5,8 @@ export type NewVisitor = Partial<{
     leave?: ASTVisitFn<NodeT>;
   };
 }>;
-export type SchemaVisitor = {
+
+export interface SchemaVisitor extends NewVisitor {
   buildImports: () => string[];
   initialEmit: () => string;
-} & NewVisitor;
+}

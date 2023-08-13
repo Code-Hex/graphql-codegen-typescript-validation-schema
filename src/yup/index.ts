@@ -10,61 +10,56 @@ import {
   TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
+import { BaseSchemaVisitor } from 'src/schema_visitor';
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
-import { SchemaVisitor } from '../types';
 import { Visitor } from '../visitor';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
 
-const importYup = `import * as yup from 'yup'`;
+export class YupSchemaVisitor extends BaseSchemaVisitor {
+  constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
+    super(schema, config);
+  }
 
-export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
-  const importTypes: string[] = [];
-  const enumDeclarations: string[] = [];
+  importValidationSchema(): string {
+    return `import * as yup from 'yup'`;
+  }
 
-  return {
-    buildImports: (): string[] => {
-      if (config.importFrom && importTypes.length > 0) {
-        return [
-          importYup,
-          `import ${config.useTypeImports ? 'type ' : ''}{ ${importTypes.join(', ')} } from '${config.importFrom}'`,
-        ];
-      }
-      return [importYup];
-    },
-    initialEmit: (): string => {
-      if (!config.withObjectType) return '\n' + enumDeclarations.join('\n');
-      return (
-        '\n' +
-        enumDeclarations.join('\n') +
-        '\n' +
-        new DeclarationBlock({})
-          .asKind('function')
-          .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
-          .withBlock(
-            [
-              indent('return yup.mixed<T>().test({'),
-              indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
-              indent('}).defined()'),
-            ].join('\n')
-          ).string
-      );
-    },
-    InputObjectTypeDefinition: {
+  initialEmit(): string {
+    if (!this.config.withObjectType) return '\n' + this.enumDeclarations.join('\n');
+    return (
+      '\n' +
+      this.enumDeclarations.join('\n') +
+      '\n' +
+      new DeclarationBlock({})
+        .asKind('function')
+        .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
+        .withBlock(
+          [
+            indent('return yup.mixed<T>().test({'),
+            indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
+            indent('}).defined()'),
+          ].join('\n')
+        ).string
+    );
+  }
+
+  get InputObjectTypeDefinition() {
+    return {
       leave: (node: InputObjectTypeDefinitionNode) => {
-        const visitor = new Visitor('input', schema, config);
+        const visitor = this.createVisitor('input');
         const name = visitor.convertName(node.name.value);
-        importTypes.push(name);
+        this.importTypes.push(name);
 
         const shape = node.fields
           ?.map(field => {
-            const fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
+            const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
             return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
           })
           .join(',\n');
 
-        switch (config.validationSchemaExportType) {
+        switch (this.config.validationSchemaExportType) {
           case 'const':
             return new DeclarationBlock({})
               .export()
@@ -81,19 +76,22 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
               .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
         }
       },
-    },
-    ObjectTypeDefinition: {
-      leave: ObjectTypeDefinitionBuilder(config.withObjectType, (node: ObjectTypeDefinitionNode) => {
-        const visitor = new Visitor('output', schema, config);
+    };
+  }
+
+  get ObjectTypeDefinition() {
+    return {
+      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+        const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
-        importTypes.push(name);
+        this.importTypes.push(name);
 
         // Building schema for field arguments.
         const argumentBlocks = visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
-          importTypes.push(typeName);
+          this.importTypes.push(typeName);
           const args = field.arguments ?? [];
-          const shape = args.map(field => generateFieldYupSchema(config, visitor, field, 2)).join(',\n');
-          switch (config.validationSchemaExportType) {
+          const shape = args.map(field => generateFieldYupSchema(this.config, visitor, field, 2)).join(',\n');
+          switch (this.config.validationSchemaExportType) {
             case 'const':
               return new DeclarationBlock({})
                 .export()
@@ -113,15 +111,14 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
         // Building schema for fields.
-
         const shape = node.fields
           ?.map(field => {
-            const fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
+            const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
             return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
           })
           .join(',\n');
 
-        switch (config.validationSchemaExportType) {
+        switch (this.config.validationSchemaExportType) {
           case 'const':
             return (
               new DeclarationBlock({})
@@ -156,18 +153,21 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
             );
         }
       }),
-    },
-    EnumTypeDefinition: {
+    };
+  }
+
+  get EnumTypeDefinition() {
+    return {
       leave: (node: EnumTypeDefinitionNode) => {
-        const visitor = new Visitor('both', schema, config);
+        const visitor = this.createVisitor('both');
         const enumname = visitor.convertName(node.name.value);
-        importTypes.push(enumname);
+        this.importTypes.push(enumname);
 
         // hoise enum declarations
-        if (config.enumsAsTypes) {
+        if (this.config.enumsAsTypes) {
           const enums = node.values?.map(enumOption => `'${enumOption.name.value}'`);
 
-          enumDeclarations.push(
+          this.enumDeclarations.push(
             new DeclarationBlock({})
               .export()
               .asKind('const')
@@ -184,7 +184,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
                 })}`
             )
             .join(', ');
-          enumDeclarations.push(
+          this.enumDeclarations.push(
             new DeclarationBlock({})
               .export()
               .asKind('const')
@@ -193,14 +193,17 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           );
         }
       },
-    },
-    UnionTypeDefinition: {
+    };
+  }
+
+  get UnionTypeDefinition() {
+    return {
       leave: (node: UnionTypeDefinitionNode) => {
-        if (!node.types || !config.withObjectType) return;
-        const visitor = new Visitor('output', schema, config);
+        if (!node.types || !this.config.withObjectType) return;
+        const visitor = this.createVisitor('output');
 
         const unionName = visitor.convertName(node.name.value);
-        importTypes.push(unionName);
+        this.importTypes.push(unionName);
 
         const unionElements = node.types
           ?.map(t => {
@@ -209,7 +212,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
             if (typ?.astNode?.kind === 'EnumTypeDefinition') {
               return `${element}Schema`;
             }
-            switch (config.validationSchemaExportType) {
+            switch (this.config.validationSchemaExportType) {
               case 'const':
                 return `${element}Schema`;
               case 'function':
@@ -219,7 +222,7 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
           })
           .join(', ');
 
-        switch (config.validationSchemaExportType) {
+        switch (this.config.validationSchemaExportType) {
           case 'const':
             return new DeclarationBlock({})
               .export()
@@ -235,28 +238,9 @@ export const YupSchemaVisitor = (schema: GraphQLSchema, config: ValidationSchema
               .withBlock(indent(`return union<${unionName}>(${unionElements})`)).string;
         }
       },
-    },
-    // ScalarTypeDefinition: (node) => {
-    //   const decl = new DeclarationBlock({})
-    //     .export()
-    //     .asKind("const")
-    //     .withName(`${node.name.value}Schema`);
-
-    //   if (tsVisitor.scalars[node.name.value]) {
-    //     const tsType = tsVisitor.scalars[node.name.value];
-    //     switch (tsType) {
-    //       case "string":
-    //         return decl.withContent(`yup.string()`).string;
-    //       case "number":
-    //         return decl.withContent(`yup.number()`).string;
-    //       case "boolean":
-    //         return decl.withContent(`yup.boolean()`).string;
-    //     }
-    //   }
-    //   return decl.withContent(`yup.mixed()`).string;
-    // },
-  };
-};
+    };
+  }
+}
 
 const generateFieldYupSchema = (
   config: ValidationSchemaPluginConfig,
