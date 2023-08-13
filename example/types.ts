@@ -78,6 +78,19 @@ export type LayoutInput = {
   dropdown?: InputMaybe<DropDownComponentInput>;
 };
 
+export type MyType = {
+  __typename?: 'MyType';
+  foo?: Maybe<Scalars['String']['output']>;
+};
+
+
+export type MyTypeFooArgs = {
+  a?: InputMaybe<Scalars['String']['input']>;
+  b: Scalars['Int']['input'];
+  c?: InputMaybe<Scalars['Boolean']['input']>;
+  d: Scalars['Float']['input'];
+};
+
 export type PageInput = {
   attributes?: InputMaybe<Array<AttributeInput>>;
   date?: InputMaybe<Scalars['Date']['input']>;

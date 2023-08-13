@@ -1,5 +1,5 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
-import { GraphQLSchema, NameNode, specifiedScalarTypes } from 'graphql';
+import { FieldDefinitionNode, GraphQLSchema, NameNode, ObjectTypeDefinitionNode, specifiedScalarTypes } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
 
@@ -49,5 +49,29 @@ export class Visitor extends TsVisitor {
     }
     const tsType = this.getScalarType(name);
     return tsType === 'string';
+  }
+
+  public buildArgumentsSchemaBlock(
+    node: ObjectTypeDefinitionNode,
+    callback: (typeName: string, field: FieldDefinitionNode) => string
+  ) {
+    const fieldsWithArguments = node.fields?.filter(field => field.arguments && field.arguments.length > 0) ?? [];
+    if (fieldsWithArguments.length === 0) {
+      return undefined;
+    }
+    return fieldsWithArguments
+      .map(field => {
+        const name =
+          node.name.value +
+          (this.config.addUnderscoreToArgsType ? '_' : '') +
+          this.convertName(field, {
+            useTypesPrefix: false,
+            useTypesSuffix: false,
+          }) +
+          'Args';
+
+        return callback(name, field);
+      })
+      .join('\n');
   }
 }

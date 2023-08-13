@@ -871,6 +871,38 @@ describe('zod', () => {
         expect(result.content).toContain(wantContain);
       }
     });
+
+    it('with object arguments', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type MyType {
+          foo(a: String, b: Int!, c: Boolean, d: Float!, e: Text): String
+        }
+        scalar Text
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withObjectType: true,
+          scalars: {
+            Text: 'string',
+          },
+        },
+        {}
+      );
+      const wantContain = dedent`
+      export function MyTypeFooArgsSchema(): z.ZodObject<Properties<MyTypeFooArgs>> {
+        return z.object({
+          a: z.string().nullish(),
+          b: z.number(),
+          c: z.boolean().nullish(),
+          d: z.number(),
+          e: z.string().nullish()
+        })
+      }`;
+      expect(result.content).toContain(wantContain);
+    });
   });
 
   it('properly generates custom directive values', async () => {
