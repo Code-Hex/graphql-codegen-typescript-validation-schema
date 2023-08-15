@@ -86,8 +86,8 @@ devDependencies:
     specifier: 1.2.0
     version: 1.2.0
   zod:
-    specifier: 3.22.0
-    version: 3.22.0
+    specifier: 3.22.1
+    version: 3.22.1
 
 packages:
 
@@ -6356,6 +6356,6 @@ packages:
       type-fest: 2.19.0
     dev: true
 
-  /zod@3.22.0:
-    resolution: {integrity: sha512-y5KZY/ssf5n7hCGDGGtcJO/EBJEm5Pa+QQvFBeyMOtnFYOSflalxIFFvdaYevPhePcmcKC4aTbFkCcXN7D0O8Q==}
+  /zod@3.22.1:
+    resolution: {integrity: sha512-+qUhAMl414+Elh+fRNtpU+byrwjDFOS1N7NioLY+tSlcADTx4TkCUua/hxJvxwDXcV4397/nZ420jy4n4+3WUg==}
     dev: true
