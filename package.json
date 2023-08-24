@@ -65,7 +65,7 @@
     "prettier": "3.0.2",
     "ts-dedent": "^2.2.0",
     "ts-jest": "29.1.1",
-    "typescript": "5.1.6",
+    "typescript": "5.2.2",
     "vitest": "^0.34.1",
     "yup": "1.2.0",
     "zod": "3.22.2"
