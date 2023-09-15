@@ -62,8 +62,8 @@ devDependencies:
     specifier: 29.7.0
     version: 29.7.0(@types/node@18.17.5)
   myzod:
-    specifier: 1.10.1
-    version: 1.10.1
+    specifier: 1.10.2
+    version: 1.10.2
   npm-run-all:
     specifier: 4.1.5
     version: 4.1.5
@@ -4884,8 +4884,8 @@ packages:
     resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
     dev: true
 
-  /myzod@1.10.1:
-    resolution: {integrity: sha512-Ul61O4muREw0opIDuG4+j9c/b8kIr6CtjI8e+OJ2q09wzJtiiq4mQ5hWBDhMY12YbLXaof7bRh609BDiCZZsLg==}
+  /myzod@1.10.2:
+    resolution: {integrity: sha512-vTVMVAWMJxXjMpScUuLg583NiYnAMit78Y4ZOkAQXevCQp3ZwlXuTY/aWrgTXxbDTysei3kahkvkbNSNy93o2g==}
     dev: true
 
   /nanoid@3.3.6:
