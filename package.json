@@ -50,7 +50,7 @@
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.0",
     "@graphql-codegen/typescript": "^4.0.0",
-    "@tsconfig/recommended": "1.0.2",
+    "@tsconfig/recommended": "1.0.3",
     "@types/graphlib": "^2.1.8",
     "@types/jest": "29.5.5",
     "@types/node": "^18.17.5",
