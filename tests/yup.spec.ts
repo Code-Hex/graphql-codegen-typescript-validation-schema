@@ -1,8 +1,8 @@
-import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql'
-import dedent from 'ts-dedent'
+import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
+import dedent from 'ts-dedent';
 
-import { YupNullishSchemaTypes } from '../src/config'
-import { plugin } from '../src/index'
+import { YupNullishSchemaTypes } from '../src/config';
+import { plugin } from '../src/index';
 
 describe('yup', () => {
   test.each([
