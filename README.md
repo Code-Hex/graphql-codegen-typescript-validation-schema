@@ -13,7 +13,7 @@
 Start by installing this plugin and write simple plugin config;
 
 ```sh
-$ npm i graphql-codegen-typescript-validation-schema
+npm i graphql-codegen-typescript-validation-schema
 ```
 
 ```yml
@@ -166,14 +166,15 @@ type: `MyZodNullishSchemaType` | `YupNullishSchemaType` | `ZodNullishSchemaType`
 
 Chooses which nullish schema to use
 
-### myzod schema
+### `maybeSchemaValue`: myzod schema
+
 ```yml
 config:
   schema: myzod
   # maybeSchemaValue: no valid options
 ```
 
-#### yup schema
+#### `maybeSchemaValue`: yup schema
 
 ```yml
 config:
@@ -181,7 +182,7 @@ config:
   maybeSchemaValue: nullable
 ```
 
-#### zod schema
+#### `maybeSchemaValue`: zod schema
 
 ```yml
 config:
@@ -201,7 +202,7 @@ type: `ScalarSchemas`
 
 Extends or overrides validation schema for the built-in scalars and custom GraphQL scalars.
 
-#### yup schema
+#### `scalarSchemas`: yup schema
 
 ```yml
 config:
@@ -211,7 +212,7 @@ config:
     Email: yup.string().email()
 ```
 
-#### zod schema
+#### `scalarSchemas`: zod schema
 
 ```yml
 config:
