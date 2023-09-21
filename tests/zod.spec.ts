@@ -1,8 +1,8 @@
-import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql'
-import { dedent } from 'ts-dedent'
+import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
+import { dedent } from 'ts-dedent';
 
-import { ZodNullishSchemaTypes } from '../src/config'
-import { plugin } from '../src/index'
+import { ZodNullishSchemaTypes } from '../src/config';
+import { plugin } from '../src/index';
 
 describe('zod', () => {
   test.each([
