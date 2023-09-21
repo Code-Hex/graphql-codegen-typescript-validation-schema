@@ -1,4 +1,4 @@
-import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common'
+import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
@@ -9,13 +9,13 @@ import {
   ObjectTypeDefinitionNode,
   TypeNode,
   UnionTypeDefinitionNode,
-} from 'graphql'
+} from 'graphql';
 
-import { ValidationSchemaPluginConfig } from '../config'
-import { buildApi, formatDirectiveConfig } from '../directive'
-import { BaseSchemaVisitor } from '../schema_visitor'
-import { Visitor } from '../visitor'
-import { ObjectTypeDefinitionBuilder, isInput, isListType, isNamedType, isNonNullType } from './../graphql'
+import { ValidationSchemaPluginConfig } from '../config';
+import { buildApi, formatDirectiveConfig } from '../directive';
+import { BaseSchemaVisitor } from '../schema_visitor';
+import { Visitor } from '../visitor';
+import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
 
 const anySchema = `definedNonNullAnySchema`;
 
