@@ -1,4 +1,4 @@
-import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common'
 import {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
@@ -9,13 +9,13 @@ import {
   ObjectTypeDefinitionNode,
   TypeNode,
   UnionTypeDefinitionNode,
-} from 'graphql';
+} from 'graphql'
 
-import { ValidationSchemaPluginConfig } from '../config';
-import { buildApi, formatDirectiveConfig } from '../directive';
-import { BaseSchemaVisitor } from '../schema_visitor';
-import { Visitor } from '../visitor';
-import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
+import { ValidationSchemaPluginConfig } from '../config'
+import { buildApi, formatDirectiveConfig } from '../directive'
+import { BaseSchemaVisitor } from '../schema_visitor'
+import { Visitor } from '../visitor'
+import { ObjectTypeDefinitionBuilder, isInput, isListType, isNamedType, isNonNullType } from './../graphql'
 
 export class YupSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
@@ -252,7 +252,7 @@ const generateFieldTypeYupSchema = (
   if (isListType(type)) {
     const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
     if (!isNonNullType(parentType)) {
-      return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
+      return `yup.array(${maybeLazy(type.type, gen)}).defined().${config.maybeSchemaValue ? config.maybeSchemaValue : 'nullable'}()`;
     }
     return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
   }
@@ -272,7 +272,7 @@ const generateFieldTypeYupSchema = (
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
       return `${gen}`;
     }
-    return `${gen}.nullable()`;
+    return `${gen}.${config.maybeSchemaValue ? config.maybeSchemaValue : 'nullable'}()`;
   }
   console.warn('unhandled type:', type);
   return '';

@@ -1,4 +1,4 @@
-import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common'
 import {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
@@ -9,13 +9,13 @@ import {
   ObjectTypeDefinitionNode,
   TypeNode,
   UnionTypeDefinitionNode,
-} from 'graphql';
+} from 'graphql'
 
-import { ValidationSchemaPluginConfig } from '../config';
-import { buildApi, formatDirectiveConfig } from '../directive';
-import { BaseSchemaVisitor } from '../schema_visitor';
-import { Visitor } from '../visitor';
-import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
+import { ValidationSchemaPluginConfig } from '../config'
+import { buildApi, formatDirectiveConfig } from '../directive'
+import { BaseSchemaVisitor } from '../schema_visitor'
+import { Visitor } from '../visitor'
+import { ObjectTypeDefinitionBuilder, isInput, isListType, isNamedType, isNonNullType } from './../graphql'
 
 const anySchema = `definedNonNullAnySchema`;
 
@@ -234,7 +234,7 @@ const generateFieldTypeZodSchema = (
     if (!isNonNullType(parentType)) {
       const arrayGen = `z.array(${maybeLazy(type.type, gen)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
-      return `${maybeLazyGen}.nullish()`;
+      return `${maybeLazyGen}.${config.maybeSchemaValue ? config.maybeSchemaValue : 'nullish'}()`;
     }
     return `z.array(${maybeLazy(type.type, gen)})`;
   }
@@ -257,7 +257,7 @@ const generateFieldTypeZodSchema = (
     if (isListType(parentType)) {
       return `${appliedDirectivesGen}.nullable()`;
     }
-    return `${appliedDirectivesGen}.nullish()`;
+    return `${appliedDirectivesGen}.${config.maybeSchemaValue ? config.maybeSchemaValue : 'nullish'}()`;
   }
   console.warn('unhandled type:', type);
   return '';

@@ -1,7 +1,14 @@
-import { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
+import { type TypeScriptPluginConfig } from '@graphql-codegen/typescript'
 
 export type ValidationSchema = 'yup' | 'zod' | 'myzod';
 export type ValidationSchemaExportType = 'function' | 'const';
+
+export const MyZodNullishSchemaTypes = [] as const;
+export type MyZodNullishSchemaType = typeof MyZodNullishSchemaTypes[number];
+export const ZodNullishSchemaTypes = ['nullable', 'optional', 'nullish'] as const;
+export type ZodNullishSchemaType = typeof ZodNullishSchemaTypes[number];
+export const YupNullishSchemaTypes = ['nullable', 'optional', 'notRequired'] as const;
+export type YupNullishSchemaType = typeof YupNullishSchemaTypes[number];
 
 export interface DirectiveConfig {
   [directive: string]: {
@@ -17,23 +24,96 @@ interface ScalarSchemas {
   [name: string]: string;
 }
 
-export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
+interface MyZodValidationSchemaPluginConfig extends BaseValidationSchemaPluginConfig {
+/**
+ * @description specify generate schema
+ * @default yup
+ * @exampleMarkdown
+ * ```yml
+ * generates:
+ *   path/to/file.ts:
+ *     plugins:
+ *       - typescript
+ *       - graphql-codegen-validation-schema
+ *     config:
+ *       schema: myzod
+ * ```
+ */
+  schema?: 'myzod';
+  maybeSchemaValue?: MyZodNullishSchemaType
+}
+
+interface YupNullableSchemaTypesPluginConfig extends BaseValidationSchemaPluginConfig {
   /**
-   * @description specify generate schema
-   * @default yup
-   *
-   * @exampleMarkdown
-   * ```yml
-   * generates:
-   *   path/to/file.ts:
-   *     plugins:
-   *       - typescript
-   *       - graphql-codegen-validation-schema
-   *     config:
-   *       schema: yup
-   * ```
-   */
-  schema?: ValidationSchema;
+ * @description specify generate schema
+ * @default yup
+ * @exampleMarkdown
+ * ```yml
+ * generates:
+ *   path/to/file.ts:
+ *     plugins:
+ *       - typescript
+ *       - graphql-codegen-validation-schema
+ *     config:
+ *       schema: yup
+ * ```
+ */
+  schema?: 'yup'
+  /**
+ * @description Set the schema value for nullish types.
+ * @default nullable
+ * @exampleMarkdown
+ * ```yml
+ * generates:
+ *   path/to/file.ts:
+ *     plugins:
+ *       - typescript
+ *       - graphql-codegen-validation-schema
+ *     config:
+ *       maybeSchemaValue: nullable
+ * ```
+ * 
+ * 
+ */
+  maybeSchemaValue?: YupNullishSchemaType
+}
+
+interface ZodNullableSchemaTypesPluginConfig extends BaseValidationSchemaPluginConfig {
+  /**
+ * @description specify generate schema
+ * @default yup
+ * @exampleMarkdown
+ * ```yml
+ * generates:
+ *   path/to/file.ts:
+ *     plugins:
+ *       - typescript
+ *       - graphql-codegen-validation-schema
+ *     config:
+ *       schema: zod
+ * ```
+ */
+  schema?: 'zod'
+  /**
+ * @description Set the schema value for nullish types.
+ * @default nullish
+ * @exampleMarkdown
+ * ```yml
+ * generates:
+ *   path/to/file.ts:
+ *     plugins:
+ *       - typescript
+ *       - graphql-codegen-validation-schema
+ *     config:
+ *       maybeSchemaValue: nullish
+ * ```
+ * 
+ * 
+ */
+  maybeSchemaValue?: ZodNullishSchemaType
+}
+
+export interface BaseValidationSchemaPluginConfig extends TypeScriptPluginConfig {
   /**
    * @description import types from generated typescript type path
    * if not given, omit import statement.
@@ -252,3 +332,8 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   directives?: DirectiveConfig;
 }
+
+export type ValidationSchemaPluginConfig =
+  | MyZodValidationSchemaPluginConfig
+  | YupNullableSchemaTypesPluginConfig
+  | ZodNullableSchemaTypesPluginConfig

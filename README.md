@@ -154,6 +154,41 @@ type: `boolean` default: `false`
 
 Generates enum as TypeScript `type` instead of `enum`.
 
+### `maybeSchemaValue`
+
+type: `MyZodNullishSchemaType` | `YupNullishSchemaType` | `ZodNullishSchemaType`
+
+| schema  | type                     | values                                          | default      |
+| ------- | ------------------------ | ----------------------------------------------- | ------------ |
+| `myzod` | `MyZodNullishSchemaType` | `never`                                         | `never`      |
+| `yup`   | `YupNullishSchemaType`   | `'nullable'` \| `'optional'` \| `'notRequired'` | `'nullable'` |
+| `zod`   | `ZodNullishSchemaType`   | `'nullable'` \| `'optional'` \| `'nullish'`     | `'nullish'`  |
+
+Chooses which nullish schema to use
+
+### myzod schema
+```yml
+config:
+  schema: myzod
+  # maybeSchemaValue: no valid options
+```
+
+#### yup schema
+
+```yml
+config:
+  schema: yup
+  maybeSchemaValue: nullable
+```
+
+#### zod schema
+
+```yml
+config:
+  schema: zod
+  maybeSchemaValue: optional
+```
+
 ### `notAllowEmptyString`
 
 type: `boolean` default: `false`
