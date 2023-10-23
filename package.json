@@ -15,7 +15,6 @@
     "README.md"
   ],
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
     "type-check": "tsc --noEmit",
     "type-check:yup": "tsc --strict --noEmit example/yup/schemas.ts",
     "type-check:zod": "tsc --strict --noEmit example/zod/schemas.ts",
