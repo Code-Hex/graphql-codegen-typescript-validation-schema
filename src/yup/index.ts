@@ -237,7 +237,7 @@ const generateFieldYupSchema = (
 ): string => {
   let gen = generateFieldTypeYupSchema(config, visitor, field.type);
   if (field.directives) {
-    gen += buildApi(config.rules ?? {}, field.directives);
+    gen += buildApi(config.rules ?? {}, config.ignoreRules ?? [], field.directives);
   }
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };

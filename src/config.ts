@@ -203,9 +203,13 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *     config:
    *       schema: yup
    *       rules:
-   *         minLength: min # same as ['min', '$1']
+   *         minLength: min
    *         maxLength: max
    * ```
    */
   rules?: Rules;
+  /**
+   * a list of rules to ignore
+   */
+  ignoreRules: string[];
 }
