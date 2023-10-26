@@ -17,7 +17,7 @@ import { codify, parse } from './laravel_validation_rule';
  *   email: String! @rules(apply: ["minLength:100", "email"])
  * }
  */
-const supportedDirectiveNames = ['rules', 'rulesForArray', 'rulesForInput'] as const;
+const supportedDirectiveNames = ['rules', 'rulesForArray'] as const;
 type SupportedDirectiveName = (typeof supportedDirectiveNames)[number];
 const supportedArgumentName = 'apply';
 
@@ -35,7 +35,6 @@ export const buildApi = (
   const ret: GeneratedCodesForDirectives = {
     rules: '',
     rulesForArray: '',
-    rulesForInput: '',
   };
 
   for (const directive of directives) {

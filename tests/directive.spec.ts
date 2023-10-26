@@ -50,7 +50,6 @@ describe('format directive config', () => {
       {
         rules: `.email("rfc").between(0,255)`,
         rulesForArray: '',
-        rulesForInput: '',
       },
     ],
   ])('buildApi %s', (_, { rules, ignoreRules, args }, want) => {
