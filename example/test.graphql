@@ -77,8 +77,8 @@ enum EventOptionType {
 }
 
 input EventArgumentInput {
-  name: String! @constraint(minLength: 5)
-  value: String! @constraint(startsWith: "foo")
+  name: String! @rules(apply: ["varchar"])
+  value: String! @rules(apply: ["startsWith:Sir"])
 }
 
 input HTTPInput {
@@ -98,22 +98,6 @@ type MyType {
   foo(a: String, b: Int!, c: Boolean, d: Float!): String
 }
 
-# https://github.com/confuser/graphql-constraint-directive
-directive @constraint(
-  # String constraints
-  minLength: Int
-  maxLength: Int
-  startsWith: String
-  endsWith: String
-  contains: String
-  notContains: String
-  pattern: String
-  format: String
-  # Number constraints
-  min: Float
-  max: Float
-  exclusiveMin: Float
-  exclusiveMax: Float
-  multipleOf: Float
-  uniqueTypeName: String
+directive @rules(
+  apply: [String!]!
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION

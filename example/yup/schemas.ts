@@ -48,8 +48,8 @@ export function DropDownComponentInputSchema(): yup.ObjectSchema<DropDownCompone
 
 export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput> {
   return yup.object({
-    name: yup.string().defined().nonNullable().min(5),
-    value: yup.string().defined().nonNullable().matches(/^foo/)
+    name: yup.string().defined().nonNullable().varchar(),
+    value: yup.string().defined().nonNullable().startsWith("Sir")
   })
 }
 
