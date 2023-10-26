@@ -1,7 +1,9 @@
+import { describe, it, test, expect } from 'vitest';
+
 import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import dedent from 'ts-dedent';
 
-import { plugin } from '../src/index';
+import { plugin } from '../src';
 
 describe('yup', () => {
   test.each([
@@ -309,7 +311,6 @@ describe('yup', () => {
       schema,
       [],
       {
-        schema: 'yup',
         notAllowEmptyString: true,
         scalars: {
           ID: 'string',
@@ -403,14 +404,7 @@ describe('yup', () => {
           name: String
         }
       `);
-      const result = await plugin(
-        schema,
-        [],
-        {
-          schema: 'yup',
-        },
-        {}
-      );
+      const result = await plugin(schema, [], {}, {});
       expect(result.content).not.toContain('export function UserSchema(): yup.ObjectSchema<User> {');
     });
 
@@ -435,7 +429,6 @@ describe('yup', () => {
         schema,
         [],
         {
-          schema: 'yup',
           withObjectType: true,
         },
         {}
@@ -504,7 +497,6 @@ describe('yup', () => {
         schema,
         [],
         {
-          schema: 'yup',
           withObjectType: true,
           scalarSchemas: {
             Date: 'yup.date()',
@@ -563,7 +555,6 @@ describe('yup', () => {
         schema,
         [],
         {
-          schema: 'yup',
           withObjectType: true,
         },
         {}
@@ -599,7 +590,6 @@ describe('yup', () => {
         schema,
         [],
         {
-          schema: 'yup',
           withObjectType: true,
         },
         {}
@@ -629,7 +619,6 @@ describe('yup', () => {
         schema,
         [],
         {
-          schema: 'yup',
           withObjectType: true,
         },
         {}
@@ -665,7 +654,6 @@ describe('yup', () => {
         schema,
         [],
         {
-          schema: 'yup',
           withObjectType: true,
         },
         {}
@@ -700,7 +688,6 @@ describe('yup', () => {
         schema,
         [],
         {
-          schema: 'yup',
           withObjectType: true,
           validationSchemaExportType: 'const',
         },
@@ -729,7 +716,6 @@ describe('yup', () => {
         schema,
         [],
         {
-          schema: 'yup',
           withObjectType: true,
           scalars: {
             Text: 'string',
@@ -754,34 +740,33 @@ describe('yup', () => {
   it('properly generates custom directive values', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input UserCreateInput {
-        name: String! @constraint(startsWith: "Sir")
-        age: Int! @constraint(min: 0, max: 100)
+        id: ID! @rules(apply: ["exists"])
+        name: String! @rules(apply: ["startsWith:Sir"])
+        age: Int! @rules(apply: ["min:0", "max:100"])
       }
-      directive @constraint(startsWith: String, min: Int, max: Int) on INPUT_FIELD_DEFINITION
+      directive @rules(apply: [String!]!) on INPUT_FIELD_DEFINITION
     `);
     const result = await plugin(
       schema,
       [],
       {
-        schema: 'yup',
-        directives: {
-          constraint: {
-            min: 'min',
-            max: 'max',
-            startsWith: ['matches', '/^$1/'],
-          },
-        },
+        rules: {},
+        ignoreRules: ['exists'],
       },
       {}
     );
     const wantContains = [
       // User Create Input
       'export function UserCreateInputSchema(): yup.ObjectSchema<UserCreateInput> {',
-      'name: yup.string().defined().nonNullable().matches(/^Sir/),',
+      'name: yup.string().defined().nonNullable().startsWith("Sir"),',
       'age: yup.number().defined().nonNullable().min(0).max(100)',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
+    }
+    const wantNotContains = ['id: yup.string().defined().nonNullable().exists(),'];
+    for (const wantNotContain of wantNotContains) {
+      expect(result.content).not.toContain(wantNotContain);
     }
   });
 
@@ -795,7 +780,6 @@ describe('yup', () => {
       schema,
       [],
       {
-        schema: 'yup',
         validationSchemaExportType: 'const',
       },
       {}
@@ -834,7 +818,6 @@ describe('yup', () => {
       schema,
       [],
       {
-        schema: 'yup',
         withObjectType: true,
         scalarSchemas: {
           Date: 'yup.date()',
@@ -890,7 +873,6 @@ describe('yup', () => {
       clientSchema,
       [],
       {
-        schema: 'yup',
         scalars: {
           ID: 'string',
         },

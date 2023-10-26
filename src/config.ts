@@ -211,5 +211,5 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
   /**
    * a list of rules to ignore
    */
-  ignoreRules: string[];
+  ignoreRules?: string[];
 }

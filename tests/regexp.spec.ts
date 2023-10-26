@@ -1,3 +1,5 @@
+import { describe, test, expect } from 'vitest';
+
 import { isConvertableRegexp } from '../src/regexp';
 
 describe('isConvertableRegexp', () => {

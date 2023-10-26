@@ -74,10 +74,6 @@ const mapMethodName = (rules: Rules, ruleName: string): string => {
   return ruleMapping;
 };
 
-export const exportedForTesting = {
-  buildApiFromDirectiveArguments,
-};
-
 function assertValueIsList(value: ConstValueNode, message: string): asserts value is ConstListValueNode {
   if (value.kind !== Kind.LIST) {
     throw new Error(message);
