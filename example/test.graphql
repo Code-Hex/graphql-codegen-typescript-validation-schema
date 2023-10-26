@@ -99,6 +99,12 @@ type MyType {
   foo(a: String, b: Int!, c: Boolean, d: Float!): String
 }
 
+type Mutation {
+  hello(
+    message: String! @rules(apply: ["required", "min:5"]),
+  ): String
+}
+
 directive @rules(
   apply: [String!]!
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION

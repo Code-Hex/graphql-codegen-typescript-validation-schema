@@ -175,7 +175,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       withObjectType: true
    * ```
    */
-  withObjectType?: boolean;
+  withObjectType?: false | 'no-reserved' | 'all';
   /**
    * @description Specify validation schema export type.
    * @default function

@@ -79,6 +79,16 @@ export type LayoutInput = {
   dropdown?: InputMaybe<DropDownComponentInput>;
 };
 
+export type Mutation = {
+  __typename?: 'Mutation';
+  hello?: Maybe<Scalars['String']['output']>;
+};
+
+
+export type MutationHelloArgs = {
+  message: Scalars['String']['input'];
+};
+
 export type MyType = {
   __typename?: 'MyType';
   foo?: Maybe<Scalars['String']['output']>;

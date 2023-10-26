@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, PageInput, PageType, User, UserKind } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, Mutation, MutationHelloArgs, MyType, MyTypeFooArgs, PageInput, PageType, User, UserKind } from '../types'
 
 export const ButtonComponentTypeSchema = yup.string<ButtonComponentType>().oneOf([ButtonComponentType.Button, ButtonComponentType.Submit]).defined();
 
@@ -78,6 +78,19 @@ export function HttpInputSchema(): yup.ObjectSchema<HttpInput> {
 export function LayoutInputSchema(): yup.ObjectSchema<LayoutInput> {
   return yup.object({
     dropdown: yup.lazy(() => DropDownComponentInputSchema()).optional()
+  })
+}
+
+export function MutationSchema(): yup.ObjectSchema<Mutation> {
+  return yup.object({
+    __typename: yup.string<'Mutation'>().optional(),
+    hello: yup.string().defined().nullable().optional()
+  })
+}
+
+export function MutationHelloArgsSchema(): yup.ObjectSchema<MutationHelloArgs> {
+  return yup.object({
+    message: yup.string().defined().required().min(5).nonNullable()
   })
 }
 
