@@ -8,7 +8,7 @@ export abstract class BaseSchemaVisitor implements SchemaVisitor {
   protected importTypes: string[] = [];
   protected enumDeclarations: string[] = [];
 
-  constructor(
+  protected constructor(
     protected schema: GraphQLSchema,
     protected config: ValidationSchemaPluginConfig
   ) {}

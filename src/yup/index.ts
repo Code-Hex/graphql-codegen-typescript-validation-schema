@@ -12,7 +12,7 @@ import {
 } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
-import { buildApi, formatDirectiveConfig } from '../directive';
+import { buildApi } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import { Visitor } from '../visitor';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
@@ -236,9 +236,8 @@ const generateFieldYupSchema = (
   indentCount: number
 ): string => {
   let gen = generateFieldTypeYupSchema(config, visitor, field.type);
-  if (config.directives && field.directives) {
-    const formatted = formatDirectiveConfig(config.directives);
-    gen += buildApi(formatted, field.directives);
+  if (field.directives) {
+    gen += buildApi(config.rules ?? {}, field.directives);
   }
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };

@@ -1,211 +1,98 @@
-import { ConstArgumentNode, ConstDirectiveNode, ConstValueNode, Kind, valueFromASTUntyped } from 'graphql';
+import {
+  ConstArgumentNode,
+  ConstDirectiveNode,
+  ConstListValueNode,
+  ConstValueNode,
+  Kind,
+  StringValueNode,
+} from 'graphql';
 
-import { DirectiveConfig, DirectiveObjectArguments } from './config';
-import { isConvertableRegexp } from './regexp';
+import { Rules } from './config';
 
-export interface FormattedDirectiveConfig {
-  [directive: string]: FormattedDirectiveArguments;
-}
+/**
+ * GraphQL schema
+ * ```graphql
+ * input ExampleInput {
+ *   email: String! @rules(apply: ["minLength:100", "email"])
+ * }
+ */
+const targetDirectiveNames = ['rules', 'rulesForArray', 'rulesForInput'] as const;
+const targetArgumentName = 'apply';
 
-export interface FormattedDirectiveArguments {
-  [argument: string]: string[] | FormattedDirectiveObjectArguments | undefined;
-}
-
-export interface FormattedDirectiveObjectArguments {
-  [matched: string]: string[] | undefined;
-}
-
-const isFormattedDirectiveObjectArguments = (
-  arg: FormattedDirectiveArguments[keyof FormattedDirectiveArguments]
-): arg is FormattedDirectiveObjectArguments => arg !== undefined && !Array.isArray(arg);
-
-// ```yml
-// directives:
-//   required:
-//     msg: required
-//   constraint:
-//     minLength: min
-//     format:
-//       uri: url
-//       email: email
-// ```
-//
-// This function convterts to like below
-// {
-//   'required': {
-//     'msg': ['required', '$1'],
-//   },
-//   'constraint': {
-//     'minLength': ['min', '$1'],
-//     'format': {
-//       'uri': ['url', '$2'],
-//       'email': ['email', '$2'],
-//     }
-//   }
-// }
-export const formatDirectiveConfig = (config: DirectiveConfig): FormattedDirectiveConfig => {
-  return Object.fromEntries(
-    Object.entries(config).map(([directive, arg]) => {
-      const formatted = Object.fromEntries(
-        Object.entries(arg).map(([arg, val]) => {
-          if (Array.isArray(val)) {
-            return [arg, val];
-          }
-          if (typeof val === 'string') {
-            return [arg, [val, '$1']];
-          }
-          return [arg, formatDirectiveObjectArguments(val)];
-        })
-      );
-      return [directive, formatted];
-    })
-  );
-};
-
-// ```yml
-// format:
-//   # For example, `@constraint(format: "uri")`. this case $1 will be "uri".
-//   # Therefore the generator generates yup schema `.url()` followed by `uri: 'url'`
-//   # If $1 does not match anywhere, the generator will ignore.
-//   uri: url
-//   email: ["email", "$2"]
-// ```
-//
-// This function convterts to like below
-// {
-//   'uri': ['url', '$2'],
-//   'email': ['email'],
-// }
-export const formatDirectiveObjectArguments = (args: DirectiveObjectArguments): FormattedDirectiveObjectArguments => {
-  const formatted = Object.entries(args).map(([arg, val]) => {
-    if (Array.isArray(val)) {
-      return [arg, val];
-    }
-    return [arg, [val, '$2']];
-  });
-  return Object.fromEntries(formatted);
-};
-
-// This function generates `.required("message").min(100).email()`
-//
-// config
-// {
-//   'required': {
-//     'msg': ['required', '$1'],
-//   },
-//   'constraint': {
-//     'minLength': ['min', '$1'],
-//     'format': {
-//       'uri': ['url', '$2'],
-//       'email': ['email', '$2'],
-//     }
-//   }
-// }
-//
-// GraphQL schema
-// ```graphql
-// input ExampleInput {
-//   email: String! @required(msg: "message") @constraint(minLength: 100, format: "email")
-// }
-// ```
-export const buildApi = (config: FormattedDirectiveConfig, directives: ReadonlyArray<ConstDirectiveNode>): string =>
+export const buildApi = (rules: Rules, directives: ReadonlyArray<ConstDirectiveNode>): string =>
   directives
-    .filter(directive => config[directive.name.value] !== undefined)
+    .filter(directive => (targetDirectiveNames as readonly string[]).includes(directive.name.value))
     .map(directive => {
-      const directiveName = directive.name.value;
-      const argsConfig = config[directiveName];
-      return buildApiFromDirectiveArguments(argsConfig, directive.arguments ?? []);
+      return buildApiFromDirectiveArguments(rules, directive.arguments ?? []);
     })
     .join('');
 
-const buildApiSchema = (validationSchema: string[] | undefined, argValue: ConstValueNode): string => {
-  if (!validationSchema) {
-    return '';
-  }
-  const schemaApi = validationSchema[0];
-  const schemaApiArgs = validationSchema.slice(1).map(templateArg => {
-    const gqlSchemaArgs = apiArgsFromConstValueNode(argValue);
-    return applyArgToApiSchemaTemplate(templateArg, gqlSchemaArgs);
-  });
-  return `.${schemaApi}(${schemaApiArgs.join(', ')})`;
-};
-
-const buildApiFromDirectiveArguments = (
-  config: FormattedDirectiveArguments,
-  args: ReadonlyArray<ConstArgumentNode>
-): string => {
+const buildApiFromDirectiveArguments = (rules: Rules, args: ReadonlyArray<ConstArgumentNode>): string => {
   return args
-    .map(arg => {
-      const argName = arg.name.value;
-      const validationSchema = config[argName];
-      if (isFormattedDirectiveObjectArguments(validationSchema)) {
-        return buildApiFromDirectiveObjectArguments(validationSchema, arg.value);
-      }
-      return buildApiSchema(validationSchema, arg.value);
+    .filter(arg => arg.name.value === targetArgumentName)
+    .flatMap(({ value }) => {
+      assertValueIsList(value, '`apply` argument must be a list of rules. For Example, ["integer", "max:255"].');
+      return value.values.map(value => {
+        assertValueIsString(value, 'rules must be a list of string. For Example, ["integer", "max:255"].');
+        return buildApiSchema(rules, value);
+      });
     })
     .join('');
 };
 
-const buildApiFromDirectiveObjectArguments = (
-  config: FormattedDirectiveObjectArguments,
-  argValue: ConstValueNode
-): string => {
-  if (argValue.kind !== Kind.STRING) {
-    return '';
+const getMethodName = (rules: Rules, ruleName: string): string => {
+  const ruleMapping = rules[ruleName];
+  if (!ruleMapping) {
+    return ruleName;
   }
-  const validationSchema = config[argValue.value];
-  return buildApiSchema(validationSchema, argValue);
+  if (Array.isArray(ruleMapping)) {
+    return ruleMapping[0];
+  }
+  return ruleMapping;
+};
+const buildApiSchema = (rules: Rules, argValue: StringValueNode): string => {
+  const [ruleName, rest] = argValue.value.split(':');
+  const methodName = getMethodName(rules, ruleName);
+  const methodArguments = rest ? rest.split(',').map(parseArgument) : [];
+
+  return `.${methodName}(${methodArguments.map(quoteIfNeeded).join(',')})`;
 };
 
-const applyArgToApiSchemaTemplate = (template: string, apiArgs: any[]): string => {
-  const matches = template.matchAll(/[$](\d+)/g);
-  for (const match of matches) {
-    const placeholder = match[0]; // `$1`
-    const idx = parseInt(match[1], 10) - 1; // start with `1 - 1`
-    const apiArg = apiArgs[idx];
-    if (apiArg === undefined) {
-      template = template.replace(placeholder, '');
-      continue;
-    }
-    if (template === placeholder) {
-      return stringify(apiArg);
-    }
-    template = template.replace(placeholder, apiArg);
+const parseArgument = (arg: string) => {
+  if (parseInt(arg, 10).toString(10) === arg) {
+    return parseInt(arg, 10);
   }
-  if (template !== '') {
-    return stringify(template, true);
+  if (parseFloat(arg).toString() === arg) {
+    return parseFloat(arg);
   }
-  return template;
+  if (arg.toLowerCase() === 'true') {
+    return true;
+  }
+  if (arg.toLowerCase() === 'false') {
+    return false;
+  }
+  return arg;
 };
 
-const stringify = (arg: any, quoteString?: boolean): string => {
-  if (Array.isArray(arg)) {
-    return arg.map(v => stringify(v, true)).join(',');
-  }
+const quoteIfNeeded = (arg: any): string => {
   if (typeof arg === 'string') {
-    if (isConvertableRegexp(arg)) {
-      return arg;
-    }
-    if (quoteString) {
-      return JSON.stringify(arg);
-    }
+    return JSON.stringify(arg);
   }
-  if (typeof arg === 'boolean' || typeof arg === 'number' || typeof arg === 'bigint') {
-    return `${arg}`;
-  }
-  return JSON.stringify(arg);
-};
-
-const apiArgsFromConstValueNode = (value: ConstValueNode): any[] => {
-  const val = valueFromASTUntyped(value);
-  if (Array.isArray(val)) {
-    return val;
-  }
-  return [val];
+  return `${arg}`;
 };
 
 export const exportedForTesting = {
-  applyArgToApiSchemaTemplate,
-  buildApiFromDirectiveObjectArguments,
   buildApiFromDirectiveArguments,
 };
+
+function assertValueIsList(value: ConstValueNode, message: string): asserts value is ConstListValueNode {
+  if (value.kind !== Kind.LIST) {
+    throw new Error(message);
+  }
+}
+
+function assertValueIsString(value: ConstValueNode, message: string): asserts value is StringValueNode {
+  if (value.kind !== Kind.STRING) {
+    throw new Error(message);
+  }
+}

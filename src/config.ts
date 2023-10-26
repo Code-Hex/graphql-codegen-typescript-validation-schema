@@ -2,15 +2,22 @@ import { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 
 export type ValidationSchemaExportType = 'function' | 'const';
 
-export interface DirectiveConfig {
-  [directive: string]: {
-    [argument: string]: string | string[] | DirectiveObjectArguments;
-  };
-}
-
-export interface DirectiveObjectArguments {
-  [matched: string]: string | string[];
-}
+/**
+ * directive example:
+ *
+ * email: Email! @rules(apply: ["email:rfc", "minLength:100"])
+ *
+ * {
+ *   email: "email",
+ *   minLength: ["min", "$1"],
+ * }
+ */
+export type Rule =
+  | string // "integer"
+  | string[]; // ["size", "255"]
+export type Rules = {
+  [ruleName: string]: Rule;
+};
 
 interface ScalarSchemas {
   [name: string]: string;
@@ -195,35 +202,10 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       - graphql-codegen-validation-schema
    *     config:
    *       schema: yup
-   *       directives:
-   *         required:
-   *           msg: required
-   *         # This is example using constraint directive.
-   *         # see: https://github.com/confuser/graphql-constraint-directive
-   *         constraint:
-   *           minLength: min # same as ['min', '$1']
-   *           maxLength: max
-   *           startsWith: ["matches", "/^$1/"]
-   *           endsWith: ["matches", "/$1$/"]
-   *           contains: ["matches", "/$1/"]
-   *           notContains: ["matches", "/^((?!$1).)*$/"]
-   *           pattern: ["matches", "/$1/"]
-   *           format:
-   *             # For example, `@constraint(format: "uri")`. this case $1 will be "uri".
-   *             # Therefore the generator generates yup schema `.url()` followed by `uri: 'url'`
-   *             # If $1 does not match anywhere, the generator will ignore.
-   *             uri: url
-   *             email: email
-   *             uuid: uuid
-   *             # yup does not have `ipv4` API. If you want to add this,
-   *             # you need to add the logic using `yup.addMethod`.
-   *             # see: https://github.com/jquense/yup#addmethodschematype-schema-name-string-method--schema-void
-   *             ipv4: ipv4
-   *           min: ["min", "$1 - 1"]
-   *           max: ["max", "$1 + 1"]
-   *           exclusiveMin: min
-   *           exclusiveMax: max
+   *       rules:
+   *         minLength: min # same as ['min', '$1']
+   *         maxLength: max
    * ```
    */
-  directives?: DirectiveConfig;
+  rules?: Rules;
 }

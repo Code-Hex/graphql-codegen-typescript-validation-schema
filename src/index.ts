@@ -5,7 +5,7 @@ import { buildSchema, GraphQLSchema, printSchema, visit } from 'graphql';
 import { ValidationSchemaPluginConfig } from './config';
 import { isGeneratedByIntrospection, topologicalSortAST } from './graphql';
 import { SchemaVisitor } from './types';
-import { YupSchemaVisitor } from './yup/index';
+import { YupSchemaVisitor } from './yup';
 
 export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,
