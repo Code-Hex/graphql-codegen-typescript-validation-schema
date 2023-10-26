@@ -29,36 +29,31 @@ const buildRulesDirectiveNode = (rules: readonly string[]): ConstDirectiveNode =
 });
 
 describe('format directive config', () => {
-  describe('buildApi', () => {
-    const cases: {
-      name: string;
-      args: {
+  test.each<
+    [
+      string,
+      {
         rules: Rules;
         ignoreRules: readonly string[];
         args: ReadonlyArray<ConstDirectiveNode>;
-      };
-      want: GeneratedCodesForDirectives;
-    }[] = [
-      {
-        name: 'valid',
-        args: {
-          rules: {},
-          ignoreRules: ['exists'],
-          args: [buildRulesDirectiveNode(['email:rfc', 'between:0,255'])],
-        },
-        want: {
-          rules: `.email("rfc").between(0,255)`,
-          rulesForArray: '',
-          rulesForInput: '',
-        },
       },
-    ];
-    for (const tc of cases) {
-      test(tc.name, () => {
-        const { rules, ignoreRules, args } = tc.args;
-        const got = buildApi(rules, ignoreRules, args);
-        expect(got).toStrictEqual(tc.want);
-      });
-    }
+      GeneratedCodesForDirectives,
+    ]
+  >([
+    [
+      'valid',
+      {
+        rules: {},
+        ignoreRules: ['exists'],
+        args: [buildRulesDirectiveNode(['email:rfc', 'between:0,255'])],
+      },
+      {
+        rules: `.email("rfc").between(0,255)`,
+        rulesForArray: '',
+        rulesForInput: '',
+      },
+    ],
+  ])('buildApi %s', (_, { rules, ignoreRules, args }, want) => {
+    expect(buildApi(rules, ignoreRules, args)).toStrictEqual(want);
   });
 });

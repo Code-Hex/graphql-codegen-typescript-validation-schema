@@ -1,56 +1,65 @@
 import { describe, test, expect } from 'vitest';
-import { codify, parse } from './laravel_validation_rule';
+import { codify, parse, ValidationMethod } from './laravel_validation_rule';
 
 describe('parse', () => {
-  test('only method name', () => {
-    expect(parse('integer')).toEqual({
-      name: 'integer',
-      args: [],
-    });
-  });
-  test('method name and single arg', () => {
-    expect(parse('email:rfc')).toEqual({
-      name: 'email',
-      args: ['rfc'],
-    });
-  });
-  test('method name and multiple args', () => {
-    expect(parse('between:0,255')).toEqual({
-      name: 'between',
-      args: [0, 255],
-    });
-  });
-  test('mixed arguments', () => {
-    expect(parse('in:0,1,3.14,true,false,foo,bar')).toEqual({
-      name: 'in',
-      args: [0, 1, 3.14, true, false, 'foo', 'bar'],
-    });
+  test.each<[string, ValidationMethod]>([
+    [
+      'integer',
+      {
+        name: 'integer',
+        args: [],
+      },
+    ],
+    [
+      'email:rfc',
+      {
+        name: 'email',
+        args: ['rfc'],
+      },
+    ],
+    [
+      'between:0,255',
+      {
+        name: 'between',
+        args: [0, 255],
+      },
+    ],
+    [
+      'in:0,1,3.14,true,false,foo,bar',
+      {
+        name: 'in',
+        args: [0, 1, 3.14, true, false, 'foo', 'bar'],
+      },
+    ],
+  ])('%s', (input, expected) => {
+    expect(parse(input)).toEqual(expected);
   });
 });
 
 describe('codify', () => {
-  test('numeric args', () => {
-    expect(
-      codify({
+  test.each<[ValidationMethod, string]>([
+    [
+      {
         name: 'between',
         args: [0, 255],
-      })
-    ).toBe('.between(0,255)');
-  });
-  test('boolean args', () => {
-    expect(
-      codify({
+      },
+      '.between(0,255)',
+    ],
+    [
+      {
         name: 'in',
         args: [true, false],
-      })
-    ).toBe('.in(true,false)');
-  });
-  test('string args', () => {
-    expect(
-      codify({
+      },
+      '.in(true,false)',
+    ],
+    [
+      {
         name: 'in',
         args: ['foo', 'bar'],
-      })
-    ).toBe('.in("foo","bar")');
+      },
+      '.in("foo","bar")',
+    ],
+  ])('numeric args', (input, expected) => {
+    expect(codify(input)).toBe(expected);
   });
 });

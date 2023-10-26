@@ -1,4 +1,4 @@
-type ValidationMethod = {
+export type ValidationMethod = {
   name: string;
   args: unknown[];
 };
