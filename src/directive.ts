@@ -17,20 +17,36 @@ import { codify, parse } from './laravel_validation_rule';
  *   email: String! @rules(apply: ["minLength:100", "email"])
  * }
  */
-const targetDirectiveNames = ['rules', 'rulesForArray', 'rulesForInput'] as const;
-const targetArgumentName = 'apply';
+const supportedDirectiveNames = ['rules', 'rulesForArray', 'rulesForInput'] as const;
+type SupportedDirectiveName = (typeof supportedDirectiveNames)[number];
+const supportedArgumentName = 'apply';
+
+function isSupportedDirective(directiveName: string): directiveName is SupportedDirectiveName {
+  return supportedDirectiveNames.includes(directiveName as SupportedDirectiveName);
+}
+
+export type GeneratedCodesForDirectives = Record<SupportedDirectiveName, string>;
 
 export const buildApi = (
   rules: Rules,
   ignoreRules: readonly string[],
   directives: readonly ConstDirectiveNode[]
-): string =>
-  directives
-    .filter(directive => (targetDirectiveNames as readonly string[]).includes(directive.name.value))
-    .map(directive => {
-      return buildApiFromDirectiveArguments(rules, ignoreRules, directive.arguments ?? []);
-    })
-    .join('');
+): GeneratedCodesForDirectives => {
+  const ret: GeneratedCodesForDirectives = {
+    rules: '',
+    rulesForArray: '',
+    rulesForInput: '',
+  };
+
+  for (const directive of directives) {
+    if (isSupportedDirective(directive.name.value)) {
+      ret[directive.name.value] = buildApiFromDirectiveArguments(rules, ignoreRules, directive.arguments ?? []);
+    }
+  }
+  console.log(ret);
+
+  return ret;
+};
 
 const buildApiFromDirectiveArguments = (
   rules: Rules,
@@ -38,7 +54,7 @@ const buildApiFromDirectiveArguments = (
   args: readonly ConstArgumentNode[]
 ): string => {
   return args
-    .filter(arg => arg.name.value === targetArgumentName)
+    .filter(arg => arg.name.value === supportedArgumentName)
     .flatMap(({ value }) => {
       assertValueIsList(value, '`apply` argument must be a list of rules. For Example, ["integer", "max:255"].');
       return value.values.map(value => {
