@@ -7,7 +7,7 @@ export default defineConfig({
     environment: 'node',
     reporters: ['default'],
     cache: { dir: 'node_modules/.vitest' }, // default
-    include: ['tests/*.spec.ts'],
+    include: ['**/*.spec.ts'],
     exclude: ['node_modules', 'dist', 'example', '.idea', '.git', '.cache', '.github'],
     server: {
       deps: {

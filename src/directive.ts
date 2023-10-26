@@ -8,6 +8,7 @@ import {
 } from 'graphql';
 
 import { Rules } from './config';
+import { codify, parse } from './laravel_validation_rule';
 
 /**
  * GraphQL schema
@@ -49,18 +50,20 @@ const buildApiFromDirectiveArguments = (
 };
 
 const buildApiSchema = (rules: Rules, ignoreRules: readonly string[], argValue: StringValueNode): string => {
-  const [ruleName, rest] = argValue.value.split(':');
-  if (ignoreRules.includes(ruleName)) {
+  const method = parse(argValue.value);
+  if (ignoreRules.includes(method.name)) {
     return '';
   }
 
-  const methodName = getMethodName(rules, ruleName);
-  const methodArguments = rest ? rest.split(',').map(parseArgument) : [];
+  const mappedMethod = {
+    ...method,
+    name: mapMethodName(rules, method.name),
+  };
 
-  return `.${methodName}(${methodArguments.map(quoteIfNeeded).join(',')})`;
+  return codify(mappedMethod);
 };
 
-const getMethodName = (rules: Rules, ruleName: string): string => {
+const mapMethodName = (rules: Rules, ruleName: string): string => {
   const ruleMapping = rules[ruleName];
   if (!ruleMapping) {
     return ruleName;
@@ -69,29 +72,6 @@ const getMethodName = (rules: Rules, ruleName: string): string => {
     return ruleMapping[0];
   }
   return ruleMapping;
-};
-
-const parseArgument = (arg: string) => {
-  if (parseInt(arg, 10).toString(10) === arg) {
-    return parseInt(arg, 10);
-  }
-  if (parseFloat(arg).toString() === arg) {
-    return parseFloat(arg);
-  }
-  if (arg.toLowerCase() === 'true') {
-    return true;
-  }
-  if (arg.toLowerCase() === 'false') {
-    return false;
-  }
-  return arg;
-};
-
-const quoteIfNeeded = (arg: any): string => {
-  if (typeof arg === 'string') {
-    return JSON.stringify(arg);
-  }
-  return `${arg}`;
 };
 
 export const exportedForTesting = {
