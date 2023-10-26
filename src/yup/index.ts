@@ -250,7 +250,7 @@ const generateFieldTypeYupSchema = (
 ): string => {
   if (isListType(type)) {
     const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
-    if (!isNonNullType(parentType)) {
+    if (!parentType || !isNonNullType(parentType)) {
       return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
     }
     return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
@@ -261,7 +261,7 @@ const generateFieldTypeYupSchema = (
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeYupSchema(config, visitor, type.name);
-    if (isNonNullType(parentType)) {
+    if (!!parentType && isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
         return `${gen}.required()`;
       }
