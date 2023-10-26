@@ -758,8 +758,8 @@ describe('yup', () => {
     const wantContains = [
       // User Create Input
       'export function UserCreateInputSchema(): yup.ObjectSchema<UserCreateInput> {',
-      'name: yup.string().defined().nonNullable().startsWith("Sir"),',
-      'age: yup.number().defined().nonNullable().min(0).max(100)',
+      'name: yup.string().defined().startsWith("Sir").nonNullable(),',
+      'age: yup.number().defined().min(0).max(100).nonNullable()',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);

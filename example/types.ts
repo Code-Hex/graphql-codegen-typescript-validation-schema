@@ -45,6 +45,7 @@ export type DropDownComponentInput = {
 };
 
 export type EventArgumentInput = {
+  favorites: Array<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   value: Scalars['String']['input'];
 };

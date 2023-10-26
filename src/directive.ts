@@ -43,7 +43,6 @@ export const buildApi = (
       ret[directive.name.value] = buildApiFromDirectiveArguments(rules, ignoreRules, directive.arguments ?? []);
     }
   }
-  console.log(ret);
 
   return ret;
 };

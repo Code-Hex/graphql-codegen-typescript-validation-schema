@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { ConstDirectiveNode, Kind } from 'graphql';
 
-import { buildApi } from '../src/directive';
+import { buildApi, GeneratedCodesForDirectives } from '../src/directive';
 import { Rules } from '../src/config';
 
 const buildRulesDirectiveNode = (rules: readonly string[]): ConstDirectiveNode => ({
@@ -37,7 +37,7 @@ describe('format directive config', () => {
         ignoreRules: readonly string[];
         args: ReadonlyArray<ConstDirectiveNode>;
       };
-      want: string;
+      want: GeneratedCodesForDirectives;
     }[] = [
       {
         name: 'valid',
@@ -46,7 +46,11 @@ describe('format directive config', () => {
           ignoreRules: ['exists'],
           args: [buildRulesDirectiveNode(['email:rfc', 'between:0,255'])],
         },
-        want: `.email("rfc").between(0,255)`,
+        want: {
+          rules: `.email("rfc").between(0,255)`,
+          rulesForArray: '',
+          rulesForInput: '',
+        },
       },
     ];
     for (const tc of cases) {

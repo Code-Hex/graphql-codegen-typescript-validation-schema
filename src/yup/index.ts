@@ -12,7 +12,7 @@ import {
 } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
-import { buildApi } from '../directive';
+import { buildApi, GeneratedCodesForDirectives } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import { Visitor } from '../visitor';
 import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
@@ -235,10 +235,8 @@ const generateFieldYupSchema = (
   field: InputValueDefinitionNode | FieldDefinitionNode,
   indentCount: number
 ): string => {
-  let gen = generateFieldTypeYupSchema(config, visitor, field.type);
-  if (field.directives) {
-    gen += buildApi(config.rules ?? {}, config.ignoreRules ?? [], field.directives);
-  }
+  const generatedCodesForDirectives = buildApi(config.rules ?? {}, config.ignoreRules ?? [], field.directives ?? []);
+  let gen = generateFieldTypeYupSchema(config, visitor, field.type, null, generatedCodesForDirectives);
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 };
 
@@ -246,21 +244,22 @@ const generateFieldTypeYupSchema = (
   config: ValidationSchemaPluginConfig,
   visitor: Visitor,
   type: TypeNode,
-  parentType?: TypeNode
+  parentType: TypeNode | null,
+  generatedCodesForDirectives: GeneratedCodesForDirectives
 ): string => {
   if (isListType(type)) {
-    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
-    if (!parentType || !isNonNullType(parentType)) {
-      return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
-    }
-    return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
+    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type, generatedCodesForDirectives);
+    const nullable = !parentType || !isNonNullType(parentType);
+    return `yup.array(${maybeLazy(type.type, gen)})${generatedCodesForDirectives.rulesForArray}.defined()${
+      nullable ? '.nullable()' : ''
+    }`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
+    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type, generatedCodesForDirectives);
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
-    const gen = generateNameNodeYupSchema(config, visitor, type.name);
+    const gen = generateNameNodeYupSchema(config, visitor, type.name) + generatedCodesForDirectives.rules;
     if (!!parentType && isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
         return `${gen}.required()`;

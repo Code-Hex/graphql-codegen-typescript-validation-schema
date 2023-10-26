@@ -48,8 +48,9 @@ export function DropDownComponentInputSchema(): yup.ObjectSchema<DropDownCompone
 
 export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput> {
   return yup.object({
-    name: yup.string().defined().nonNullable().varchar(),
-    value: yup.string().defined().nonNullable().startsWith("Sir")
+    favorites: yup.array(yup.string().defined().maxLength(16).nonNullable()).size(5).defined(),
+    name: yup.string().defined().varchar().nonNullable(),
+    value: yup.string().defined().startsWith("Sir").nonNullable()
   })
 }
 

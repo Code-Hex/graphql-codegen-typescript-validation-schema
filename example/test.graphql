@@ -79,6 +79,7 @@ enum EventOptionType {
 input EventArgumentInput {
   name: String! @rules(apply: ["varchar"])
   value: String! @rules(apply: ["startsWith:Sir"])
+  favorites: [String!]! @rules(apply: ["maxLength:16"]) @rulesForArray(apply: ["size:5"])
 }
 
 input HTTPInput {
@@ -99,5 +100,9 @@ type MyType {
 }
 
 directive @rules(
+  apply: [String!]!
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+directive @rulesForArray(
   apply: [String!]!
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
