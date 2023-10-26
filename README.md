@@ -5,8 +5,6 @@
 [GraphQL code generator](https://github.com/dotansimha/graphql-code-generator) plugin to generate form validation schema from your GraphQL schema.
 
 - [x] support [yup](https://github.com/jquense/yup)
-- [x] support [zod](https://github.com/colinhacks/zod)
-- [x] support [myzod](https://github.com/davidmdm/myzod)
 
 ## Quick Start
 
@@ -31,7 +29,6 @@ generates:
       scalars:
         ID: string
       # You can also write the config for this plugin together
-      schema: yup # or zod
 ```
 
 It is recommended to write `scalars` config for built-in type `ID`, as in the yaml example shown above. For more information: [#375](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/pull/375)
@@ -41,24 +38,6 @@ You can check [example](https://github.com/Code-Hex/graphql-codegen-typescript-v
 The Q&A for each schema is written in the README in the respective example directory.
 
 ## Config API Reference
-
-### `schema`
-
-type: `ValidationSchema` default: `'yup'`
-
-Specify generete validation schema you want.
-
-You can specify `yup` or `zod` or `myzod`.
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-      - typescript-validation-schema
-    config:
-      schema: yup
-```
 
 ### `importFrom`
 
@@ -176,16 +155,6 @@ config:
     Email: yup.string().email()
 ```
 
-#### zod schema
-
-```yml
-config:
-  schema: zod
-  scalarSchemas:
-    Date: z.date()
-    Email: z.string().email()
-```
-
 ### `withObjectType`
 
 type: `boolean` default: `false`
@@ -255,43 +224,6 @@ export function ExampleInputSchema(): yup.SchemaOf<ExampleInput> {
 }
 ```
 
-#### zod schema
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-      - typescript-validation-schema
-    config:
-      schema: zod
-      directives:
-        # Write directives like
-        #
-        # directive:
-        #   arg1: schemaApi
-        #   arg2: ["schemaApi2", "Hello $1"]
-        #
-        # See more examples in `./tests/directive.spec.ts`
-        # https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/blob/main/tests/directive.spec.ts
-        constraint:
-          minLength: min
-          # Replace $1 with specified `startsWith` argument value of the constraint directive
-          startsWith: ["regex", "/^$1/", "message"]
-          format:
-            email: email
-```
-
-Then generates zod validation schema like below.
-
-```ts
-export function ExampleInputSchema(): z.ZodSchema<ExampleInput> {
-  return z.object({
-    email: z.string().min(50).email(),
-    message: z.string().regex(/^Hello/, "message")
-  })
-}
-```
 
 #### other schema
 
@@ -299,7 +231,7 @@ Please see [example](https://github.com/Code-Hex/graphql-codegen-typescript-vali
 
 ## Notes
 
-Their is currently a compatibility issue with the client-preset. A workaround for this is to split the generation into two (one for client-preset and one for typescript-validation-schema).
+There is currently a compatibility issue with the client-preset. A workaround for this is to split the generation into two (one for client-preset and one for typescript-validation-schema).
 
 ```yml
 generates:

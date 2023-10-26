@@ -4,10 +4,8 @@ import { buildSchema, GraphQLSchema, printSchema, visit } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
 import { isGeneratedByIntrospection, topologicalSortAST } from './graphql';
-import { MyZodSchemaVisitor } from './myzod/index';
 import { SchemaVisitor } from './types';
 import { YupSchemaVisitor } from './yup/index';
-import { ZodSchemaVisitor } from './zod/index';
 
 export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,
@@ -30,11 +28,6 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
 };
 
 const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
-  if (config?.schema === 'zod') {
-    return new ZodSchemaVisitor(schema, config);
-  } else if (config?.schema === 'myzod') {
-    return new MyZodSchemaVisitor(schema, config);
-  }
   return new YupSchemaVisitor(schema, config);
 };
 
