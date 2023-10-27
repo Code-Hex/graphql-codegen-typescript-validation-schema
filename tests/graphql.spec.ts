@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, it, expect } from 'vitest';
 
 import { Graph } from 'graphlib';
 import {
@@ -16,7 +16,39 @@ import { isGeneratedByIntrospection, ObjectTypeDefinitionBuilder, topologicalSor
 
 describe('graphql', () => {
   describe('ObjectTypeDefinitionBuilder', () => {
-    describe('useObjectTypes === true', () => {
+    describe('useObjectTypes === all', () => {
+      test.each([
+        ['Query', true],
+        ['Mutation', true],
+        ['Subscription', true],
+        ['QueryFoo', true],
+        ['MutationFoo', true],
+        ['SubscriptionFoo', true],
+        ['FooQuery', true],
+        ['FooMutation', true],
+        ['FooSubscription', true],
+        ['Foo', true],
+      ])(`A node with a name of "%s" should be matched? %s`, (nodeName, nodeIsMatched) => {
+        const node: ObjectTypeDefinitionNode = {
+          name: {
+            kind: Kind.NAME,
+            value: nodeName,
+          },
+          kind: Kind.OBJECT_TYPE_DEFINITION,
+        };
+
+        const objectTypeDefFn = ObjectTypeDefinitionBuilder('all', (n: ObjectTypeDefinitionNode) => n);
+
+        expect(objectTypeDefFn).toBeDefined();
+
+        if (nodeIsMatched) {
+          expect(objectTypeDefFn?.(node)).toBe(node);
+        } else {
+          expect(objectTypeDefFn?.(node)).toBeUndefined();
+        }
+      });
+    });
+    describe('useObjectTypes === no-reserved', () => {
       test.each([
         ['Query', false],
         ['Mutation', false],
@@ -37,7 +69,7 @@ describe('graphql', () => {
           kind: Kind.OBJECT_TYPE_DEFINITION,
         };
 
-        const objectTypeDefFn = ObjectTypeDefinitionBuilder(true, (n: ObjectTypeDefinitionNode) => n);
+        const objectTypeDefFn = ObjectTypeDefinitionBuilder('no-reserved', (n: ObjectTypeDefinitionNode) => n);
 
         expect(objectTypeDefFn).toBeDefined();
 

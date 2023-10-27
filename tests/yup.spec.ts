@@ -429,7 +429,7 @@ describe('yup', () => {
         schema,
         [],
         {
-          withObjectType: true,
+          withObjectType: 'all',
         },
         {}
       );
@@ -458,7 +458,7 @@ describe('yup', () => {
       }
     });
 
-    it('generate both input & type if withObjectType true', async () => {
+    it('generate both input & type if withObjectType all', async () => {
       const schema = buildSchema(/* GraphQL */ `
         scalar Date
         scalar Email
@@ -497,7 +497,89 @@ describe('yup', () => {
         schema,
         [],
         {
-          withObjectType: true,
+          withObjectType: 'all',
+          scalarSchemas: {
+            Date: 'yup.date()',
+            Email: 'yup.string().email()',
+          },
+          scalars: {
+            ID: {
+              input: 'number',
+              output: 'string',
+            },
+          },
+        },
+        {}
+      );
+      const wantContains = [
+        // User Create Input
+        'export function UserCreateInputSchema(): yup.ObjectSchema<UserCreateInput> {',
+        'name: yup.string().defined().nonNullable(),',
+        'date: yup.date().defined().nonNullable(),',
+        'email: yup.string().email().defined().nonNullable()',
+        // Username Update Input
+        'export function UsernameUpdateInputSchema(): yup.ObjectSchema<UsernameUpdateInput> {',
+        'updateInputId: yup.number().defined().nonNullable(),',
+        'updateName: yup.string().defined().nonNullable()',
+        // User
+        'export function UserSchema(): yup.ObjectSchema<User> {',
+        "__typename: yup.string<'User'>().optional(),",
+        'id: yup.string().defined().nonNullable(),',
+        'name: yup.string().defined().nullable().optional(),',
+        'age: yup.number().defined().nullable().optional(),',
+        'isMember: yup.boolean().defined().nullable().optional(),',
+        'email: yup.string().email().defined().nullable().optional(),',
+        'createdAt: yup.date().defined().nonNullable()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+
+      for (const wantContain of ['Query', 'Mutation', 'Subscription']) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('generate both input & type if withObjectType no-reserved', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        scalar Date
+        scalar Email
+        input UserCreateInput {
+          name: String!
+          date: Date!
+          email: Email!
+        }
+        input UsernameUpdateInput {
+          updateInputId: ID!
+          updateName: String!
+        }
+        type User {
+          id: ID!
+          name: String
+          age: Int
+          email: Email
+          isMember: Boolean
+          createdAt: Date!
+        }
+
+        type Mutation {
+          _empty: String
+        }
+
+        type Query {
+          _empty: String
+        }
+
+        type Subscription {
+          _empty: String
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          withObjectType: 'no-reserved',
           scalarSchemas: {
             Date: 'yup.date()',
             Email: 'yup.string().email()',
@@ -555,7 +637,7 @@ describe('yup', () => {
         schema,
         [],
         {
-          withObjectType: true,
+          withObjectType: 'all',
         },
         {}
       );
@@ -590,7 +672,7 @@ describe('yup', () => {
         schema,
         [],
         {
-          withObjectType: true,
+          withObjectType: 'all',
         },
         {}
       );
@@ -619,7 +701,7 @@ describe('yup', () => {
         schema,
         [],
         {
-          withObjectType: true,
+          withObjectType: 'all',
         },
         {}
       );
@@ -654,7 +736,7 @@ describe('yup', () => {
         schema,
         [],
         {
-          withObjectType: true,
+          withObjectType: 'all',
         },
         {}
       );
@@ -688,7 +770,7 @@ describe('yup', () => {
         schema,
         [],
         {
-          withObjectType: true,
+          withObjectType: 'all',
           validationSchemaExportType: 'const',
         },
         {}
@@ -818,7 +900,7 @@ describe('yup', () => {
       schema,
       [],
       {
-        withObjectType: true,
+        withObjectType: 'all',
         scalarSchemas: {
           Date: 'yup.date()',
           Email: 'yup.string().email()',
@@ -847,8 +929,8 @@ describe('yup', () => {
       expect(result.content).toContain(wantContain);
     }
 
-    for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
-      expect(result.content).not.toContain(wantNotContain);
+    for (const wantContain of ['Query', 'Mutation', 'Subscription']) {
+      expect(result.content).toContain(wantContain);
     }
   });
 
