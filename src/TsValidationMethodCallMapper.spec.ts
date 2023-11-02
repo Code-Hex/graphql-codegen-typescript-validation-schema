@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'vitest';
+
 import { TsValidationMethodCallMapper } from './TsValidationMethodCallMapper';
 
 describe('TsValidationMethodCallMapper', () => {
