@@ -62,7 +62,7 @@ export class Visitor extends TsVisitor {
     return fieldsWithArguments
       .map(field => {
         const name =
-          node.name.value +
+          this.convertName(node.name.value) +
           (this.config.addUnderscoreToArgsType ? '_' : '') +
           this.convertName(field, {
             useTypesPrefix: false,
