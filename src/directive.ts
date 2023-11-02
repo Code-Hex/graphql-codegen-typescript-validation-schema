@@ -8,7 +8,7 @@ import {
 } from 'graphql';
 
 import { Rules } from './config';
-import { codify, parse } from './laravel_validation_rule';
+import { TsValidationMethodCallMapper } from './TsValidationMethodCallMapper';
 
 /**
  * GraphQL schema
@@ -64,28 +64,9 @@ const buildApiFromDirectiveArguments = (
 };
 
 const buildApiSchema = (rules: Rules, ignoreRules: readonly string[], argValue: StringValueNode): string => {
-  const method = parse(argValue.value);
-  if (ignoreRules.includes(method.name)) {
-    return '';
-  }
-
-  const mappedMethod = {
-    ...method,
-    name: mapMethodName(rules, method.name),
-  };
-
-  return codify(mappedMethod);
-};
-
-const mapMethodName = (rules: Rules, ruleName: string): string => {
-  const ruleMapping = rules[ruleName];
-  if (!ruleMapping) {
-    return ruleName;
-  }
-  if (Array.isArray(ruleMapping)) {
-    return ruleMapping[0];
-  }
-  return ruleMapping;
+  const mapper = new TsValidationMethodCallMapper(rules, ignoreRules);
+  const TsValidationRuleMethodCall = mapper.create(argValue.value);
+  return TsValidationRuleMethodCall?.toString() ?? '';
 };
 
 function assertValueIsList(value: ConstValueNode, message: string): asserts value is ConstListValueNode {

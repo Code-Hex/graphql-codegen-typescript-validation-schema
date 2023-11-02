@@ -1,7 +1,6 @@
-import { describe, it, test, expect } from 'vitest';
-
 import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import dedent from 'ts-dedent';
+import { describe, expect, it, test } from 'vitest';
 
 import { plugin } from '../src';
 
@@ -825,6 +824,7 @@ describe('yup', () => {
         id: ID! @rules(apply: ["exists"])
         name: String! @rules(apply: ["startsWith:Sir"])
         age: Int! @rules(apply: ["min:0", "max:100"])
+        keyword: String! @rules(apply: ["regex:/^[a-zA-Z0-9]+$/"])
       }
       directive @rules(apply: [String!]!) on INPUT_FIELD_DEFINITION
     `);
@@ -832,7 +832,9 @@ describe('yup', () => {
       schema,
       [],
       {
-        rules: {},
+        rules: {
+          regex: 'matches',
+        },
         ignoreRules: ['exists'],
       },
       {}
@@ -842,6 +844,7 @@ describe('yup', () => {
       'export function UserCreateInputSchema(): yup.ObjectSchema<UserCreateInput> {',
       'name: yup.string().defined().startsWith("Sir").nonNullable(),',
       'age: yup.number().defined().min(0).max(100).nonNullable()',
+      'keyword: yup.string().defined().matches(/^[a-zA-Z0-9]+$/).nonNullable()',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
