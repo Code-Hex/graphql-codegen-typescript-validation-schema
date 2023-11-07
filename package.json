@@ -52,7 +52,7 @@
     "@graphql-codegen/typescript": "^4.0.0",
     "@tsconfig/recommended": "1.0.3",
     "@types/graphlib": "^2.1.8",
-    "@types/jest": "29.5.7",
+    "@types/jest": "29.5.8",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "6.10.0",
     "@typescript-eslint/parser": "6.10.0",
