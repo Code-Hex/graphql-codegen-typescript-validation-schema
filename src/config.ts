@@ -212,4 +212,8 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * a list of rules to ignore
    */
   ignoreRules?: string[];
+  /**
+   * a list of types to be lazy evaluated
+   */
+  lazyTypes?: string[];
 }

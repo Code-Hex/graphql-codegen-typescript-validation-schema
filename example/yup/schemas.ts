@@ -31,9 +31,9 @@ export function AttributeInputSchema(): yup.ObjectSchema<AttributeInput> {
 
 export function ComponentInputSchema(): yup.ObjectSchema<ComponentInput> {
   return yup.object({
-    child: yup.lazy(() => ComponentInputSchema()).optional(),
-    childrens: yup.array(yup.lazy(() => ComponentInputSchema())).defined().nullable().optional(),
-    event: yup.lazy(() => EventInputSchema()).optional(),
+    child: ComponentInputSchema().optional(),
+    childrens: yup.array(ComponentInputSchema()).defined().nullable().optional(),
+    event: EventInputSchema().optional(),
     name: yup.string().defined().nonNullable(),
     type: ButtonComponentTypeSchema.nonNullable()
   })
@@ -41,8 +41,8 @@ export function ComponentInputSchema(): yup.ObjectSchema<ComponentInput> {
 
 export function DropDownComponentInputSchema(): yup.ObjectSchema<DropDownComponentInput> {
   return yup.object({
-    dropdownComponent: yup.lazy(() => ComponentInputSchema()).optional(),
-    getEvent: yup.lazy(() => EventInputSchema().nonNullable())
+    dropdownComponent: ComponentInputSchema().optional(),
+    getEvent: EventInputSchema().nonNullable()
   })
 }
 
@@ -56,7 +56,7 @@ export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput>
 
 export function EventInputSchema(): yup.ObjectSchema<EventInput> {
   return yup.object({
-    arguments: yup.array(yup.lazy(() => EventArgumentInputSchema().nonNullable())).defined(),
+    arguments: yup.array(EventArgumentInputSchema().nonNullable()).defined(),
     options: yup.array(EventOptionTypeSchema.nonNullable()).defined().nullable().optional()
   })
 }
@@ -77,7 +77,7 @@ export function HttpInputSchema(): yup.ObjectSchema<HttpInput> {
 
 export function LayoutInputSchema(): yup.ObjectSchema<LayoutInput> {
   return yup.object({
-    dropdown: yup.lazy(() => DropDownComponentInputSchema()).optional()
+    dropdown: DropDownComponentInputSchema().optional()
   })
 }
 
@@ -112,11 +112,11 @@ export function MyTypeFooArgsSchema(): yup.ObjectSchema<MyTypeFooArgs> {
 
 export function PageInputSchema(): yup.ObjectSchema<PageInput> {
   return yup.object({
-    attributes: yup.array(yup.lazy(() => AttributeInputSchema().nonNullable())).defined().nullable().optional(),
+    attributes: yup.array(AttributeInputSchema().nonNullable()).defined().nullable().optional(),
     date: yup.mixed().nullable().optional(),
     height: yup.number().defined().nonNullable(),
     id: yup.string().defined().nonNullable(),
-    layout: yup.lazy(() => LayoutInputSchema().nonNullable()),
+    layout: LayoutInputSchema().nonNullable(),
     pageType: PageTypeSchema.nonNullable(),
     postIDs: yup.array(yup.string().defined().nonNullable()).defined().nullable().optional(),
     show: yup.boolean().defined().nonNullable(),

@@ -29,6 +29,7 @@ describe('yup', () => {
         scalars: {
           ID: 'string',
         },
+        lazyTypes: undefined,
       },
     ],
     [
@@ -56,6 +57,7 @@ describe('yup', () => {
         scalars: {
           ID: 'string',
         },
+        lazyTypes: undefined,
       },
     ],
     [
@@ -81,6 +83,7 @@ describe('yup', () => {
           'f: yup.array(yup.array(yup.string().defined().nullable()).defined()).defined()',
         ],
         scalars: undefined,
+        lazyTypes: undefined,
       },
     ],
     [
@@ -101,11 +104,12 @@ describe('yup', () => {
           'export function AInputSchema(): yup.ObjectSchema<AInput>',
           'b: yup.lazy(() => BInputSchema().nonNullable())',
           'export function BInputSchema(): yup.ObjectSchema<BInput>',
-          'c: yup.lazy(() => CInputSchema().nonNullable())',
+          'c: CInputSchema().nonNullable()',
           'export function CInputSchema(): yup.ObjectSchema<CInput>',
-          'a: yup.lazy(() => AInputSchema().nonNullable())',
+          'a: AInputSchema().nonNullable()',
         ],
         scalars: undefined,
+        lazyTypes: ['BInput'],
       },
     ],
     [
@@ -123,6 +127,7 @@ describe('yup', () => {
           'childrens: yup.array(yup.lazy(() => NestedInputSchema())).defined().nullable().optional()',
         ],
         scalars: undefined,
+        lazyTypes: ['NestedInput'],
       },
     ],
     [
@@ -143,6 +148,7 @@ describe('yup', () => {
           'pageType: PageTypeSchema.nonNullable()',
         ],
         scalars: undefined,
+        lazyTypes: undefined,
       },
     ],
     [
@@ -168,11 +174,12 @@ describe('yup', () => {
           'url: yup.mixed().nonNullable()',
         ],
         scalars: undefined,
+        lazyTypes: undefined,
       },
     ],
-  ])('%s', async (_, { textSchema, wantContains, scalars }) => {
+  ])('%s', async (_, { textSchema, wantContains, scalars, lazyTypes }) => {
     const schema = buildSchema(textSchema);
-    const result = await plugin(schema, [], { scalars }, {});
+    const result = await plugin(schema, [], { scalars, lazyTypes }, {});
     expect(result.prepend).toContain("import * as yup from 'yup'");
 
     for (const wantContain of wantContains) {

@@ -236,8 +236,8 @@ const generateFieldYupSchema = (
   indentCount: number
 ): string => {
   const generatedCodesForDirectives = buildApi(config.rules ?? {}, config.ignoreRules ?? [], field.directives ?? []);
-  let gen = generateFieldTypeYupSchema(config, visitor, field.type, null, generatedCodesForDirectives);
-  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
+  const gen = generateFieldTypeYupSchema(config, visitor, field.type, null, generatedCodesForDirectives);
+  return indent(`${field.name.value}: ${maybeLazy(config, field.type, gen)}`, indentCount);
 };
 
 const generateFieldTypeYupSchema = (
@@ -250,13 +250,13 @@ const generateFieldTypeYupSchema = (
   if (isListType(type)) {
     const gen = generateFieldTypeYupSchema(config, visitor, type.type, type, generatedCodesForDirectives);
     const nullable = !parentType || !isNonNullType(parentType);
-    return `yup.array(${maybeLazy(type.type, gen)})${generatedCodesForDirectives.rulesForArray}.defined()${
+    return `yup.array(${maybeLazy(config, type.type, gen)})${generatedCodesForDirectives.rulesForArray}.defined()${
       nullable ? '.nullable()' : ''
     }`;
   }
   if (isNonNullType(type)) {
     const gen = generateFieldTypeYupSchema(config, visitor, type.type, type, generatedCodesForDirectives);
-    return maybeLazy(type.type, gen);
+    return maybeLazy(config, type.type, gen);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeYupSchema(config, visitor, type.name) + generatedCodesForDirectives.rules;
@@ -298,8 +298,8 @@ const generateNameNodeYupSchema = (config: ValidationSchemaPluginConfig, visitor
   }
 };
 
-const maybeLazy = (type: TypeNode, schema: string): string => {
-  if (isNamedType(type) && isInput(type.name.value)) {
+const maybeLazy = (config: ValidationSchemaPluginConfig, type: TypeNode, schema: string): string => {
+  if (isNamedType(type) && isInput(type.name.value) && config.lazyTypes?.includes(type.name.value)) {
     // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
     return `yup.lazy(() => ${schema})`;
   }
