@@ -256,7 +256,7 @@ const generateFieldTypeYupSchema = (
     const gen = generateFieldTypeYupSchema(config, visitor, type.type, type, generatedCodesForDirectives);
     const nullable = !parentType || !isNonNullType(parentType);
     return `yup.array(${maybeLazy(config, type.type, gen)})${generatedCodesForDirectives.rulesForArray}${
-      nullable ? '.nullable()' : ''
+      nullable ? '.nullable()' : '.defined()'
     }`;
   }
   if (isNonNullType(type)) {
