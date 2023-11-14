@@ -39,7 +39,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           [
             indent('return yup.mixed<T>().test({'),
             indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
-            indent('}).defined()'),
+            indent('})'),
           ].join('\n')
         ).string
     );
@@ -129,7 +129,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`yup.string().oneOf([${enums?.join(', ')}]).defined()`).string
+              .withContent(`yup.string().oneOf([${enums?.join(', ')}])`).string
           );
         } else {
           const values = node.values
@@ -146,7 +146,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`yup.string<${enumname}>().oneOf([${values}]).defined()`).string
+              .withContent(`yup.string<${enumname}>().oneOf([${values}])`).string
           );
         }
       },
@@ -250,7 +250,7 @@ const generateFieldTypeYupSchema = (
   if (isListType(type)) {
     const gen = generateFieldTypeYupSchema(config, visitor, type.type, type, generatedCodesForDirectives);
     const nullable = !parentType || !isNonNullType(parentType);
-    return `yup.array(${maybeLazy(config, type.type, gen)})${generatedCodesForDirectives.rulesForArray}.defined()${
+    return `yup.array(${maybeLazy(config, type.type, gen)})${generatedCodesForDirectives.rulesForArray}${
       nullable ? '.nullable()' : ''
     }`;
   }
@@ -308,16 +308,16 @@ const maybeLazy = (config: ValidationSchemaPluginConfig, type: TypeNode, schema:
 
 const yup4Scalar = (config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string => {
   if (config.scalarSchemas?.[scalarName]) {
-    return `${config.scalarSchemas[scalarName]}.defined()`;
+    return `${config.scalarSchemas[scalarName]}`;
   }
   const tsType = visitor.getScalarType(scalarName);
   switch (tsType) {
     case 'string':
-      return `yup.string().defined()`;
+      return `yup.string()`;
     case 'number':
-      return `yup.number().defined()`;
+      return `yup.number()`;
     case 'boolean':
-      return `yup.boolean().defined()`;
+      return `yup.boolean()`;
   }
   console.warn('unhandled name:', scalarName);
   return `yup.mixed()`;
