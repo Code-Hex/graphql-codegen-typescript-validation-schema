@@ -326,7 +326,7 @@ describe('yup', () => {
     export function InputNestedSchema(): yup.ObjectSchema<InputNested> {
       return yup.object({
         field: yup.string().required()
-      })
+      }).strict()
     }`;
     expect(result.content).toContain(wantContain);
   });
@@ -817,7 +817,7 @@ describe('yup', () => {
           c: yup.boolean().nullable().optional(),
           d: yup.number().nonNullable(),
           e: yup.string().nullable().optional()
-        })
+        }).strict()
       }`;
       expect(result.content).toContain(wantContain);
     });
@@ -975,7 +975,7 @@ describe('yup', () => {
     export function QueryInputSchema(): yup.ObjectSchema<QueryInput> {
       return yup.object({
         _dummy: TestSchema.nullable().optional()
-      })
+      }).strict()
     }`;
     expect(result.content).toContain(wantContain);
   });

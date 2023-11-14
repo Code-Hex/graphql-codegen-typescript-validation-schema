@@ -87,7 +87,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
                     `yup.object({`,
                     indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
                     shape,
-                    '})',
+                    '}).strict()',
                   ].join('\n')
                 ).string + appendArguments
             );
@@ -104,7 +104,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
                     indent(`return yup.object({`),
                     indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
                     shape,
-                    indent('})'),
+                    indent('}).strict()'),
                   ].join('\n')
                 ).string + appendArguments
             );
@@ -216,7 +216,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('const')
           .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
-          .withContent(['yup.object({', shape, '})'].join('\n')).string;
+          .withContent(['yup.object({', shape, '}).strict()'].join('\n')).string;
 
       case 'function':
       default:
@@ -224,7 +224,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
-          .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
+          .withBlock([indent(`return yup.object({`), shape, indent('}).strict()')].join('\n')).string;
     }
   }
 }
