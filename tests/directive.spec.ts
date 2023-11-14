@@ -1,8 +1,8 @@
-import { describe, expect, test } from 'vitest';
 import { ConstDirectiveNode, Kind } from 'graphql';
+import { describe, expect, test } from 'vitest';
 
-import { buildApi, GeneratedCodesForDirectives } from '../src/directive';
 import { Rules } from '../src/config';
+import { buildApi, GeneratedCodesForDirectives } from '../src/directive';
 
 const buildRulesDirectiveNode = (rules: readonly string[]): ConstDirectiveNode => ({
   kind: Kind.DIRECTIVE,
@@ -37,6 +37,7 @@ describe('format directive config', () => {
         ignoreRules: readonly string[];
         args: ReadonlyArray<ConstDirectiveNode>;
       },
+      string,
       GeneratedCodesForDirectives,
     ]
   >([
@@ -47,12 +48,26 @@ describe('format directive config', () => {
         ignoreRules: ['exists'],
         args: [buildRulesDirectiveNode(['email:rfc', 'between:0,255'])],
       },
+      'field',
       {
         rules: `.email("rfc").between(0,255)`,
         rulesForArray: '',
       },
     ],
-  ])('buildApi %s', (_, { rules, ignoreRules, args }, want) => {
-    expect(buildApi(rules, ignoreRules, args)).toStrictEqual(want);
+    [
+      'withSometimes',
+      {
+        rules: {},
+        ignoreRules: ['exists'],
+        args: [buildRulesDirectiveNode(['varchar', 'max:10', 'sometimes'])],
+      },
+      'field',
+      {
+        rules: `.sometimes("field", schema => schema.varchar().max(10))`,
+        rulesForArray: '',
+      },
+    ],
+  ])('buildApi %s', (_, { rules, ignoreRules, args }, fieldName, want) => {
+    expect(buildApi(fieldName, rules, ignoreRules, args)).toStrictEqual(want);
   });
 });

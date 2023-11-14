@@ -50,6 +50,7 @@ export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput>
   return yup.object({
     favorites: yup.array(yup.string().maxLength(16).defined().nonNullable()).size(5),
     name: yup.string().varchar().defined().nonNullable(),
+    nickname: yup.string().sometimes("nickname", schema => schema.varchar().max(10)).nullable().optional(),
     value: yup.string().startsWith("Sir").defined().nonNullable()
   }).strict()
 }

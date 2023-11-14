@@ -235,7 +235,12 @@ const generateFieldYupSchema = (
   field: InputValueDefinitionNode | FieldDefinitionNode,
   indentCount: number
 ): string => {
-  const generatedCodesForDirectives = buildApi(config.rules ?? {}, config.ignoreRules ?? [], field.directives ?? []);
+  const generatedCodesForDirectives = buildApi(
+    field.name.value,
+    config.rules ?? {},
+    config.ignoreRules ?? [],
+    field.directives ?? []
+  );
   const gen = generateFieldTypeYupSchema(config, visitor, field.type, null, generatedCodesForDirectives);
   return indent(`${field.name.value}: ${maybeLazy(config, field.type, gen)}`, indentCount);
 };

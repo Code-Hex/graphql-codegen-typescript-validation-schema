@@ -28,6 +28,7 @@ function isSupportedDirective(directiveName: string): directiveName is Supported
 export type GeneratedCodesForDirectives = Record<SupportedDirectiveName, string>;
 
 export const buildApi = (
+  fieldName: string,
   rules: Rules,
   ignoreRules: readonly string[],
   directives: readonly ConstDirectiveNode[]
@@ -39,7 +40,12 @@ export const buildApi = (
 
   for (const directive of directives) {
     if (isSupportedDirective(directive.name.value)) {
-      ret[directive.name.value] = buildApiFromDirectiveArguments(rules, ignoreRules, directive.arguments ?? []);
+      ret[directive.name.value] = buildApiFromDirectiveArguments(
+        fieldName,
+        rules,
+        ignoreRules,
+        directive.arguments ?? []
+      );
     }
   }
 
@@ -47,6 +53,7 @@ export const buildApi = (
 };
 
 const buildApiFromDirectiveArguments = (
+  fieldName: string,
   rules: Rules,
   ignoreRules: readonly string[],
   args: readonly ConstArgumentNode[]
@@ -69,12 +76,15 @@ const buildApiFromDirectiveArguments = (
     .join('');
 
   if (sometimesIncluded) {
-    return `.sometimes(schema => schema${methodChain})`;
+    return `.sometimes(${JSON.stringify(fieldName)}, schema => schema${methodChain})`;
   }
 
   return methodChain;
 };
 
+/**
+ * sometimes は超特殊で、他の検証ルールを無視する必要があるため、コールバックで他の検証ルールを渡す形にする。
+ */
 const buildApiSchema = (
   rules: Rules,
   ignoreRules: readonly string[],

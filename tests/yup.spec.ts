@@ -851,7 +851,7 @@ describe('yup', () => {
       'name: yup.string().startsWith("Sir").defined().nonNullable(),',
       'age: yup.number().min(0).max(100).defined().nonNullable()',
       'keyword: yup.string().matches(/^[a-zA-Z0-9]+$/).defined().nonNullable()',
-      'nickname: yup.string().sometimes(schema => schema.max(10).required()).nullable().optional()',
+      'nickname: yup.string().sometimes("nickname", schema => schema.max(10).required()).nullable().optional()',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
