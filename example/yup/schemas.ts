@@ -48,7 +48,7 @@ export function DropDownComponentInputSchema(): yup.ObjectSchema<DropDownCompone
 
 export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput> {
   return yup.object({
-    favorites: yup.array(yup.string().maxLength(16).defined().nonNullable()).size(5),
+    favorites: yup.array(yup.string().maxLength(16).defined().nonNullable()).size(5).defined(),
     name: yup.string().varchar().defined().nonNullable(),
     nickname: yup.string().sometimes("nickname", schema => schema.varchar().max(10)).nullable().optional(),
     value: yup.string().startsWith("Sir").defined().nonNullable()
@@ -57,7 +57,7 @@ export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput>
 
 export function EventInputSchema(): yup.ObjectSchema<EventInput> {
   return yup.object({
-    arguments: yup.array(EventArgumentInputSchema().defined().nonNullable()),
+    arguments: yup.array(EventArgumentInputSchema().defined().nonNullable()).defined(),
     options: yup.array(EventOptionTypeSchema.defined().nonNullable()).nullable().optional()
   }).strict()
 }
