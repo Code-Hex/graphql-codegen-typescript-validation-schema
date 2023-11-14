@@ -51,22 +51,54 @@ const buildApiFromDirectiveArguments = (
   ignoreRules: readonly string[],
   args: readonly ConstArgumentNode[]
 ): string => {
-  return args
+  let sometimesIncluded = false;
+  const methodChain = args
     .filter(arg => arg.name.value === supportedArgumentName)
     .flatMap(({ value }) => {
       assertValueIsList(value, '`apply` argument must be a list of rules. For Example, ["integer", "max:255"].');
       return value.values.map(value => {
         assertValueIsString(value, 'rules must be a list of string. For Example, ["integer", "max:255"].');
-        return buildApiSchema(rules, ignoreRules, value);
+        const built = buildApiSchema(rules, ignoreRules, value);
+        if (built.sometimes) {
+          sometimesIncluded = true;
+          return '';
+        }
+        return built.value;
       });
     })
     .join('');
+
+  if (sometimesIncluded) {
+    return `.sometimes(schema => schema${methodChain})`;
+  }
+
+  return methodChain;
 };
 
-const buildApiSchema = (rules: Rules, ignoreRules: readonly string[], argValue: StringValueNode): string => {
+const buildApiSchema = (
+  rules: Rules,
+  ignoreRules: readonly string[],
+  argValue: StringValueNode
+):
+  | {
+      sometimes: false;
+      value: string;
+    }
+  | {
+      sometimes: true;
+    } => {
+  if (argValue.value === 'sometimes') {
+    return {
+      sometimes: true,
+    };
+  }
+
   const mapper = new TsValidationMethodCallMapper(rules, ignoreRules);
-  const TsValidationRuleMethodCall = mapper.create(argValue.value);
-  return TsValidationRuleMethodCall?.toString() ?? '';
+  const tsValidationRuleMethodCall = mapper.create(argValue.value);
+  return {
+    sometimes: false,
+    value: tsValidationRuleMethodCall?.toString() ?? '',
+  };
 };
 
 function assertValueIsList(value: ConstValueNode, message: string): asserts value is ConstListValueNode {

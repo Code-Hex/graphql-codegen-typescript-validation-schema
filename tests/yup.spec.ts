@@ -832,6 +832,7 @@ describe('yup', () => {
         name: String! @rules(apply: ["startsWith:Sir"])
         age: Int! @rules(apply: ["min:0", "max:100"])
         keyword: String! @rules(apply: ["regex:/^[a-zA-Z0-9]+$/"])
+        nickname: String @rules(apply: ["max:10", "sometimes", "required"])
       }
       directive @rules(apply: [String!]!) on INPUT_FIELD_DEFINITION
     `);
@@ -852,6 +853,7 @@ describe('yup', () => {
       'name: yup.string().defined().startsWith("Sir").nonNullable(),',
       'age: yup.number().defined().min(0).max(100).nonNullable()',
       'keyword: yup.string().defined().matches(/^[a-zA-Z0-9]+$/).nonNullable()',
+      'nickname: yup.string().defined().sometimes(schema => schema.max(10).required()).nullable().optional()',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
