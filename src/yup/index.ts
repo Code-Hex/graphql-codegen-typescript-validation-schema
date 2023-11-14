@@ -262,9 +262,9 @@ const generateFieldTypeYupSchema = (
     const gen = generateNameNodeYupSchema(config, visitor, type.name) + generatedCodesForDirectives.rules;
     if (!!parentType && isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
-        return `${gen}.required()`;
+        return `${gen}.defined().required()`;
       }
-      return `${gen}.nonNullable()`;
+      return `${gen}.defined().nonNullable()`;
     }
     const typ = visitor.getType(type.name.value);
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
