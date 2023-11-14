@@ -12,7 +12,7 @@ export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.BasicAuth, 
 function union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T> {
   return yup.mixed<T>().test({
     test: (value) => schemas.some((schema) => schema.isValidSync(value))
-  })
+  }).defined()
 }
 
 export function AdminSchema(): yup.ObjectSchema<Admin> {
@@ -32,7 +32,7 @@ export function AttributeInputSchema(): yup.ObjectSchema<AttributeInput> {
 export function ComponentInputSchema(): yup.ObjectSchema<ComponentInput> {
   return yup.object({
     child: ComponentInputSchema().optional(),
-    childrens: yup.array(ComponentInputSchema()).nullable().optional(),
+    childrens: yup.array(ComponentInputSchema().defined()).nullable().optional(),
     event: EventInputSchema().optional(),
     name: yup.string().defined().nonNullable(),
     type: ButtonComponentTypeSchema.defined().nonNullable()
@@ -48,7 +48,7 @@ export function DropDownComponentInputSchema(): yup.ObjectSchema<DropDownCompone
 
 export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput> {
   return yup.object({
-    favorites: yup.array(yup.string().maxLength(16).defined().nonNullable()).size(5).defined(),
+    favorites: yup.array(yup.string().maxLength(16).defined().nonNullable().defined()).size(5).defined(),
     name: yup.string().varchar().defined().nonNullable(),
     nickname: yup.string().sometimes("nickname", schema => schema.varchar().max(10)).nullable().optional(),
     value: yup.string().startsWith("Sir").defined().nonNullable()
@@ -57,8 +57,8 @@ export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput>
 
 export function EventInputSchema(): yup.ObjectSchema<EventInput> {
   return yup.object({
-    arguments: yup.array(EventArgumentInputSchema().defined().nonNullable()).defined(),
-    options: yup.array(EventOptionTypeSchema.defined().nonNullable()).nullable().optional()
+    arguments: yup.array(EventArgumentInputSchema().defined().nonNullable().defined()).defined(),
+    options: yup.array(EventOptionTypeSchema.defined().nonNullable().defined()).nullable().optional()
   }).strict()
 }
 
@@ -113,15 +113,15 @@ export function MyTypeFooArgsSchema(): yup.ObjectSchema<MyTypeFooArgs> {
 
 export function PageInputSchema(): yup.ObjectSchema<PageInput> {
   return yup.object({
-    attributes: yup.array(AttributeInputSchema().defined().nonNullable()).nullable().optional(),
+    attributes: yup.array(AttributeInputSchema().defined().nonNullable().defined()).nullable().optional(),
     date: yup.mixed().nullable().optional(),
     height: yup.number().defined().nonNullable(),
     id: yup.string().defined().nonNullable(),
     layout: LayoutInputSchema().defined().nonNullable(),
     pageType: PageTypeSchema.defined().nonNullable(),
-    postIDs: yup.array(yup.string().defined().nonNullable()).nullable().optional(),
+    postIDs: yup.array(yup.string().defined().nonNullable().defined()).nullable().optional(),
     show: yup.boolean().defined().nonNullable(),
-    tags: yup.array(yup.string().nullable()).nullable().optional(),
+    tags: yup.array(yup.string().nullable().defined()).nullable().optional(),
     title: yup.string().defined().nonNullable(),
     width: yup.number().defined().nonNullable()
   }).strict()

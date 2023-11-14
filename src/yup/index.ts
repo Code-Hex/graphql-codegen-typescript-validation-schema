@@ -39,7 +39,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           [
             indent('return yup.mixed<T>().test({'),
             indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
-            indent('})'),
+            indent('}).defined()'), // HACK: 型を合わせるために、union は undefined を許容しないこととした。問題が出たら考える。
           ].join('\n')
         ).string
     );
@@ -255,7 +255,8 @@ const generateFieldTypeYupSchema = (
   if (isListType(type)) {
     const gen = generateFieldTypeYupSchema(config, visitor, type.type, type, generatedCodesForDirectives);
     const nullable = !parentType || !isNonNullType(parentType);
-    return `yup.array(${maybeLazy(config, type.type, gen)})${generatedCodesForDirectives.rulesForArray}${
+    // NOTE: 配列の中身は必ず defined (nullが混ざることはあってもundefinedは混ざらない)
+    return `yup.array(${maybeLazy(config, type.type, `${gen}.defined()`)})${generatedCodesForDirectives.rulesForArray}${
       nullable ? '.nullable()' : '.defined()'
     }`;
   }

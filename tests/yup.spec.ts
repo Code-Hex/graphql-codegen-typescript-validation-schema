@@ -75,12 +75,12 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function ArrayInputSchema(): yup.ObjectSchema<ArrayInput>',
-          'a: yup.array(yup.string().nullable()).nullable().optional(),',
-          'b: yup.array(yup.string().defined().nonNullable()).nullable().optional(),',
-          'c: yup.array(yup.string().defined().nonNullable()).defined(),',
-          'd: yup.array(yup.array(yup.string().nullable()).nullable()).nullable().optional(),',
-          'e: yup.array(yup.array(yup.string().nullable()).defined()).nullable().optional(),',
-          'f: yup.array(yup.array(yup.string().nullable()).defined()).defined()',
+          'a: yup.array(yup.string().nullable().defined()).nullable().optional(),',
+          'b: yup.array(yup.string().defined().nonNullable().defined()).nullable().optional(),',
+          'c: yup.array(yup.string().defined().nonNullable().defined()).defined(),',
+          'd: yup.array(yup.array(yup.string().nullable().defined()).nullable().defined()).nullable().optional(),',
+          'e: yup.array(yup.array(yup.string().nullable().defined()).defined().defined()).nullable().optional(),',
+          'f: yup.array(yup.array(yup.string().nullable().defined()).defined().defined()).defined()',
         ],
         scalars: undefined,
         lazyTypes: undefined,
@@ -124,7 +124,7 @@ describe('yup', () => {
         wantContains: [
           'export function NestedInputSchema(): yup.ObjectSchema<NestedInput>',
           'child: yup.lazy(() => NestedInputSchema()).optional(),',
-          'childrens: yup.array(yup.lazy(() => NestedInputSchema())).nullable().optional()',
+          'childrens: yup.array(yup.lazy(() => NestedInputSchema().defined())).nullable().optional()',
         ],
         scalars: undefined,
         lazyTypes: ['NestedInput'],
@@ -440,7 +440,7 @@ describe('yup', () => {
       const wantContains = [
         'export function AuthorSchema(): yup.ObjectSchema<Author> {',
         "__typename: yup.string<'Author'>().optional(),",
-        'books: yup.array(BookSchema().nullable()).nullable().optional(),',
+        'books: yup.array(BookSchema().nullable().defined()).nullable().optional(),',
         'name: yup.string().nullable().optional()',
 
         'export function BookSchema(): yup.ObjectSchema<Book> {',
