@@ -10,6 +10,7 @@ import {
   NameNode,
   NonNullTypeNode,
   ObjectTypeDefinitionNode,
+  specifiedScalarTypes,
   TypeNode,
   visit,
 } from 'graphql';
@@ -175,3 +176,8 @@ export const isGeneratedByIntrospection = (schema: GraphQLSchema): boolean =>
   Object.entries(schema.getTypeMap())
     .filter(([name, type]) => !name.startsWith('__') && !isSpecifiedScalarType(type))
     .every(([, type]) => type.astNode === undefined);
+
+export const isSpecifiedScalarName = (
+  scalarName: string
+): scalarName is (typeof specifiedScalarTypes)[number]['name'] =>
+  specifiedScalarTypes.some(({ name }) => name === scalarName);

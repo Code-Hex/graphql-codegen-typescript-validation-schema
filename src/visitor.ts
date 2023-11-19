@@ -1,19 +1,16 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
-import { FieldDefinitionNode, GraphQLSchema, NameNode, ObjectTypeDefinitionNode, specifiedScalarTypes } from 'graphql';
+import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
+import { FieldDefinitionNode, GraphQLSchema, NameNode, ObjectTypeDefinitionNode } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
+import { isSpecifiedScalarName } from './graphql';
 
 export class Visitor extends TsVisitor {
   constructor(
-    private scalarDirection: 'input' | 'output' | 'both',
     private schema: GraphQLSchema,
     private pluginConfig: ValidationSchemaPluginConfig
   ) {
     super(schema, pluginConfig);
-  }
-
-  private isSpecifiedScalarName(scalarName: string) {
-    return specifiedScalarTypes.some(({ name }) => name === scalarName);
   }
 
   public getType(name: string) {
@@ -32,22 +29,19 @@ export class Visitor extends TsVisitor {
     };
   }
 
-  public getScalarType(scalarName: string): string | null {
-    if (this.scalarDirection === 'both') {
-      return null;
-    }
-    return this.scalars[scalarName][this.scalarDirection];
+  public getScalarType(scalarName: string, scalarDirection: keyof NormalizedScalarsMap[string]): string | null {
+    return this.scalars[scalarName][scalarDirection];
   }
 
-  public shouldEmitAsNotAllowEmptyString(name: string): boolean {
+  public shouldEmitAsNotAllowEmptyString(name: string, scalarDirection: keyof NormalizedScalarsMap[string]): boolean {
     if (this.pluginConfig.notAllowEmptyString !== true) {
       return false;
     }
     const typ = this.getType(name);
-    if (typ?.astNode?.kind !== 'ScalarTypeDefinition' && !this.isSpecifiedScalarName(name)) {
+    if (typ?.astNode?.kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(name)) {
       return false;
     }
-    const tsType = this.getScalarType(name);
+    const tsType = this.getScalarType(name, scalarDirection);
     return tsType === 'string';
   }
 

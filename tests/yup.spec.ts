@@ -802,7 +802,7 @@ describe('yup', () => {
         schema,
         [],
         {
-          withObjectType: true,
+          withObjectType: 'all',
           scalars: {
             Text: 'string',
           },

@@ -12,6 +12,6 @@ generates:
       - ./dist/main/index.js:
           schema: yup
           importFrom: ../types
-          withObjectType: true
+          withObjectType: all
           scalars:
             ID: string

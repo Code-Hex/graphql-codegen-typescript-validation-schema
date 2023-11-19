@@ -4,7 +4,6 @@ import { buildSchema, GraphQLSchema, printSchema, visit } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
 import { isGeneratedByIntrospection, topologicalSortAST } from './graphql';
-import { SchemaVisitor } from './types';
 import { YupSchemaVisitor } from './yup';
 
 export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexPluginOutput> = (
@@ -12,8 +11,8 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
   _documents: Types.DocumentFile[],
   config: ValidationSchemaPluginConfig
 ): Types.ComplexPluginOutput => {
-  const { schema: _schema, ast } = _transformSchemaAST(schema, config);
-  const visitor = schemaVisitor(_schema, config);
+  const { schema: transformedSchema, ast } = _transformSchemaAST(schema, config);
+  const visitor = new YupSchemaVisitor(transformedSchema, config);
 
   const result = visit(ast, visitor);
 
@@ -25,10 +24,6 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
     prepend: visitor.buildImports(),
     content: [visitor.initialEmit(), ...generated].join('\n'),
   };
-};
-
-const schemaVisitor = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig): SchemaVisitor => {
-  return new YupSchemaVisitor(schema, config);
 };
 
 const _transformSchemaAST = (schema: GraphQLSchema, config: ValidationSchemaPluginConfig) => {

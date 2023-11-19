@@ -2,7 +2,17 @@ import { ConstDirectiveNode, Kind } from 'graphql';
 import { describe, expect, test } from 'vitest';
 
 import { Rules } from '../src/config';
-import { buildApi, GeneratedCodesForDirectives } from '../src/directive';
+import { DirectiveRenderer, GeneratedCodesForDirectives } from '../src/yup/DirectiveRenderer';
+
+export const action = (
+  fieldName: string,
+  rules: Rules,
+  ignoreRules: readonly string[],
+  directives: readonly ConstDirectiveNode[]
+): GeneratedCodesForDirectives => {
+  const renderer = new DirectiveRenderer(rules, ignoreRules);
+  return renderer.render(fieldName, directives);
+};
 
 const buildRulesDirectiveNode = (rules: readonly string[]): ConstDirectiveNode => ({
   kind: Kind.DIRECTIVE,
@@ -68,6 +78,6 @@ describe('format directive config', () => {
       },
     ],
   ])('buildApi %s', (_, { rules, ignoreRules, args }, fieldName, want) => {
-    expect(buildApi(fieldName, rules, ignoreRules, args)).toStrictEqual(want);
+    expect(action(fieldName, rules, ignoreRules, args)).toStrictEqual(want);
   });
 });
