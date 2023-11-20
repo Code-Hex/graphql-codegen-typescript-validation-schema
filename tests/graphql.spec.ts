@@ -1,5 +1,3 @@
-import { describe, test, it, expect } from 'vitest';
-
 import { Graph } from 'graphlib';
 import {
   buildClientSchema,
@@ -11,6 +9,7 @@ import {
   print,
 } from 'graphql';
 import dedent from 'ts-dedent';
+import { describe, expect, it, test } from 'vitest';
 
 import { isGeneratedByIntrospection, ObjectTypeDefinitionBuilder, topologicalSortAST, topsort } from '../src/graphql';
 

@@ -103,6 +103,10 @@ export type MyTypeFooArgs = {
   d: Scalars['Float']['input'];
 };
 
+export type Node = {
+  id?: Maybe<Scalars['ID']['output']>;
+};
+
 export type PageInput = {
   attributes?: InputMaybe<Array<AttributeInput>>;
   date?: InputMaybe<Scalars['Date']['input']>;
@@ -124,7 +128,7 @@ export enum PageType {
   Service = 'SERVICE'
 }
 
-export type User = {
+export type User = Node & {
   __typename?: 'User';
   createdAt?: Maybe<Scalars['Date']['output']>;
   email?: Maybe<Scalars['String']['output']>;

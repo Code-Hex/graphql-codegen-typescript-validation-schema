@@ -1,71 +1,51 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
 import { NormalizedScalarsMap } from '@graphql-codegen/visitor-plugin-common';
-import { FieldDefinitionNode, GraphQLSchema, NameNode, ObjectTypeDefinitionNode } from 'graphql';
+import { GraphQLSchema, Kind } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
-import { isSpecifiedScalarName } from './graphql';
 
 export class Visitor extends TsVisitor {
   constructor(
     private schema: GraphQLSchema,
-    private pluginConfig: ValidationSchemaPluginConfig
+    pluginConfig: ValidationSchemaPluginConfig
   ) {
     super(schema, pluginConfig);
   }
 
-  public getType(name: string) {
-    return this.schema.getType(name);
+  public getKind(graphQLTypeName: string) {
+    const foundType = this.schema.getType(graphQLTypeName);
+    if (!foundType) {
+      throw new Error(`type ${graphQLTypeName} not found in schema`);
+    }
+
+    // String 等の組み込みの scalar の場合、 astNode がない
+    if (!foundType.astNode) {
+      return null;
+    }
+
+    const kind = foundType.astNode.kind;
+    assertsNotInterface(kind);
+
+    return kind;
   }
 
-  public getNameNodeConverter(node: NameNode) {
-    const typ = this.schema.getType(node.value);
-    const astNode = typ?.astNode;
-    if (astNode === undefined || astNode === null) {
-      return undefined;
-    }
-    return {
-      targetKind: astNode.kind,
-      convertName: () => this.convertName(astNode.name.value),
-    };
+  public getTypeScriptScalarType(
+    graphQLTypeName: string,
+    scalarDirection: keyof NormalizedScalarsMap[string]
+  ): string | null {
+    return this.scalars[graphQLTypeName]?.[scalarDirection] ?? null;
   }
+}
 
-  public getScalarType(scalarName: string, scalarDirection: keyof NormalizedScalarsMap[string]): string | null {
-    return this.scalars[scalarName][scalarDirection];
-  }
+/**
+ * String 等の組み込みの scalar の場合は null
+ */
+export type GetKindResult = ReturnType<Visitor['getKind']>;
 
-  public shouldEmitAsNotAllowEmptyString(name: string, scalarDirection: keyof NormalizedScalarsMap[string]): boolean {
-    if (this.pluginConfig.notAllowEmptyString !== true) {
-      return false;
-    }
-    const typ = this.getType(name);
-    if (typ?.astNode?.kind !== 'ScalarTypeDefinition' && !isSpecifiedScalarName(name)) {
-      return false;
-    }
-    const tsType = this.getScalarType(name, scalarDirection);
-    return tsType === 'string';
-  }
-
-  public buildArgumentsSchemaBlock(
-    node: ObjectTypeDefinitionNode,
-    callback: (typeName: string, field: FieldDefinitionNode) => string
-  ) {
-    const fieldsWithArguments = node.fields?.filter(field => field.arguments && field.arguments.length > 0) ?? [];
-    if (fieldsWithArguments.length === 0) {
-      return undefined;
-    }
-    return fieldsWithArguments
-      .map(field => {
-        const name =
-          node.name.value +
-          (this.config.addUnderscoreToArgsType ? '_' : '') +
-          this.convertName(field, {
-            useTypesPrefix: false,
-            useTypesSuffix: false,
-          }) +
-          'Args';
-
-        return callback(name, field);
-      })
-      .join('\n');
+function assertsNotInterface<TKind extends Kind>(
+  kind: TKind
+): asserts kind is Exclude<TKind, Kind.INTERFACE_TYPE_DEFINITION> {
+  if (kind === Kind.INTERFACE_TYPE_DEFINITION) {
+    throw new Error(`unexpected kind: ${kind}`);
   }
 }

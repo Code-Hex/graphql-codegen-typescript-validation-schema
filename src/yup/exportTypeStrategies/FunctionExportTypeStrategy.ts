@@ -37,7 +37,7 @@ export class FunctionExportTypeStrategy implements ExportTypeStrategy {
       .withBlock([indent(`return yup.object({`), shape, indent('}).strict()')].join('\n')).string;
   }
 
-  schemaEvaluation(schema: string, kind?: Kind): string {
+  schemaEvaluation(schema: string, kind: Kind | null): string {
     // enum は関数出力形式でも定数として出力する
     if (kind === Kind.ENUM_TYPE_DEFINITION) return schema;
 

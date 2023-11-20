@@ -1,6 +1,5 @@
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 
-import { ValidationSchemaPluginConfig } from '../config';
 import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
 
 export class InitialEmitter {

@@ -1,4 +1,4 @@
-import { ObjectTypeDefinitionNode } from 'graphql';
+import { FieldDefinitionNode, ObjectTypeDefinitionNode } from 'graphql';
 
 import { Visitor } from '../../visitor';
 import { ExportTypeStrategy } from '../exportTypeStrategies/ExportTypeStrategy';
@@ -13,7 +13,8 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
     private readonly visitor: Visitor,
     private readonly withObjectTypesSpec: WithObjectTypesSpec,
     private readonly exportTypeStrategy: ExportTypeStrategy,
-    private readonly shapeRenderer: ShapeRenderer
+    private readonly shapeRenderer: ShapeRenderer,
+    private readonly addUnderscoreToArgsType: boolean = false
   ) {}
 
   create() {
@@ -24,7 +25,7 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
       this.registry.registerType(name);
 
       // Building schema for field arguments.
-      const argumentBlocks = this.visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
+      const argumentBlocks = this.buildArgumentsSchemaBlock(node, (typeName, field) => {
         this.registry.registerType(typeName);
         return this.exportTypeStrategy.inputObjectTypeDefinition(
           typeName,
@@ -38,5 +39,29 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
 
       return this.exportTypeStrategy.objectTypeDefinition(name, node.name.value, shapeContent, appendArguments);
     };
+  }
+
+  private buildArgumentsSchemaBlock(
+    node: ObjectTypeDefinitionNode,
+    callback: (typeName: string, field: FieldDefinitionNode) => string
+  ) {
+    const fieldsWithArguments = node.fields?.filter(field => field.arguments && field.arguments.length > 0) ?? [];
+    if (fieldsWithArguments.length === 0) {
+      return undefined;
+    }
+    return fieldsWithArguments
+      .map(field => {
+        const name =
+          node.name.value +
+          (this.addUnderscoreToArgsType ? '_' : '') +
+          this.visitor.convertName(field, {
+            useTypesPrefix: false,
+            useTypesSuffix: false,
+          }) +
+          'Args';
+
+        return callback(name, field);
+      })
+      .join('\n');
   }
 }

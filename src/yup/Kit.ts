@@ -3,19 +3,27 @@ import { GraphQLSchema } from 'graphql';
 
 import { ValidationSchemaPluginConfig } from '../config';
 import { Visitor } from '../visitor';
-import { DirectiveRenderer } from './DirectiveRenderer';
-import { createExportTypeStrategy } from './exportTypeStrategies/factory';
-import { FieldRenderer } from './FieldRenderer';
+import { ConstExportTypeStrategy } from './exportTypeStrategies/ConstExportTypeStrategy';
+import { ExportTypeStrategy } from './exportTypeStrategies/ExportTypeStrategy';
+import { FunctionExportTypeStrategy } from './exportTypeStrategies/FunctionExportTypeStrategy';
 import { ImportBuilder } from './ImportBuilder';
 import { InitialEmitter } from './InitialEmitter';
 import { Registry } from './registry';
-import { ScalarRenderer } from './ScalarRenderer';
+import { FieldFactory } from './renderable/field/FieldFactory';
+import { FieldRenderer } from './renderable/field/FieldRenderer';
+import { RuleASTFactory } from './renderable/ruleAST/RuleASTFactory';
+import { RuleASTRenderer } from './renderable/ruleAST/RuleASTRenderer';
+import { SchemaASTFactory } from './renderable/schemaAST/SchemaASTFactory';
+import { SchemaASTRenderer } from './renderable/schemaAST/SchemaASTRenderer';
 import { ShapeRenderer } from './ShapeRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
 import { ObjectTypeDefinitionFactory } from './visitFunctionFactories/ObjectTypeDefinitionFactory';
 import { UnionTypesDefinitionFactory } from './visitFunctionFactories/UnionTypesDefinitionFactory';
-import { createWithObjectTypesSpec } from './withObjectTypesSpecs/factory';
+import { AllWithObjectTypesSpec } from './withObjectTypesSpecs/AllWithObjectTypesSpec';
+import { NoReservedWithObjectTypesSpec } from './withObjectTypesSpecs/NoReservedWithObjectTypesSpec';
+import { NullWithObjectTypesSpec } from './withObjectTypesSpecs/NullWithObjectTypesSpec';
+import { WithObjectTypesSpec } from './withObjectTypesSpecs/WithObjectTypesSpec';
 
 export class Kit {
   constructor(
@@ -27,35 +35,58 @@ export class Kit {
     return new Visitor(this.schema, this.config);
   }
 
-  getWithObjectTypesSpec() {
-    return createWithObjectTypesSpec(this.config.withObjectType);
+  getWithObjectTypesSpec(): WithObjectTypesSpec {
+    const type = this.config.withObjectType ?? false;
+    switch (type) {
+      case 'no-reserved':
+        return new NoReservedWithObjectTypesSpec();
+      case 'all':
+        return new AllWithObjectTypesSpec();
+      case false:
+        return new NullWithObjectTypesSpec();
+      default:
+        return assertNever(type);
+    }
   }
 
-  getExportTypesStrategy() {
-    return createExportTypeStrategy(this.config.validationSchemaExportType);
+  getExportTypesStrategy(): ExportTypeStrategy {
+    const type = this.config.validationSchemaExportType ?? 'function';
+    switch (type) {
+      case 'function':
+        return new FunctionExportTypeStrategy();
+      case 'const':
+        return new ConstExportTypeStrategy();
+      default:
+        return assertNever(type);
+    }
   }
 
-  getFieldRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new FieldRenderer(
-      this.config,
-      this.getVisitor(),
-      this.getExportTypesStrategy(),
-      this.getDirectiveRenderer(),
-      this.getScalarRenderer(),
-      scalarDirection
-    );
+  getFieldRenderer() {
+    return new FieldRenderer(this.getSchemaASTRenderer());
   }
 
-  getScalarRenderer() {
-    return new ScalarRenderer(this.config.scalarSchemas, this.getVisitor());
+  getSchemaASTRenderer() {
+    return new SchemaASTRenderer(this.config, this.getRuleASTRenderer(), this.getExportTypesStrategy());
   }
 
-  getDirectiveRenderer() {
-    return new DirectiveRenderer(this.config.rules, this.config.ignoreRules);
+  getRuleASTFactory() {
+    return new RuleASTFactory(this.config.rules, this.config.ignoreRules);
+  }
+
+  getRuleASTRenderer() {
+    return new RuleASTRenderer();
   }
 
   getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new ShapeRenderer(this.getFieldRenderer(scalarDirection));
+    return new ShapeRenderer(this.getFieldRenderer(), this.getFieldFactory(scalarDirection));
+  }
+
+  getSchemaASTFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new SchemaASTFactory(this.config.lazyTypes, scalarDirection, this.getVisitor());
+  }
+
+  getFieldFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new FieldFactory(this.getSchemaASTFactory(scalarDirection), this.getRuleASTFactory());
   }
 
   getImportBuilder() {
@@ -81,7 +112,8 @@ export class Kit {
       this.getVisitor(),
       this.getWithObjectTypesSpec(),
       this.getExportTypesStrategy(),
-      this.getShapeRenderer('output')
+      this.getShapeRenderer('output'),
+      this.config.addUnderscoreToArgsType
     );
   }
 
@@ -97,4 +129,8 @@ export class Kit {
       this.getExportTypesStrategy()
     );
   }
+}
+
+function assertNever(type: never): never {
+  throw new Error(`undefined type ${type}`);
 }

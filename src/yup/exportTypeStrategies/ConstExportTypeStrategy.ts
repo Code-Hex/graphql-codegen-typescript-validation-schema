@@ -35,7 +35,7 @@ export class ConstExportTypeStrategy implements ExportTypeStrategy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  schemaEvaluation(schema: string, _kind?: Kind): string {
+  schemaEvaluation(schema: string, _kind: Kind | null): string {
     return schema;
   }
 }
