@@ -4,6 +4,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - name: Setup asdf
@@ -22,6 +24,8 @@ jobs:
         run: |
           sed .gitignore -i -e s/dist//g
           VERSION=$(cat package.json | jq -r .version)
+          git config user.name "actions-user"
+          git config user.email "action@github.com"
           git add .gitignore
           git add dist
           git commit -m "release ${VERSION}"
