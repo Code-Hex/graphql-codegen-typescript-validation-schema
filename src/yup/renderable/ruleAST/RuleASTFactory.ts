@@ -7,9 +7,10 @@ import { RuleASTSometimesNode } from './RuleASTSometimesNode';
 
 export class RuleASTFactory {
   public constructor(
-    private rules: Rules = {},
-    private ignoreRules: readonly string[] = [],
-    private supportedArgumentName: string = 'apply'
+    private readonly rules: Rules = {},
+    private readonly ignoreRules: readonly string[] = [],
+    private readonly lazyRules: readonly string[] = [],
+    private readonly supportedArgumentName: string = 'apply'
   ) {}
 
   public createFromDirectiveOrNull(fieldName: string, directive: ConstDirectiveNode | null) {
@@ -54,10 +55,12 @@ export class RuleASTFactory {
     const others = parsed.filter(isNotSometimes);
 
     const compositeRule = new RuleASTCompositeNode(
-      others.map(({ name, rawArgs }) => new RuleASTSingleNode(name, rawArgs))
+      others.map(({ name, rawArgs }) => new RuleASTSingleNode(name, rawArgs, this.requiresLazy(name)))
     );
 
-    return sometimesIfExists.length === 0 ? compositeRule : new RuleASTSometimesNode(fieldName, compositeRule);
+    return sometimesIfExists.length === 0
+      ? compositeRule
+      : new RuleASTSometimesNode(fieldName, compositeRule, this.requiresLazy('sometimes'));
   }
 
   private mapMethodName(ruleName: string): string {
@@ -69,6 +72,10 @@ export class RuleASTFactory {
       return ruleMapping[0];
     }
     return ruleMapping;
+  }
+
+  private requiresLazy(ruleName: string): boolean {
+    return this.lazyRules.includes(ruleName);
   }
 }
 

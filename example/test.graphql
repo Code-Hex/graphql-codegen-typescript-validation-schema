@@ -81,10 +81,10 @@ enum EventOptionType {
 }
 
 input EventArgumentInput {
-  name: String! @rules(apply: ["varchar"])
+  name: String! @rules(apply: ["varchar", "required_without:nickname"])
   value: String! @rules(apply: ["startsWith:Sir"])
   favorites: [String!]! @rules(apply: ["maxLength:16"]) @rulesForArray(apply: ["size:5"])
-  nickname: String @rules(apply: ["varchar", "max:10", "sometimes"])
+  nickname: String @rules(apply: ["varchar", "max:10", "sometimes", "required_without:name"])
 }
 
 input HTTPInput {

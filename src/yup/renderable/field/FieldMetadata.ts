@@ -2,18 +2,21 @@ import { RuleASTNode } from '../ruleAST/RuleASTNode';
 
 export class FieldMetadata {
   constructor(
-    private readonly name: string,
-    private readonly isOptional: boolean,
-    private readonly rule: RuleASTNode,
-    private readonly ruleForArray: RuleASTNode
+    private readonly data: {
+      name: string;
+      isOptional: boolean;
+      rule: RuleASTNode;
+      ruleForArray: RuleASTNode;
+    }
   ) {}
 
   public getData() {
     return {
-      name: this.name,
-      isOptional: this.isOptional,
-      rule: this.rule,
-      ruleForArray: this.ruleForArray,
+      ...this.data,
     };
+  }
+
+  public requiresLazy(): boolean {
+    return this.data.rule.requiresLazy() || this.data.ruleForArray.requiresLazy();
   }
 }

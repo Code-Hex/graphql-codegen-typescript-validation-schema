@@ -13,4 +13,8 @@ export class RuleASTCompositeNode implements RuleASTNode {
   public render(ruleRenderer: RuleASTRenderer): string {
     return ruleRenderer.renderCompositeRule(this);
   }
+
+  public requiresLazy(): boolean {
+    return this.children.some(child => child.requiresLazy());
+  }
 }

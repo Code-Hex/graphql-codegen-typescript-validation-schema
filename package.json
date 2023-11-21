@@ -1,6 +1,6 @@
 {
   "name": "graphql-codegen-lighthouse-yup-schema",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "description": "GraphQL Code Generator plugin to generate form validation schema from your GraphQL schema",
   "respository": {
     "type": "git",
@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "type-check": "tsc --noEmit",
-    "type-check:yup": "tsc --strict --noEmit example/yup/schemas.ts",
+    "type-check:yup": "tsc --strict --noEmit example/yup/yup.d.ts example/yup/schemas.ts",
     "test": "vitest run",
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.main.json",

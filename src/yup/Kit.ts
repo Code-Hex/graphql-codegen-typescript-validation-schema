@@ -13,8 +13,8 @@ import { FieldFactory } from './renderable/field/FieldFactory';
 import { FieldRenderer } from './renderable/field/FieldRenderer';
 import { RuleASTFactory } from './renderable/ruleAST/RuleASTFactory';
 import { RuleASTRenderer } from './renderable/ruleAST/RuleASTRenderer';
-import { SchemaASTFactory } from './renderable/schemaAST/SchemaASTFactory';
-import { SchemaASTRenderer } from './renderable/schemaAST/SchemaASTRenderer';
+import { TypeASTFactory } from './renderable/typeAST/TypeASTFactory';
+import { TypeASTRenderer } from './renderable/typeAST/TypeASTRenderer';
 import { ShapeRenderer } from './ShapeRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
@@ -62,15 +62,15 @@ export class Kit {
   }
 
   getFieldRenderer() {
-    return new FieldRenderer(this.getSchemaASTRenderer());
+    return new FieldRenderer(this.getTypeASTRenderer());
   }
 
-  getSchemaASTRenderer() {
-    return new SchemaASTRenderer(this.config, this.getRuleASTRenderer(), this.getExportTypesStrategy());
+  getTypeASTRenderer() {
+    return new TypeASTRenderer(this.config, this.getRuleASTRenderer(), this.getExportTypesStrategy());
   }
 
   getRuleASTFactory() {
-    return new RuleASTFactory(this.config.rules, this.config.ignoreRules);
+    return new RuleASTFactory(this.config.rules, this.config.ignoreRules, this.config.lazyRules);
   }
 
   getRuleASTRenderer() {
@@ -81,12 +81,12 @@ export class Kit {
     return new ShapeRenderer(this.getFieldRenderer(), this.getFieldFactory(scalarDirection));
   }
 
-  getSchemaASTFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new SchemaASTFactory(this.config.lazyTypes, scalarDirection, this.getVisitor());
+  getTypeASTFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new TypeASTFactory(this.config.lazyTypes, scalarDirection, this.getVisitor());
   }
 
   getFieldFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new FieldFactory(this.getSchemaASTFactory(scalarDirection), this.getRuleASTFactory());
+    return new FieldFactory(this.getTypeASTFactory(scalarDirection), this.getRuleASTFactory());
   }
 
   getImportBuilder() {

@@ -129,21 +129,6 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   enumsAsTypes?: boolean;
   /**
-   * @description Generates validation string schema as do not allow empty characters by default.
-   * @default false
-   *
-   * @exampleMarkdown
-   * ```yml
-   * generates:
-   *   path/to/file.ts:
-   *     plugins:
-   *       - graphql-codegen-validation-schema
-   *     config:
-   *       notAllowEmptyString: true
-   * ```
-   */
-  notAllowEmptyString?: boolean;
-  /**
    * @description Extends or overrides validation schema for the built-in scalars and custom GraphQL scalars.
    *
    * @exampleMarkdown
@@ -216,4 +201,8 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * a list of types to be lazy evaluated
    */
   lazyTypes?: string[];
+  /**
+   * a list of rules to be lazy evaluated
+   */
+  lazyRules?: string[];
 }

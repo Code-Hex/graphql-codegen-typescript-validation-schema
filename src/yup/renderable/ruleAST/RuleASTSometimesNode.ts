@@ -6,7 +6,8 @@ import { RuleASTRenderer } from './RuleASTRenderer';
 export class RuleASTSometimesNode implements RuleASTNode {
   public constructor(
     private readonly fieldName: string, // 消したい
-    private readonly continuation: RuleASTCompositeNode
+    private readonly continuation: RuleASTCompositeNode,
+    private readonly _requiresLazy: boolean
   ) {}
 
   public getData() {
@@ -18,5 +19,9 @@ export class RuleASTSometimesNode implements RuleASTNode {
 
   public render(ruleRenderer: RuleASTRenderer): string {
     return ruleRenderer.renderSometimesRule(this);
+  }
+
+  public requiresLazy(): boolean {
+    return this._requiresLazy || this.continuation.requiresLazy();
   }
 }

@@ -11,9 +11,7 @@ export class ConstExportTypeStrategy implements ExportTypeStrategy {
         .asKind('const')
         .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
         .withContent(
-          [`yup.object({`, indent(`__typename: yup.string<'${typeName}'>().optional(),`, 2), shape, '}).strict()'].join(
-            '\n'
-          )
+          [`yup.object({`, indent(`__typename: yup.string<'${typeName}'>(),`, 2), shape, '}).strict()'].join('\n')
         ).string + appendArguments
     );
   }

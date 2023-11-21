@@ -13,7 +13,7 @@ export class FunctionExportTypeStrategy implements ExportTypeStrategy {
         .withBlock(
           [
             indent(`return yup.object({`),
-            indent(`__typename: yup.string<'${typeName}'>().optional(),`, 2),
+            indent(`__typename: yup.string<'${typeName}'>(),`, 2),
             shape,
             indent('}).strict()'),
           ].join('\n')

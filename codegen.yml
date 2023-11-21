@@ -15,3 +15,5 @@ generates:
           withObjectType: all
           scalars:
             ID: string
+          lazyRules:
+            - required_without

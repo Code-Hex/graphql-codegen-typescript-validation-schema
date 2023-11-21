@@ -2,18 +2,17 @@ import { Kind } from 'graphql';
 
 import { GetKindResult } from '../../../visitor';
 import { FieldMetadata } from '../field/FieldMetadata';
-import { SchemaASTNamedTypeNode } from './SchemaASTNamedTypeNode';
-import { SchemaASTRenderer } from './SchemaASTRenderer';
+import { TypeASTNode } from './TypeASTNode';
+import { TypeASTRenderer } from './TypeASTRenderer';
 
-export class SchemaASTNonScalarNamedTypeNode implements SchemaASTNamedTypeNode {
+export class TypeASTNonScalarNamedTypeNode implements TypeASTNode {
   constructor(
     private readonly data: Readonly<{
       graphQLTypeName: string;
       tsTypeName: string | null;
       convertedName: string;
       kind: Exclude<GetKindResult, Kind.SCALAR_TYPE_DEFINITION | null>;
-      isNonNull: boolean;
-      isDefined: boolean;
+      requiresLazy: boolean;
     }>
   ) {}
 
@@ -23,7 +22,11 @@ export class SchemaASTNonScalarNamedTypeNode implements SchemaASTNamedTypeNode {
     };
   }
 
-  public render(schemaASTRenderer: SchemaASTRenderer, fieldMetadata: FieldMetadata) {
+  public render(schemaASTRenderer: TypeASTRenderer, fieldMetadata: FieldMetadata) {
     return schemaASTRenderer.renderNonScalarNamedType(this, fieldMetadata);
+  }
+
+  public requiresLazy() {
+    return this.data.requiresLazy;
   }
 }

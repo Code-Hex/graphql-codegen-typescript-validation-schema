@@ -48,11 +48,11 @@ describe('yup', () => {
         wantContains: [
           'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
           // alphabet order
-          'a: yup.string().nullable().optional(),',
-          'b: yup.string().nullable().optional(),',
-          'c: yup.boolean().nullable().optional(),',
-          'd: yup.number().nullable().optional(),',
-          'e: yup.number().nullable().optional(),',
+          'a: yup.string().nullable(),',
+          'b: yup.string().nullable(),',
+          'c: yup.boolean().nullable(),',
+          'd: yup.number().nullable(),',
+          'e: yup.number().nullable(),',
         ],
         scalars: {
           ID: 'string',
@@ -75,12 +75,12 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function ArrayInputSchema(): yup.ObjectSchema<ArrayInput>',
-          'a: yup.array(yup.string().nullable().defined()).nullable().optional(),',
-          'b: yup.array(yup.string().defined().nonNullable().defined()).nullable().optional(),',
-          'c: yup.array(yup.string().defined().nonNullable().defined()).defined(),',
-          'd: yup.array(yup.array(yup.string().nullable().defined()).nullable().defined()).nullable().optional(),',
-          'e: yup.array(yup.array(yup.string().nullable().defined()).defined().defined()).nullable().optional(),',
-          'f: yup.array(yup.array(yup.string().nullable().defined()).defined().defined()).defined()',
+          'a: yup.array(yup.string().nullable().defined()).nullable(),',
+          'b: yup.array(yup.string().nonNullable().defined()).nullable(),',
+          'c: yup.array(yup.string().nonNullable().defined()).nonNullable().defined(),',
+          'd: yup.array(yup.array(yup.string().nullable().defined()).nullable().defined()).nullable(),',
+          'e: yup.array(yup.array(yup.string().nullable().defined()).nonNullable().defined()).nullable(),',
+          'f: yup.array(yup.array(yup.string().nullable().defined()).nonNullable().defined()).nonNullable().defined()',
         ],
         scalars: undefined,
         lazyTypes: undefined,
@@ -102,11 +102,11 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function AInputSchema(): yup.ObjectSchema<AInput>',
-          'b: yup.lazy(() => BInputSchema().defined().nonNullable())',
+          'b: yup.lazy(() => BInputSchema().nonNullable().defined())',
           'export function BInputSchema(): yup.ObjectSchema<BInput>',
-          'c: CInputSchema().defined().nonNullable()',
+          'c: CInputSchema().nonNullable().defined()',
           'export function CInputSchema(): yup.ObjectSchema<CInput>',
-          'a: AInputSchema().defined().nonNullable()',
+          'a: AInputSchema().nonNullable().defined()',
         ],
         scalars: undefined,
         lazyTypes: ['BInput'],
@@ -123,8 +123,8 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function NestedInputSchema(): yup.ObjectSchema<NestedInput>',
-          'child: yup.lazy(() => NestedInputSchema()).optional(),',
-          'childrens: yup.array(yup.lazy(() => NestedInputSchema().defined())).nullable().optional()',
+          'child: yup.lazy(() => NestedInputSchema().nullable()),',
+          'childrens: yup.lazy(() => yup.array(NestedInputSchema().nullable().defined()).nullable())',
         ],
         scalars: undefined,
         lazyTypes: ['NestedInput'],
@@ -145,7 +145,7 @@ describe('yup', () => {
         wantContains: [
           'export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.Public, PageType.BasicAuth]);',
           'export function PageInputSchema(): yup.ObjectSchema<PageInput>',
-          'pageType: PageTypeSchema.defined().nonNullable()',
+          'pageType: PageTypeSchema.nonNullable()',
         ],
         scalars: undefined,
         lazyTypes: undefined,
@@ -170,8 +170,8 @@ describe('yup', () => {
         wantContains: [
           'export function HttpInputSchema(): yup.ObjectSchema<HttpInput>',
           'export const HttpMethodSchema = yup.string<HttpMethod>().oneOf([HttpMethod.Get, HttpMethod.Post]);',
-          'method: HttpMethodSchema.nullable().optional(),',
-          'url: yup.mixed().defined().nonNullable()',
+          'method: HttpMethodSchema.nullable(),',
+          'url: yup.mixed().nonNullable().defined()',
         ],
         scalars: undefined,
         lazyTypes: undefined,
@@ -281,20 +281,20 @@ describe('yup', () => {
       schema,
       [],
       {
-        notAllowEmptyString: true,
-        scalars: {
-          ID: 'string',
+        scalarSchemas: {
+          String: 'yup.string().required()',
+          ID: 'yup.string().required()',
         },
       },
       {}
     );
     const wantContains = [
       'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
-      'a: yup.string().defined().required(),',
-      'b: yup.string().defined().required(),',
-      'c: yup.boolean().defined().nonNullable(),',
-      'd: yup.number().defined().nonNullable(),',
-      'e: yup.number().defined().nonNullable()',
+      'a: yup.string().required().nonNullable().defined(),',
+      'b: yup.string().required().nonNullable().defined(),',
+      'c: yup.boolean().nonNullable().defined(),',
+      'd: yup.number().nonNullable().defined(),',
+      'e: yup.number().nonNullable().defined()',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
@@ -315,9 +315,9 @@ describe('yup', () => {
       schema,
       [],
       {
-        notAllowEmptyString: true,
-        scalars: {
-          ID: 'string',
+        scalarSchemas: {
+          String: 'yup.string().required()',
+          ID: 'yup.string().required()',
         },
       },
       {}
@@ -325,7 +325,7 @@ describe('yup', () => {
     const wantContain = dedent`
     export function InputNestedSchema(): yup.ObjectSchema<InputNested> {
       return yup.object({
-        field: yup.string().defined().required()
+        field: yup.string().required().nonNullable().defined()
       }).strict()
     }`;
     expect(result.content).toContain(wantContain);
@@ -354,9 +354,9 @@ describe('yup', () => {
     );
     const wantContains = [
       'export function ScalarsInputSchema(): yup.ObjectSchema<ScalarsInput>',
-      'date: yup.date().defined().nonNullable(),',
-      'email: yup.string().email().nullable().optional(),',
-      'str: yup.string().defined().nonNullable()',
+      'date: yup.date().nonNullable().defined(),',
+      'email: yup.string().email().nullable()',
+      'str: yup.string().nonNullable().defined()',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
@@ -439,19 +439,19 @@ describe('yup', () => {
       );
       const wantContains = [
         'export function AuthorSchema(): yup.ObjectSchema<Author> {',
-        "__typename: yup.string<'Author'>().optional(),",
-        'books: yup.array(BookSchema().nullable().defined()).nullable().optional(),',
-        'name: yup.string().nullable().optional()',
+        "__typename: yup.string<'Author'>(),",
+        'books: yup.array(BookSchema().nullable().defined()).nullable(),',
+        'name: yup.string().nullable()',
 
         'export function BookSchema(): yup.ObjectSchema<Book> {',
-        "__typename: yup.string<'Book'>().optional(),",
-        'author: AuthorSchema().nullable().optional(),',
-        'title: yup.string().defined().nonNullable()',
+        "__typename: yup.string<'Book'>(),",
+        'author: AuthorSchema().nullable(),',
+        'title: yup.string().nonNullable().defined()',
 
         'export function Book2Schema(): yup.ObjectSchema<Book2> {',
-        "__typename: yup.string<'Book2'>().optional(),",
-        'author: AuthorSchema().defined().nonNullable(),',
-        'title: yup.string().nullable().optional()',
+        "__typename: yup.string<'Book2'>(),",
+        'author: AuthorSchema().nonNullable().defined(),',
+        'title: yup.string().nullable()',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
@@ -518,22 +518,22 @@ describe('yup', () => {
       const wantContains = [
         // User Create Input
         'export function UserCreateInputSchema(): yup.ObjectSchema<UserCreateInput> {',
-        'name: yup.string().defined().nonNullable(),',
-        'date: yup.date().defined().nonNullable(),',
-        'email: yup.string().email().defined().nonNullable()',
+        'name: yup.string().nonNullable().defined(),',
+        'date: yup.date().nonNullable().defined(),',
+        'email: yup.string().email().nonNullable().defined()',
         // Username Update Input
         'export function UsernameUpdateInputSchema(): yup.ObjectSchema<UsernameUpdateInput> {',
-        'updateInputId: yup.number().defined().nonNullable(),',
-        'updateName: yup.string().defined().nonNullable()',
+        'updateInputId: yup.number().nonNullable().defined(),',
+        'updateName: yup.string().nonNullable().defined()',
         // User
         'export function UserSchema(): yup.ObjectSchema<User> {',
-        "__typename: yup.string<'User'>().optional(),",
-        'id: yup.string().defined().nonNullable(),',
-        'name: yup.string().nullable().optional(),',
-        'age: yup.number().nullable().optional(),',
-        'isMember: yup.boolean().nullable().optional(),',
-        'email: yup.string().email().nullable().optional(),',
-        'createdAt: yup.date().defined().nonNullable()',
+        "__typename: yup.string<'User'>(),",
+        'id: yup.string().nonNullable().defined(),',
+        'name: yup.string().nullable(),',
+        'age: yup.number().nullable(),',
+        'isMember: yup.boolean().nullable(),',
+        'email: yup.string().email().nullable(),',
+        'createdAt: yup.date().nonNullable().defined()',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
@@ -600,22 +600,22 @@ describe('yup', () => {
       const wantContains = [
         // User Create Input
         'export function UserCreateInputSchema(): yup.ObjectSchema<UserCreateInput> {',
-        'name: yup.string().defined().nonNullable(),',
-        'date: yup.date().defined().nonNullable(),',
-        'email: yup.string().email().defined().nonNullable()',
+        'name: yup.string().nonNullable().defined(),',
+        'date: yup.date().nonNullable().defined(),',
+        'email: yup.string().email().nonNullable().defined()',
         // Username Update Input
         'export function UsernameUpdateInputSchema(): yup.ObjectSchema<UsernameUpdateInput> {',
-        'updateInputId: yup.number().defined().nonNullable(),',
-        'updateName: yup.string().defined().nonNullable()',
+        'updateInputId: yup.number().nonNullable().defined(),',
+        'updateName: yup.string().nonNullable().defined()',
         // User
         'export function UserSchema(): yup.ObjectSchema<User> {',
-        "__typename: yup.string<'User'>().optional(),",
-        'id: yup.string().defined().nonNullable(),',
-        'name: yup.string().nullable().optional(),',
-        'age: yup.number().nullable().optional(),',
-        'isMember: yup.boolean().nullable().optional(),',
-        'email: yup.string().email().nullable().optional(),',
-        'createdAt: yup.date().defined().nonNullable()',
+        "__typename: yup.string<'User'>(),",
+        'id: yup.string().nonNullable().defined(),',
+        'name: yup.string().nullable(),',
+        'age: yup.number().nullable(),',
+        'isMember: yup.boolean().nullable(),',
+        'email: yup.string().email().nullable(),',
+        'createdAt: yup.date().nonNullable().defined()',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
@@ -684,8 +684,8 @@ describe('yup', () => {
       const wantContains = [
         'export function GeometrySchema(): yup.ObjectSchema<Geometry> {',
         'return yup.object({',
-        "__typename: yup.string<'Geometry'>().optional(),",
-        'shape: ShapeSchema().nullable().optional()',
+        "__typename: yup.string<'Geometry'>(),",
+        'shape: ShapeSchema().nullable()',
         '})',
       ];
       for (const wantContain of wantContains) {
@@ -782,8 +782,8 @@ describe('yup', () => {
 
       const wantContains = [
         'export const GeometrySchema: yup.ObjectSchema<Geometry> = yup.object({',
-        "__typename: yup.string<'Geometry'>().optional(),",
-        'shape: ShapeSchema.nullable().optional()',
+        "__typename: yup.string<'Geometry'>(),",
+        'shape: ShapeSchema.nullable()',
         '})',
       ];
       for (const wantContain of wantContains) {
@@ -812,11 +812,11 @@ describe('yup', () => {
       const wantContain = dedent`
       export function MyTypeFooArgsSchema(): yup.ObjectSchema<MyTypeFooArgs> {
         return yup.object({
-          a: yup.string().nullable().optional(),
-          b: yup.number().defined().nonNullable(),
-          c: yup.boolean().nullable().optional(),
-          d: yup.number().defined().nonNullable(),
-          e: yup.string().nullable().optional()
+          a: yup.string().nullable(),
+          b: yup.number().nonNullable().defined(),
+          c: yup.boolean().nullable(),
+          d: yup.number().nonNullable().defined(),
+          e: yup.string().nullable()
         }).strict()
       }`;
       expect(result.content).toContain(wantContain);
@@ -827,10 +827,10 @@ describe('yup', () => {
     const schema = buildSchema(/* GraphQL */ `
       input UserCreateInput {
         id: ID! @rules(apply: ["exists"])
-        name: String! @rules(apply: ["startsWith:Sir"])
+        name: String! @rules(apply: ["startsWith:Sir", "required_without:nickname"])
         age: Int! @rules(apply: ["min:0", "max:100"])
         keyword: String! @rules(apply: ["regex:/^[a-zA-Z0-9]+$/"])
-        nickname: String @rules(apply: ["max:10", "sometimes", "required"])
+        nickname: String @rules(apply: ["max:10", "sometimes", "required_without:name"])
       }
       directive @rules(apply: [String!]!) on INPUT_FIELD_DEFINITION
     `);
@@ -842,21 +842,22 @@ describe('yup', () => {
           regex: 'matches',
         },
         ignoreRules: ['exists'],
+        lazyRules: ['required_without'],
       },
       {}
     );
     const wantContains = [
       // User Create Input
       'export function UserCreateInputSchema(): yup.ObjectSchema<UserCreateInput> {',
-      'name: yup.string().startsWith("Sir").defined().nonNullable(),',
-      'age: yup.number().min(0).max(100).defined().nonNullable()',
-      'keyword: yup.string().matches(/^[a-zA-Z0-9]+$/).defined().nonNullable()',
-      'nickname: yup.string().sometimes("nickname", schema => schema.max(10).required()).nullable().optional()',
+      'name: yup.lazy(() => yup.string().startsWith("Sir").required_without("nickname").nonNullable().defined()),',
+      'age: yup.number().min(0).max(100).nonNullable().defined()',
+      'keyword: yup.string().matches(/^[a-zA-Z0-9]+$/).nonNullable().defined()',
+      'nickname: yup.lazy(() => yup.string().sometimes("nickname", schema => schema.max(10).required_without("name")).nullable())',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
     }
-    const wantNotContains = ['id: yup.string().defined().nonNullable().exists(),'];
+    const wantNotContains = ['id: yup.string().nonNullable().exists(),'];
     for (const wantNotContain of wantNotContains) {
       expect(result.content).not.toContain(wantNotContain);
     }
@@ -922,18 +923,18 @@ describe('yup', () => {
     const wantContains = [
       // User Create Input
       'export const UserCreateInputSchema: yup.ObjectSchema<UserCreateInput> = yup.object({',
-      'name: yup.string().defined().nonNullable(),',
-      'date: yup.date().defined().nonNullable(),',
-      'email: yup.string().email().defined().nonNullable()',
+      'name: yup.string().nonNullable().defined(),',
+      'date: yup.date().nonNullable().defined(),',
+      'email: yup.string().email().nonNullable().defined()',
       // User
       'export const UserSchema: yup.ObjectSchema<User> = yup.object({',
-      "__typename: yup.string<'User'>().optional(),",
-      'id: yup.string().defined().nonNullable(),',
-      'name: yup.string().nullable().optional(),',
-      'age: yup.number().nullable().optional(),',
-      'email: yup.string().email().nullable().optional(),',
-      'isMember: yup.boolean().nullable().optional(),',
-      'createdAt: yup.date().defined().nonNullable()',
+      "__typename: yup.string<'User'>(),",
+      'id: yup.string().nonNullable().defined(),',
+      'name: yup.string().nullable(),',
+      'age: yup.number().nullable()',
+      'email: yup.string().email().nullable()',
+      'isMember: yup.boolean().nullable()',
+      'createdAt: yup.date().nonNullable().defined()',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
@@ -974,7 +975,7 @@ describe('yup', () => {
     const wantContain = dedent`
     export function QueryInputSchema(): yup.ObjectSchema<QueryInput> {
       return yup.object({
-        _dummy: TestSchema.nullable().optional()
+        _dummy: TestSchema.nullable()
       }).strict()
     }`;
     expect(result.content).toContain(wantContain);
