@@ -1,52 +1,29 @@
 name: Test
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: current
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      - name: Setup asdf
+        uses: asdf-vm/actions/setup@v3
+        # 2回目以降エラーが出るが問題ない
+        continue-on-error: true
+      - name: asdf install
+        uses: asdf-vm/actions/install@v3
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: lint
+        run: yarn lint
+      - name: fmt
+        run: yarn prettier:check
+      - name: test
+        run: yarn test
         env:
           CI: true
-  eslint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: current
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint-fix
-      - run: pnpm prettier
-      - name: Auto commit fixed code
-        id: auto-commit-action
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Apply auto lint-fix changes
-          branch: ${{ github.head_ref }}
-      # See: https://github.com/reviewdog/action-eslint/issues/152
-      # - name: eslint
-      #   if: steps.auto-commit-action.outputs.changes_detected == 'false'
-      #   uses: reviewdog/action-eslint@v1
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     level: warning
-      #     reporter: github-pr-review
+      - name: generate and type-check
+        run: |
+          yarn generate
+          yarn type-check
