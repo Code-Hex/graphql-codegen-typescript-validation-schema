@@ -50,7 +50,7 @@ export function EventArgumentInputSchema(): yup.ObjectSchema<EventArgumentInput>
   return yup.object({
     favorites: yup.array(yup.string().maxLength(16).nonNullable().defined()).size(5).nonNullable().defined(),
     name: yup.lazy(() => yup.string().varchar().required_without("nickname").nonNullable().defined()),
-    nickname: yup.lazy(() => yup.string().sometimes("nickname", schema => schema.varchar().max(10).required_without("name")).nullable()),
+    nickname: yup.lazy(() => yup.string().sometimes(schema => schema.varchar().max(10).required_without("name")).nullable()),
     value: yup.string().startsWith("Sir").nonNullable().defined()
   }).strict()
 }

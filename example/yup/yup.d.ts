@@ -9,7 +9,7 @@ declare module 'yup' {
   > extends Schema<TType, TContext, TDefault, TFlags> {
     maxLength(size: number): this;
     varchar(): this;
-    sometimes(str: string, callback: (schema: this) => this): this;
+    sometimes(callback: (schema: this) => this): this;
     startsWith(str: string): this;
     required_without(str: string): this;
   }

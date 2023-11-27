@@ -13,15 +13,15 @@ export class RuleASTFactory {
     private readonly supportedArgumentName: string = 'apply'
   ) {}
 
-  public createFromDirectiveOrNull(fieldName: string, directive: ConstDirectiveNode | null) {
-    return directive ? this.createFromDirective(fieldName, directive) : this.createNullObject();
+  public createFromDirectiveOrNull(directive: ConstDirectiveNode | null) {
+    return directive ? this.createFromDirective(directive) : this.createNullObject();
   }
 
   public createNullObject() {
     return new RuleASTCompositeNode([]);
   }
 
-  public createFromDirective(fieldName: string, directive: ConstDirectiveNode) {
+  public createFromDirective(directive: ConstDirectiveNode) {
     const ruleStrings = (directive.arguments ?? [])
       .filter(arg => arg.name.value === this.supportedArgumentName)
       .flatMap(({ value }) => {
@@ -32,10 +32,10 @@ export class RuleASTFactory {
         });
       });
 
-    return this.helper(fieldName, ruleStrings);
+    return this.helper(ruleStrings);
   }
 
-  private helper(fieldName: string, ruleStrings: readonly string[]): RuleASTCompositeNode | RuleASTSometimesNode {
+  private helper(ruleStrings: readonly string[]): RuleASTCompositeNode | RuleASTSometimesNode {
     const parsed = ruleStrings.flatMap(ruleString => {
       const validationRule = parse(ruleString);
 
@@ -60,7 +60,7 @@ export class RuleASTFactory {
 
     return sometimesIfExists.length === 0
       ? compositeRule
-      : new RuleASTSometimesNode(fieldName, compositeRule, this.requiresLazy('sometimes'));
+      : new RuleASTSometimesNode(compositeRule, this.requiresLazy('sometimes'));
   }
 
   private mapMethodName(ruleName: string): string {

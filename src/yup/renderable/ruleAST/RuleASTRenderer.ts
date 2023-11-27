@@ -16,8 +16,8 @@ export class RuleASTRenderer {
   }
 
   public renderSometimesRule(sometimesRule: RuleASTSometimesNode): string {
-    const { fieldName, continuation } = sometimesRule.getData();
-    return `.sometimes(${JSON.stringify(fieldName)}, schema => schema${continuation.render(this)})`;
+    const { continuation } = sometimesRule.getData();
+    return `.sometimes(schema => schema${continuation.render(this)})`;
   }
 }
 

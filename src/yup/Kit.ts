@@ -13,9 +13,10 @@ import { FieldFactory } from './renderable/field/FieldFactory';
 import { FieldRenderer } from './renderable/field/FieldRenderer';
 import { RuleASTFactory } from './renderable/ruleAST/RuleASTFactory';
 import { RuleASTRenderer } from './renderable/ruleAST/RuleASTRenderer';
+import { ShapeFactory } from './renderable/shape/ShapeFactory';
+import { ShapeRenderer } from './renderable/shape/ShapeRenderer';
 import { TypeASTFactory } from './renderable/typeAST/TypeASTFactory';
 import { TypeASTRenderer } from './renderable/typeAST/TypeASTRenderer';
-import { ShapeRenderer } from './ShapeRenderer';
 import { EnumTypeDefinitionFactory } from './visitFunctionFactories/EnumTypeDefinitionFactory';
 import { InputObjectTypeDefinitionFactory } from './visitFunctionFactories/InputObjectTypeDefinitionFactory';
 import { ObjectTypeDefinitionFactory } from './visitFunctionFactories/ObjectTypeDefinitionFactory';
@@ -61,6 +62,10 @@ export class Kit {
     }
   }
 
+  getShapeRenderer() {
+    return new ShapeRenderer(this.getFieldRenderer());
+  }
+
   getFieldRenderer() {
     return new FieldRenderer(this.getTypeASTRenderer());
   }
@@ -69,24 +74,23 @@ export class Kit {
     return new TypeASTRenderer(this.config, this.getRuleASTRenderer(), this.getExportTypesStrategy());
   }
 
-  getRuleASTFactory() {
-    return new RuleASTFactory(this.config.rules, this.config.ignoreRules, this.config.lazyRules);
-  }
-
   getRuleASTRenderer() {
     return new RuleASTRenderer();
   }
 
-  getShapeRenderer(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new ShapeRenderer(this.getFieldRenderer(), this.getFieldFactory(scalarDirection));
-  }
-
-  getTypeASTFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
-    return new TypeASTFactory(this.config.lazyTypes, scalarDirection, this.getVisitor());
+  getShapeFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new ShapeFactory(this.getFieldFactory(scalarDirection));
   }
 
   getFieldFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
     return new FieldFactory(this.getTypeASTFactory(scalarDirection), this.getRuleASTFactory());
+  }
+  getTypeASTFactory(scalarDirection: keyof NormalizedScalarsMap[string]) {
+    return new TypeASTFactory(this.config.lazyTypes, scalarDirection, this.getVisitor());
+  }
+
+  getRuleASTFactory() {
+    return new RuleASTFactory(this.config.rules, this.config.ignoreRules, this.config.lazyRules);
   }
 
   getImportBuilder() {
@@ -102,7 +106,8 @@ export class Kit {
       registry,
       this.getVisitor(),
       this.getExportTypesStrategy(),
-      this.getShapeRenderer('input')
+      this.getShapeFactory('input'),
+      this.getShapeRenderer()
     );
   }
 
@@ -112,7 +117,8 @@ export class Kit {
       this.getVisitor(),
       this.getWithObjectTypesSpec(),
       this.getExportTypesStrategy(),
-      this.getShapeRenderer('output'),
+      this.getShapeFactory('output'),
+      this.getShapeRenderer(),
       this.config.addUnderscoreToArgsType
     );
   }

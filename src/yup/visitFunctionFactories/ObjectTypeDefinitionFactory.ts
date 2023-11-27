@@ -3,7 +3,8 @@ import { FieldDefinitionNode, ObjectTypeDefinitionNode } from 'graphql';
 import { Visitor } from '../../visitor';
 import { ExportTypeStrategy } from '../exportTypeStrategies/ExportTypeStrategy';
 import { Registry } from '../registry';
-import { ShapeRenderer } from '../ShapeRenderer';
+import { ShapeFactory } from '../renderable/shape/ShapeFactory';
+import { ShapeRenderer } from '../renderable/shape/ShapeRenderer';
 import { WithObjectTypesSpec } from '../withObjectTypesSpecs/WithObjectTypesSpec';
 import { VisitFunctionFactory } from './types';
 
@@ -13,6 +14,7 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
     private readonly visitor: Visitor,
     private readonly withObjectTypesSpec: WithObjectTypesSpec,
     private readonly exportTypeStrategy: ExportTypeStrategy,
+    private readonly shapeFactory: ShapeFactory,
     private readonly shapeRenderer: ShapeRenderer,
     private readonly addUnderscoreToArgsType: boolean = false
   ) {}
@@ -27,17 +29,19 @@ export class ObjectTypeDefinitionFactory implements VisitFunctionFactory<ObjectT
       // Building schema for field arguments.
       const argumentBlocks = this.buildArgumentsSchemaBlock(node, (typeName, field) => {
         this.registry.registerType(typeName);
-        return this.exportTypeStrategy.inputObjectTypeDefinition(
-          typeName,
-          this.shapeRenderer.render(field.arguments ?? [])
-        );
+        const shape = this.shapeFactory.create(field.arguments ?? []);
+        return this.exportTypeStrategy.inputObjectTypeDefinition(typeName, shape.render(this.shapeRenderer));
       });
       const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
       // Building schema for fields.
-      const shapeContent = this.shapeRenderer.render(node.fields ?? []);
-
-      return this.exportTypeStrategy.objectTypeDefinition(name, node.name.value, shapeContent, appendArguments);
+      const shape = this.shapeFactory.create(node.fields ?? []);
+      return this.exportTypeStrategy.objectTypeDefinition(
+        name,
+        node.name.value,
+        shape.render(this.shapeRenderer),
+        appendArguments
+      );
     };
   }
 

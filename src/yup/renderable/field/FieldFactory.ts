@@ -16,13 +16,12 @@ export class FieldFactory {
     const directives = graphQLFieldNode.directives ?? [];
     const rulesDirective = findDirectiveByName(directives, 'rules');
     const rulesForArrayDirective = findDirectiveByName(directives, 'rulesForArray');
-    const fieldName = graphQLFieldNode.name.value;
 
     const metadata = new FieldMetadata({
       name: graphQLFieldNode.name.value,
       isOptional: !isNonNullType(graphQLFieldNode.type),
-      rule: this.ruleASTFactory.createFromDirectiveOrNull(fieldName, rulesDirective ?? null),
-      ruleForArray: this.ruleASTFactory.createFromDirectiveOrNull(fieldName, rulesForArrayDirective ?? null),
+      rule: this.ruleASTFactory.createFromDirectiveOrNull(rulesDirective ?? null),
+      ruleForArray: this.ruleASTFactory.createFromDirectiveOrNull(rulesForArrayDirective ?? null),
     });
 
     return new Field(metadata, this.typeASTFactory.create(graphQLFieldNode.type));

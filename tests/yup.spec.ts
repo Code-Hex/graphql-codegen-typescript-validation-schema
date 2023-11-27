@@ -852,7 +852,7 @@ describe('yup', () => {
       'name: yup.lazy(() => yup.string().startsWith("Sir").required_without("nickname").nonNullable().defined()),',
       'age: yup.number().min(0).max(100).nonNullable().defined()',
       'keyword: yup.string().matches(/^[a-zA-Z0-9]+$/).nonNullable().defined()',
-      'nickname: yup.lazy(() => yup.string().sometimes("nickname", schema => schema.max(10).required_without("name")).nullable())',
+      'nickname: yup.lazy(() => yup.string().sometimes(schema => schema.max(10).required_without("name")).nullable())',
     ];
     for (const wantContain of wantContains) {
       expect(result.content).toContain(wantContain);
