@@ -14,16 +14,16 @@ jobs:
       - name: asdf install
         uses: asdf-vm/actions/install@v3
       - name: Install dependencies
-        run: yarn install --immutable
+        run: pnpm install
       - name: lint
-        run: yarn lint
+        run: pnpm lint
       - name: fmt
-        run: yarn prettier:check
+        run: pnpm prettier:check
       - name: test
-        run: yarn test
+        run: pnpm test
         env:
           CI: true
       - name: generate and type-check
         run: |
-          yarn generate
-          yarn type-check
+          pnpm generate
+          pnpm type-check

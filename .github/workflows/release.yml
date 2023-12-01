@@ -15,11 +15,11 @@ jobs:
       - name: asdf install
         uses: asdf-vm/actions/install@v3
       - name: Install dependencies
-        run: yarn install --immutable
+        run: pnpm install
       - name: generate and type-check
         run: |
-          yarn generate
-          yarn type-check
+          pnpm generate
+          pnpm type-check
       - name: prepare release
         run: |
           sed .gitignore -i -e s/dist//g
