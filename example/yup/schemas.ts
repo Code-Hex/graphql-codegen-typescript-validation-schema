@@ -9,10 +9,10 @@ export const HttpMethodSchema = yup.string<HttpMethod>().oneOf([HttpMethod.Get, 
 
 export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.BasicAuth, PageType.Lp, PageType.Restricted, PageType.Service]);
 
-function union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T> {
-  return yup.mixed<T>().test({
-    test: (value) => schemas.some((schema) => schema.isValidSync(value))
-  }).defined()
+function union<T extends {}>(schemas: Record<string, yup.Schema<T>>): yup.MixedSchema<T> {
+  return yup.mixed<T>().when(
+    ([value], schema) => schemas[value?.__typename] ?? schema
+  ).defined()
 }
 
 export function AdminSchema(): yup.ObjectSchema<Admin> {
@@ -141,5 +141,8 @@ export function UserSchema(): yup.ObjectSchema<User> {
 }
 
 export function UserKindSchema(): yup.MixedSchema<UserKind> {
-  return union<UserKind>(AdminSchema(), GuestSchema())
+  return union<UserKind>({
+Admin: AdminSchema(),
+Guest: GuestSchema(),
+})
 }

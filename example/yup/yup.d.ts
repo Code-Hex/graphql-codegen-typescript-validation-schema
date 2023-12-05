@@ -18,4 +18,8 @@ declare module 'yup' {
     extends Schema<TIn, TContext, TDefault, TFlags> {
     size(size: number): this;
   }
+
+  interface MixedSchema<TType extends Maybe<AnyPresentValue> = AnyPresentValue | undefined, TContext = AnyObject, TDefault = undefined, TFlags extends Flags = ''> extends Schema<TType, TContext, TDefault, TFlags> {
+    union(schemas: Record<string, Schema>): this
+  }
 }

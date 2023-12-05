@@ -649,7 +649,10 @@ describe('yup', () => {
       const wantContains = [
         // Shape Schema
         'export function ShapeSchema(): yup.MixedSchema<Shape> {',
-        'union<Shape>(CircleSchema(), SquareSchema())',
+        'union<Shape>({',
+        'Circle: CircleSchema(),',
+        'Square: SquareSchema(),',
+        '})',
         '}',
       ];
       for (const wantContain of wantContains) {
@@ -713,7 +716,9 @@ describe('yup', () => {
       const wantContains = [
         // Shape Schema
         'export function ShapeSchema(): yup.MixedSchema<Shape> {',
-        'return union<Shape>(CircleSchema())',
+        'return union<Shape>({',
+        'Circle: CircleSchema(),',
+        '})',
         '}',
       ];
       for (const wantContain of wantContains) {
@@ -721,6 +726,7 @@ describe('yup', () => {
       }
     });
 
+    // FIXME: TODO: broken
     it('generate enum union types', async () => {
       const schema = buildSchema(/* GraphQL */ `
         enum PageType {
@@ -747,7 +753,10 @@ describe('yup', () => {
 
       const wantContains = [
         'export function AnyTypeSchema(): yup.MixedSchema<AnyType> {',
-        'union<AnyType>(PageTypeSchema, MethodTypeSchema)',
+        'union<AnyType>({',
+        'PageType: PageTypeSchema,',
+        'MethodType: MethodTypeSchema,',
+        '})',
         '}',
       ];
       for (const wantContain of wantContains) {

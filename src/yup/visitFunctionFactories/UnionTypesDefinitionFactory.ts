@@ -28,11 +28,11 @@ export class UnionTypesDefinitionFactory implements VisitFunctionFactory<UnionTy
           const element = this.visitor.convertName(t.name.value);
           const kind = this.visitor.getKind(t.name.value);
 
-          return this.exportTypeStrategy.schemaEvaluation(`${element}Schema`, kind);
+          return `${element}: ${this.exportTypeStrategy.schemaEvaluation(`${element}Schema`, kind)},`;
         })
-        .join(', ');
+        .join('\n');
 
-      return this.exportTypeStrategy.unionTypeDefinition(unionName, unionElements);
+      return this.exportTypeStrategy.unionTypeDefinition(unionName, ['{', unionElements, '}'].join('\n'));
     };
   }
 }
