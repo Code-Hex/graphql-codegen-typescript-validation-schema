@@ -43,6 +43,8 @@
   "ignorePatterns": [
     "dist",
     "node_modules",
-    "example"
+    "example",
+    "vitest.config.ts",
+    "tsconfig.json"
   ]
 }
