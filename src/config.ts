@@ -195,6 +195,24 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   withObjectType?: boolean
   /**
+   * @description Generates validation schema with GraphQL type interfaces.
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/types.ts:
+   *     plugins:
+   *       - typescript
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: yup
+   *       withInterfaceType: true
+   * ```
+   */
+  withInterfaceType?: boolean;
+  /**
    * @description Specify validation schema export type.
    * @default function
    *
