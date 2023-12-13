@@ -339,7 +339,12 @@ function generateNameNodeZodSchema(config: ValidationSchemaPluginConfig, visitor
       }
     case 'EnumTypeDefinition':
       return `${converter.convertName()}Schema`;
+    case 'ScalarTypeDefinition':
+      return zod4Scalar(config, visitor, node.value);
     default:
+      if (converter?.targetKind) {
+        console.warn('Unknown targetKind', converter?.targetKind);
+      }
       return zod4Scalar(config, visitor, node.value);
   }
 }
