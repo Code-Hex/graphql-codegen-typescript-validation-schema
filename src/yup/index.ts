@@ -5,6 +5,7 @@ import {
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
   InputValueDefinitionNode,
+  Kind,
   NameNode,
   ObjectTypeDefinitionNode,
   TypeNode,
@@ -68,12 +69,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
         // Building schema for fields.
-        const shape = node.fields
-          ?.map(field => {
-            const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
-            return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
-          })
-          .join(',\n');
+    const shape = shapeFields(node.fields, this.config, visitor)
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -203,12 +199,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
     visitor: Visitor,
     name: string
   ) {
-    const shape = fields
-      ?.map(field => {
-        const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
-        return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
-      })
-      .join(',\n');
+    const shape = shapeFields(fields, this.config, visitor)
 
     switch (this.config.validationSchemaExportType) {
       case 'const':
@@ -227,6 +218,30 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
     }
   }
+}
+
+const shapeFields = (fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[] | undefined, config: ValidationSchemaPluginConfig, visitor: Visitor) => {
+  return fields?.map(field => {
+    let fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
+
+    if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
+      const { defaultValue } = field;
+
+      if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN) {
+        fieldSchema = `${fieldSchema}.default(${defaultValue.value})`;
+      }
+      if ((defaultValue?.kind === Kind.STRING) || (defaultValue?.kind === Kind.ENUM)) {
+        fieldSchema = `${fieldSchema}.default("${defaultValue.value}")`;
+      }
+    }
+
+    if(isNonNullType(field.type)) {
+      return fieldSchema
+    }
+
+    return `${fieldSchema}.optional()`;
+  })
+  .join(',\n');
 }
 
 const generateFieldYupSchema = (
