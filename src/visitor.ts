@@ -43,7 +43,11 @@ export class Visitor extends TsVisitor {
     if (this.scalarDirection === 'both') {
       return null;
     }
-    return this.scalars[scalarName][this.scalarDirection];
+    const scalar = this.scalars[scalarName];
+    if (!scalar) {
+      throw new Error(`Unknown scalar ${scalarName}`);
+    }
+    return scalar[this.scalarDirection];
   }
 
   public shouldEmitAsNotAllowEmptyString(name: string): boolean {
