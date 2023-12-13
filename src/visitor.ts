@@ -1,6 +1,12 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
-import type { FieldDefinitionNode, GraphQLSchema, NameNode, ObjectTypeDefinitionNode } from 'graphql';
-import { specifiedScalarTypes } from 'graphql';
+import {
+  FieldDefinitionNode,
+  GraphQLSchema,
+  InterfaceTypeDefinitionNode,
+  NameNode,
+  ObjectTypeDefinitionNode,
+  specifiedScalarTypes,
+} from 'graphql';
 
 import type { ValidationSchemaPluginConfig } from './config';
 
@@ -53,8 +59,8 @@ export class Visitor extends TsVisitor {
   }
 
   public buildArgumentsSchemaBlock(
-    node: ObjectTypeDefinitionNode,
-    callback: (typeName: string, field: FieldDefinitionNode) => string,
+    node: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
+    callback: (typeName: string, field: FieldDefinitionNode) => string
   ) {
     const fieldsWithArguments = node.fields?.filter(field => field.arguments && field.arguments.length > 0) ?? [];
     if (fieldsWithArguments.length === 0)
