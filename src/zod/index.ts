@@ -5,6 +5,7 @@ import {
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
   InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
   NameNode,
   ObjectTypeDefinitionNode,
   TypeNode,
@@ -15,7 +16,14 @@ import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import { Visitor } from '../visitor';
-import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
+import {
+  InterfaceTypeDefinitionBuilder,
+  isInput,
+  isListType,
+  isNamedType,
+  isNonNullType,
+  ObjectTypeDefinitionBuilder,
+} from './../graphql';
 
 const anySchema = `definedNonNullAnySchema`;
 
@@ -63,6 +71,44 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         this.importTypes.push(name);
         return this.buildInputFields(node.fields ?? [], visitor, name);
       },
+    };
+  }
+
+  get InterfaceTypeDefinition() {
+    return {
+      leave: InterfaceTypeDefinitionBuilder(this.config.withInterfaceType, (node: InterfaceTypeDefinitionNode) => {
+        const visitor = this.createVisitor('output');
+        const name = visitor.convertName(node.name.value);
+        this.importTypes.push(name);
+
+        // Building schema for field arguments.
+        const argumentBlocks = this.buildTypeDefinitionArguments(node, visitor);
+        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+
+        // Building schema for fields.
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+
+        switch (this.config.validationSchemaExportType) {
+          case 'const':
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${name}Schema: z.ZodObject<Properties<${name}>>`)
+                .withContent([`z.object({`, shape, '})'].join('\n')).string + appendArguments
+            );
+
+          case 'function':
+          default:
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
+                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string + appendArguments
+            );
+        }
+      }),
     };
   }
 
