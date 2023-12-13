@@ -486,6 +486,61 @@ describe('myzod', () => {
     });
   });
 
+  describe('with withInterfaceType', () => {
+    it('not generate if withObjectType false', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface User {
+          id: ID!
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+        },
+        {}
+      );
+      expect(result.content).not.toContain('export function UserSchema(): myzod.Type<User> {');
+    });
+
+    it('generate interface type contains interface type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface Book {
+          author: Author
+          title: String
+        }
+
+        interface Author {
+          books: [Book]
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withInterfaceType: true,
+        },
+        {}
+      );
+      const wantContains = [
+        'export function AuthorSchema(): myzod.Type<Author> {',
+        'books: myzod.array(BookSchema().nullable()).optional().nullable(),',
+        'name: myzod.string().optional().nullable()',
+
+        'export function BookSchema(): myzod.Type<Book> {',
+        'author: AuthorSchema().optional().nullable(),',
+        'title: myzod.string().optional().nullable()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+  });
+
   describe('with withObjectType', () => {
     it('not generate if withObjectType false', async () => {
       const schema = buildSchema(/* GraphQL */ `
