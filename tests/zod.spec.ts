@@ -1,4 +1,5 @@
-import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
+import { getCachedDocumentNodeFromSchema } from '@graphql-codegen/plugin-helpers';
+import { buildClientSchema, buildSchema, introspectionFromSchema, isSpecifiedScalarType } from 'graphql';
 import { dedent } from 'ts-dedent';
 
 import { plugin } from '../src/index';
@@ -585,6 +586,145 @@ describe('zod', () => {
       ];
       for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
+    });
+  });
+
+  describe('with withInterfaceType', () => {
+    it('not generate if withObjectType false', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface User {
+          id: ID!
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+        },
+        {}
+      );
+      expect(result.content).not.toContain('export function UserSchema(): z.ZodObject<Properties<User>>');
+    });
+
+    it('generate interface type contains interface type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface Book {
+          author: Author
+          title: String
+        }
+
+        interface Author {
+          books: [Book]
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withInterfaceType: true,
+        },
+        {}
+      );
+      const wantContains = [
+        'export function AuthorSchema(): z.ZodObject<Properties<Author>> {',
+        'books: z.array(BookSchema().nullable()).nullish(),',
+        'name: z.string().nullish()',
+
+        'export function BookSchema(): z.ZodObject<Properties<Book>> {',
+        'author: AuthorSchema().nullish(),',
+        'title: z.string().nullish()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+    });
+
+    it('generate object type contains interface type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface Book {
+          title: String!
+          author: Author!
+        }
+
+        type Textbook implements Book {
+          title: String!
+          author: Author!
+          courses: [String!]!
+        }
+
+        type ColoringBook implements Book {
+          title: String!
+          author: Author!
+          colors: [String!]!
+        }
+
+        type Author {
+          books: [Book!]
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withInterfaceType: true,
+          withObjectType: true,
+        },
+        {}
+      );
+      const wantContains = [
+        [
+          'export function BookSchema(): z.ZodObject<Properties<Book>> {',
+          'return z.object({',
+          'title: z.string(),',
+          'author: AuthorSchema()',
+          '})',
+          '}',
+        ],
+
+        [
+          'export function TextbookSchema(): z.ZodObject<Properties<Textbook>> {',
+          'return z.object({',
+          "__typename: z.literal('Textbook').optional(),",
+          'title: z.string(),',
+          'author: AuthorSchema(),',
+          'courses: z.array(z.string())',
+          '})',
+          '}',
+        ],
+
+        [
+          'export function ColoringBookSchema(): z.ZodObject<Properties<ColoringBook>> {',
+          'return z.object({',
+          "__typename: z.literal('ColoringBook').optional(),",
+          'title: z.string(),',
+          'author: AuthorSchema(),',
+          'colors: z.array(z.string())',
+          '})',
+          '}',
+        ],
+
+        [
+          'export function AuthorSchema(): z.ZodObject<Properties<Author>> {',
+          'return z.object({',
+          "__typename: z.literal('Author').optional()",
+          'books: z.array(BookSchema()).nullish()',
+          'name: z.string().nullish()',
+          '})',
+          '}',
+        ],
+      ];
+
+      for (const wantContain of wantContains) {
+        for (const wantContainLine of wantContain) {
+          expect(result.content).toContain(wantContainLine);
+        }
+      }
     });
   });
 
