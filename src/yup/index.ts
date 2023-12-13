@@ -64,7 +64,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         this.importTypes.push(name);
 
         // Building schema for field arguments.
-        const argumentBlocks = this.buildObjectTypeDefinitionArguments(node, visitor);
+        const argumentBlocks = this.buildTypeDefinitionArguments(node, visitor);
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
         // Building schema for fields.
