@@ -92,14 +92,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('function')
                 .withName(`${name}Schema(): myzod.Type<${name}>`)
-                .withBlock(
-                  [
-                    indent(`return myzod.object({`),
-                    indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
-                    shape,
-                    indent('})'),
-                  ].join('\n')
-                ).string + appendArguments
+                .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string + appendArguments
             );
         }
       }),
