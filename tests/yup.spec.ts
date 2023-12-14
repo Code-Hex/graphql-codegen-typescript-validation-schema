@@ -412,6 +412,34 @@ describe('yup', () => {
       expect(result.content).not.toContain('export function UserSchema(): yup.ObjectSchema<User> {');
     });
 
+    it('generate if withInterfaceType true', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface Book {
+          title: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+          withInterfaceType: true,
+        },
+        {}
+      );
+      const wantContains = [
+        'export function BookSchema(): yup.ObjectSchema<Book> {',
+        'title: yup.string().defined().nullable().optional()',
+      ];
+      const wantNotContains = ["__typename: yup.string<'Book'>().optional()"];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+      for (const wantNotContain of wantNotContains) {
+        expect(result.content).not.toContain(wantNotContain);
+      }
+    });
+
     it('generate interface type contains interface type', async () => {
       const schema = buildSchema(/* GraphQL */ `
         interface Book {
@@ -445,11 +473,11 @@ describe('yup', () => {
 
         'export function BookSchema(): yup.ObjectSchema<Book> {',
         'author: AuthorSchema().nullable().optional(),',
-        'title: yup.string().defined().nonNullable()',
+        'title: yup.string().defined().nullable().optional()',
 
         'export function Book2Schema(): yup.ObjectSchema<Book2> {',
         'author: AuthorSchema().nonNullable(),',
-        'title: yup.string().defined().nullable().optional()',
+        'title: yup.string().defined().nonNullable()',
       ];
       for (const wantContain of wantContains) {
         expect(result.content).toContain(wantContain);
