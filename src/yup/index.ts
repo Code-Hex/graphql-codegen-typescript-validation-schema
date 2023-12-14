@@ -5,6 +5,7 @@ import type {
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
   InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
   NameNode,
   ObjectTypeDefinitionNode,
   TypeNode,
@@ -17,8 +18,15 @@ import {
 import type { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
-import type { Visitor } from '../visitor';
-import { ObjectTypeDefinitionBuilder, isInput, isListType, isNamedType, isNonNullType } from './../graphql';
+import { Visitor } from '../visitor';
+import {
+  InterfaceTypeDefinitionBuilder,
+  isInput,
+  isListType,
+  isNamedType,
+  isNonNullType,
+  ObjectTypeDefinitionBuilder,
+} from './../graphql';
 
 export class YupSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
@@ -57,6 +65,49 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         this.importTypes.push(name);
         return this.buildInputFields(node.fields ?? [], visitor, name);
       },
+    };
+  }
+
+  get InterfaceTypeDefinition() {
+    return {
+      leave: InterfaceTypeDefinitionBuilder(this.config.withInterfaceType, (node: InterfaceTypeDefinitionNode) => {
+        const visitor = this.createVisitor('output');
+        const name = visitor.convertName(node.name.value);
+        this.importTypes.push(name);
+
+        // Building schema for field arguments.
+        const argumentBlocks = this.buildTypeDefinitionArguments(node, visitor);
+        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+
+        // Building schema for fields.
+        const shape = node.fields
+          ?.map(field => {
+            const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
+            return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
+          })
+          .join(',\n');
+
+        switch (this.config.validationSchemaExportType) {
+          case 'const':
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
+                .withContent([`yup.object({`, shape, '})'].join('\n')).string + appendArguments
+            );
+
+          case 'function':
+          default:
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
+                .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string + appendArguments
+            );
+        }
+      }),
     };
   }
 
@@ -286,6 +337,7 @@ function generateNameNodeYupSchema(config: ValidationSchemaPluginConfig, visitor
   const converter = visitor.getNameNodeConverter(node);
 
   switch (converter?.targetKind) {
+    case 'InterfaceTypeDefinition':
     case 'InputObjectTypeDefinition':
     case 'ObjectTypeDefinition':
     case 'UnionTypeDefinition':
