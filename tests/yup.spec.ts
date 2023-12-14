@@ -395,6 +395,75 @@ describe('yup', () => {
     expect(result.prepend).toContain("import { SayI } from './types'");
     expect(result.content).toContain('export function SayISchema(): yup.ObjectSchema<SayI> {');
   });
+
+  describe('with interfaceType', () => {
+    it('not generate if withInterfaceType false', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface User {
+          id: ID!
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+        },
+        {}
+      );
+      expect(result.content).not.toContain('export function UserSchema(): yup.ObjectSchema<User> {');
+    });
+
+    it('generate interface type contains interface type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface Book {
+          author: Author
+          title: String
+        }
+
+        interface Book2 {
+          author: Author!
+          title: String!
+        }
+
+        interface Author {
+          books: [Book]
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'yup',
+          withInterfaceType: true,
+        },
+        {}
+      );
+      const wantContains = [
+        'export function AuthorSchema(): yup.ObjectSchema<Author> {',
+        'books: yup.array(BookSchema().nullable()).defined().nullable().optional(),',
+        'name: yup.string().defined().nullable().optional()',
+
+        'export function BookSchema(): yup.ObjectSchema<Book> {',
+        'author: AuthorSchema().nullable().optional(),',
+        'title: yup.string().defined().nonNullable()',
+
+        'export function Book2Schema(): yup.ObjectSchema<Book2> {',
+        'author: AuthorSchema().nonNullable(),',
+        'title: yup.string().defined().nullable().optional()',
+      ];
+      for (const wantContain of wantContains) {
+        expect(result.content).toContain(wantContain);
+      }
+
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+        expect(result.content).not.toContain(wantNotContain);
+      }
+    });
+  });
+
   describe('with withObjectType', () => {
     it('not generate if withObjectType false', async () => {
       const schema = buildSchema(/* GraphQL */ `
