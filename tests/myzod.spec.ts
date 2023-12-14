@@ -545,6 +545,88 @@ describe('myzod', () => {
         expect(result.content).toContain(wantContain);
       }
     });
+    it('generate object type contains interface type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface Book {
+          title: String!
+          author: Author!
+        }
+
+        type Textbook implements Book {
+          title: String!
+          author: Author!
+          courses: [String!]!
+        }
+
+        type ColoringBook implements Book {
+          title: String!
+          author: Author!
+          colors: [String!]!
+        }
+
+        type Author {
+          books: [Book!]
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withInterfaceType: true,
+          withObjectType: true,
+        },
+        {}
+      );
+      const wantContains = [
+        [
+          'export function BookSchema(): myzod.Type<Book> {',
+          'return myzod.object({',
+          'title: myzod.string(),',
+          'author: AuthorSchema()',
+          '})',
+          '}',
+        ],
+
+        [
+          'export function TextbookSchema(): myzod.Type<Textbook> {',
+          'return myzod.object({',
+          "__typename: myzod.literal('Textbook').optional(),",
+          'title: myzod.string(),',
+          'author: AuthorSchema(),',
+          'courses: myzod.array(myzod.string())',
+          '})',
+          '}',
+        ],
+
+        [
+          'export function ColoringBookSchema(): myzod.Type<ColoringBook> {',
+          'return myzod.object({',
+          "__typename: myzod.literal('ColoringBook').optional(),",
+          'title: myzod.string(),',
+          'author: AuthorSchema(),',
+          'colors: myzod.array(myzod.string())',
+          '})',
+          '}',
+        ],
+
+        [
+          'export function AuthorSchema(): myzod.Type<Author> {',
+          'return myzod.object({',
+          "__typename: myzod.literal('Author').optional()",
+          'books: myzod.array(BookSchema()).optional().nullable()',
+          'name: myzod.string().optional().nullable()',
+          '})',
+          '}',
+        ],
+      ];
+      for (const wantContain of wantContains) {
+        for (const wantContainLine of wantContain) {
+          expect(result.content).toContain(wantContainLine);
+        }
+      }
+    });
   });
 
   describe('with withObjectType', () => {
