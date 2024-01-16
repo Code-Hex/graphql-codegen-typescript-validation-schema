@@ -1,5 +1,12 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
-import { FieldDefinitionNode, GraphQLSchema, NameNode, ObjectTypeDefinitionNode, specifiedScalarTypes } from 'graphql';
+import {
+  FieldDefinitionNode,
+  GraphQLSchema,
+  InterfaceTypeDefinitionNode,
+  NameNode,
+  ObjectTypeDefinitionNode,
+  specifiedScalarTypes,
+} from 'graphql';
 
 import { ValidationSchemaPluginConfig } from './config';
 
@@ -36,7 +43,11 @@ export class Visitor extends TsVisitor {
     if (this.scalarDirection === 'both') {
       return null;
     }
-    return this.scalars[scalarName][this.scalarDirection];
+    const scalar = this.scalars[scalarName];
+    if (!scalar) {
+      throw new Error(`Unknown scalar ${scalarName}`);
+    }
+    return scalar[this.scalarDirection];
   }
 
   public shouldEmitAsNotAllowEmptyString(name: string): boolean {
@@ -52,7 +63,7 @@ export class Visitor extends TsVisitor {
   }
 
   public buildArgumentsSchemaBlock(
-    node: ObjectTypeDefinitionNode,
+    node: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
     callback: (typeName: string, field: FieldDefinitionNode) => string
   ) {
     const fieldsWithArguments = node.fields?.filter(field => field.arguments && field.arguments.length > 0) ?? [];

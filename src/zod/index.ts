@@ -5,6 +5,7 @@ import {
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
   InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
   NameNode,
   ObjectTypeDefinitionNode,
   TypeNode,
@@ -15,7 +16,14 @@ import { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import { Visitor } from '../visitor';
-import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
+import {
+  InterfaceTypeDefinitionBuilder,
+  isInput,
+  isListType,
+  isNamedType,
+  isNonNullType,
+  ObjectTypeDefinitionBuilder,
+} from './../graphql';
 
 const anySchema = `definedNonNullAnySchema`;
 
@@ -66,6 +74,44 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
     };
   }
 
+  get InterfaceTypeDefinition() {
+    return {
+      leave: InterfaceTypeDefinitionBuilder(this.config.withInterfaceType, (node: InterfaceTypeDefinitionNode) => {
+        const visitor = this.createVisitor('output');
+        const name = visitor.convertName(node.name.value);
+        this.importTypes.push(name);
+
+        // Building schema for field arguments.
+        const argumentBlocks = this.buildTypeDefinitionArguments(node, visitor);
+        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+
+        // Building schema for fields.
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+
+        switch (this.config.validationSchemaExportType) {
+          case 'const':
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('const')
+                .withName(`${name}Schema: z.ZodObject<Properties<${name}>>`)
+                .withContent([`z.object({`, shape, '})'].join('\n')).string + appendArguments
+            );
+
+          case 'function':
+          default:
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
+                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string + appendArguments
+            );
+        }
+      }),
+    };
+  }
+
   get ObjectTypeDefinition() {
     return {
       leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
@@ -74,7 +120,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         this.importTypes.push(name);
 
         // Building schema for field arguments.
-        const argumentBlocks = this.buildObjectTypeDefinitionArguments(node, visitor);
+        const argumentBlocks = this.buildTypeDefinitionArguments(node, visitor);
         const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
 
         // Building schema for fields.
@@ -279,6 +325,7 @@ const generateNameNodeZodSchema = (config: ValidationSchemaPluginConfig, visitor
   const converter = visitor.getNameNodeConverter(node);
 
   switch (converter?.targetKind) {
+    case 'InterfaceTypeDefinition':
     case 'InputObjectTypeDefinition':
     case 'ObjectTypeDefinition':
     case 'UnionTypeDefinition':
@@ -292,7 +339,12 @@ const generateNameNodeZodSchema = (config: ValidationSchemaPluginConfig, visitor
       }
     case 'EnumTypeDefinition':
       return `${converter.convertName()}Schema`;
+    case 'ScalarTypeDefinition':
+      return zod4Scalar(config, visitor, node.value);
     default:
+      if (converter?.targetKind) {
+        console.warn('Unknown targetKind', converter?.targetKind);
+      }
       return zod4Scalar(config, visitor, node.value);
   }
 };

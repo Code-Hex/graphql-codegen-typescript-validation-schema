@@ -4,6 +4,7 @@ import {
   DefinitionNode,
   DocumentNode,
   GraphQLSchema,
+  InterfaceTypeDefinitionNode,
   isSpecifiedScalarType,
   ListTypeNode,
   NamedTypeNode,
@@ -21,6 +22,7 @@ export const isNamedType = (typ?: TypeNode): typ is NamedTypeNode => typ?.kind =
 export const isInput = (kind: string) => kind.includes('Input');
 
 type ObjectTypeDefinitionFn = (node: ObjectTypeDefinitionNode) => any;
+type InterfaceTypeDefinitionFn = (node: InterfaceTypeDefinitionNode) => any;
 
 export const ObjectTypeDefinitionBuilder = (
   useObjectTypes: boolean | undefined,
@@ -31,6 +33,16 @@ export const ObjectTypeDefinitionBuilder = (
     if (/^(Query|Mutation|Subscription)$/.test(node.name.value)) {
       return;
     }
+    return callback(node);
+  };
+};
+
+export const InterfaceTypeDefinitionBuilder = (
+  useInterfaceTypes: boolean | undefined,
+  callback: InterfaceTypeDefinitionFn
+): InterfaceTypeDefinitionFn | undefined => {
+  if (!useInterfaceTypes) return undefined;
+  return node => {
     return callback(node);
   };
 };
