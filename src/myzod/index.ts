@@ -243,11 +243,11 @@ const generateFieldTypeMyZodSchema = (
       if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN) {
         appliedDirectivesGen = `${appliedDirectivesGen}.default(${defaultValue.value})`;
       }
-      if ((defaultValue?.kind === Kind.STRING) || (defaultValue?.kind === Kind.ENUM)) {
+      if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM) {
         appliedDirectivesGen = `${appliedDirectivesGen}.default("${defaultValue.value}")`;
       }
     }
-    
+
     if (isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
         return `${gen}.min(1)`;

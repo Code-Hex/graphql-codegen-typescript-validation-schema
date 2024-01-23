@@ -130,16 +130,16 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         this.enumDeclarations.push(
           this.config.enumsAsTypes
             ? new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${enumname}Schema`)
-              .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`)
-              .string
+                .export()
+                .asKind('const')
+                .withName(`${enumname}Schema`)
+                .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`)
+                .string
             : new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${enumname}Schema`)
-              .withContent(`z.nativeEnum(${enumname})`).string
+                .export()
+                .asKind('const')
+                .withName(`${enumname}Schema`)
+                .withContent(`z.nativeEnum(${enumname})`).string
         );
       },
     };
@@ -256,7 +256,7 @@ const generateFieldTypeZodSchema = (
       if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN) {
         appliedDirectivesGen = `${appliedDirectivesGen}.default(${defaultValue.value})`;
       }
-      if ((defaultValue?.kind === Kind.STRING) || (defaultValue?.kind === Kind.ENUM)) {
+      if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM) {
         appliedDirectivesGen = `${appliedDirectivesGen}.default("${defaultValue.value}")`;
       }
     }

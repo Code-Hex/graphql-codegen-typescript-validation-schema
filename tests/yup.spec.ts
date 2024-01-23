@@ -930,7 +930,9 @@ describe('yup', () => {
       {}
     );
 
-    expect(result.content).toContain('export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.Public, PageType.BasicAuth]).defined()');
+    expect(result.content).toContain(
+      'export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.Public, PageType.BasicAuth]).defined()'
+    );
     expect(result.content).toContain('export function PageInputSchema(): yup.ObjectSchema<PageInput>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.nonNullable().default("PUBLIC")');
