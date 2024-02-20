@@ -12,8 +12,8 @@ dependencies:
     specifier: 4.0.2
     version: 4.0.2(graphql@16.7.1)
   '@graphql-codegen/visitor-plugin-common':
-    specifier: ^4.0.0
-    version: 4.0.1(graphql@16.7.1)
+    specifier: ^5.0.0
+    version: 5.0.0(graphql@16.7.1)
   '@graphql-tools/utils':
     specifier: ^10.0.0
     version: 10.0.5(graphql@16.7.1)
@@ -344,6 +344,7 @@ packages:
   /@babel/plugin-proposal-class-properties@7.18.6(@babel/core@7.22.5):
     resolution: {integrity: sha512-cumfXOF0+nzZrrN8Rf0t7M+tF6sZc7vhQwYQck9q1/5w2OExlD+b4v4RpMJFaV1Z7WcDRgO6FqvxqxGlwo+RHQ==}
     engines: {node: '>=6.9.0'}
+    deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties instead.
     peerDependencies:
       '@babel/core': ^7.0.0-0
     dependencies:
@@ -356,6 +357,7 @@ packages:
   /@babel/plugin-proposal-object-rest-spread@7.20.7(@babel/core@7.22.5):
     resolution: {integrity: sha512-d2S98yCiLxDVmBmE8UjGcfPvNEUbA1U5q5WxaWFUGRzJSVAZqm5W6MbPct0jxnegUZ0niLeNX+IOzEs7wYg9Dg==}
     engines: {node: '>=6.9.0'}
+    deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-object-rest-spread instead.
     peerDependencies:
       '@babel/core': ^7.0.0-0
     dependencies:
@@ -1219,7 +1221,7 @@ packages:
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
     dependencies:
-      '@graphql-codegen/plugin-helpers': 5.0.1(graphql@16.7.1)
+      '@graphql-codegen/plugin-helpers': 5.0.3(graphql@16.7.1)
       '@graphql-tools/optimize': 2.0.0(graphql@16.7.1)
       '@graphql-tools/relay-operation-optimizer': 7.0.0(graphql@16.7.1)
       '@graphql-tools/utils': 10.0.5(graphql@16.7.1)
@@ -1233,6 +1235,7 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
+    dev: true
 
   /@graphql-codegen/visitor-plugin-common@4.1.2(graphql@16.7.1):
     resolution: {integrity: sha512-yk7iEAL1kYZ2Gi/pvVjdsZhul5WsYEM4Zcgh2Ev15VicMdJmPHsMhNUsZWyVJV0CaQCYpNOFlGD/11Ea3pn4GA==}
@@ -1254,6 +1257,27 @@ packages:
       - encoding
       - supports-color
     dev: true
+
+  /@graphql-codegen/visitor-plugin-common@5.0.0(graphql@16.7.1):
+    resolution: {integrity: sha512-qQOZZZ2MxmBEyd0Lm3lVh7zgauLXVBsg3ToucQJHmbk2WUxLMOcaf/+BOBIkrDjvWA8L+JU6COUT6uZc57DBcw==}
+    peerDependencies:
+      graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
+    dependencies:
+      '@graphql-codegen/plugin-helpers': 5.0.3(graphql@16.7.1)
+      '@graphql-tools/optimize': 2.0.0(graphql@16.7.1)
+      '@graphql-tools/relay-operation-optimizer': 7.0.0(graphql@16.7.1)
+      '@graphql-tools/utils': 10.0.5(graphql@16.7.1)
+      auto-bind: 4.0.0
+      change-case-all: 1.0.15
+      dependency-graph: 0.11.0
+      graphql: 16.7.1
+      graphql-tag: 2.12.6(graphql@16.7.1)
+      parse-filepath: 1.0.2
+      tslib: 2.6.1
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    dev: false
 
   /@graphql-tools/apollo-engine-loader@8.0.0(graphql@16.7.1):
     resolution: {integrity: sha512-axQTbN5+Yxs1rJ6cWQBOfw3AEeC+fvIuZSfJLPLLvFJLj4pUm9fhxey/g6oQZAAQJqKPfw+tLDUQvnfvRK8Kmg==}
