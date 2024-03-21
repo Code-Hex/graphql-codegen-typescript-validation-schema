@@ -1,7 +1,7 @@
-import { getCachedDocumentNodeFromSchema } from '@graphql-codegen/plugin-helpers';
-import { buildClientSchema, buildSchema, introspectionFromSchema, isSpecifiedScalarType } from 'graphql';
+import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import { dedent } from 'ts-dedent';
 
+import { ZodNullishSchemaTypes } from '../src/config';
 import { plugin } from '../src/index';
 
 describe('zod', () => {
@@ -243,6 +243,39 @@ describe('zod', () => {
     );
     expect(result.prepend).toContain("import type { Say } from './types'");
     expect(result.content).toContain('phrase: z.string()');
+  });
+
+  it('without maybeSchemaValue', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+      }
+    )
+    expect(result.content).toContain('phrase: z.string().nullish()');
+  });
+
+  it.each(ZodNullishSchemaTypes)('with maybeSchemaValue: %s', async (maybeSchemaValue) => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        maybeSchemaValue,
+      }
+    )
+    expect(result.content).toContain(`phrase: z.string().${maybeSchemaValue}()`);
   });
 
   it('with enumsAsTypes', async () => {

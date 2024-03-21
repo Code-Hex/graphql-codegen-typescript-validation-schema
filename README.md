@@ -13,7 +13,7 @@
 Start by installing this plugin and write simple plugin config;
 
 ```sh
-$ npm i graphql-codegen-typescript-validation-schema
+npm i graphql-codegen-typescript-validation-schema
 ```
 
 ```yml
@@ -154,6 +154,42 @@ type: `boolean` default: `false`
 
 Generates enum as TypeScript `type` instead of `enum`.
 
+### `maybeSchemaValue`
+
+type: `MyZodNullishSchemaType` | `YupNullishSchemaType` | `ZodNullishSchemaType`
+
+| schema  | type                     | values                                          | default      |
+| ------- | ------------------------ | ----------------------------------------------- | ------------ |
+| `myzod` | `MyZodNullishSchemaType` | `never`                                         | `never`      |
+| `yup`   | `YupNullishSchemaType`   | `'nullable'` \| `'optional'` \| `'notRequired'` | `'nullable'` |
+| `zod`   | `ZodNullishSchemaType`   | `'nullable'` \| `'optional'` \| `'nullish'`     | `'nullish'`  |
+
+Chooses which nullish schema to use
+
+### `maybeSchemaValue`: myzod schema
+
+```yml
+config:
+  schema: myzod
+  # maybeSchemaValue: no valid options
+```
+
+#### `maybeSchemaValue`: yup schema
+
+```yml
+config:
+  schema: yup
+  maybeSchemaValue: nullable
+```
+
+#### `maybeSchemaValue`: zod schema
+
+```yml
+config:
+  schema: zod
+  maybeSchemaValue: optional
+```
+
 ### `notAllowEmptyString`
 
 type: `boolean` default: `false`
@@ -166,7 +202,7 @@ type: `ScalarSchemas`
 
 Extends or overrides validation schema for the built-in scalars and custom GraphQL scalars.
 
-#### yup schema
+#### `scalarSchemas`: yup schema
 
 ```yml
 config:
@@ -176,7 +212,7 @@ config:
     Email: yup.string().email()
 ```
 
-#### zod schema
+#### `scalarSchemas`: zod schema
 
 ```yml
 config:

@@ -1,6 +1,7 @@
 import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import dedent from 'ts-dedent';
 
+import { YupNullishSchemaTypes } from '../src/config';
 import { plugin } from '../src/index';
 
 describe('yup', () => {
@@ -239,6 +240,39 @@ describe('yup', () => {
     );
     expect(result.prepend).toContain("import type { Say } from './types'");
     expect(result.content).toContain('phrase: yup.string().defined()');
+  });
+
+  it('without maybeSchemaValue', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String
+      }
+    `)
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+      }
+    )
+    expect(result.content).toContain('phrase: z.string().nullish()')
+  })
+
+  it.each(YupNullishSchemaTypes)('with maybeSchemaValue: %s', async (maybeSchemaValue) => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String
+      }
+    `)
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'yup',
+        maybeSchemaValue,
+      }
+    )
+    expect(result.content).toContain(`phrase: z.string().${ maybeSchemaValue }()`)
   });
 
   it('with enumsAsTypes', async () => {

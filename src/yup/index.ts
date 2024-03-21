@@ -276,7 +276,7 @@ const generateFieldTypeYupSchema = (
   if (isListType(type)) {
     const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
     if (!isNonNullType(parentType)) {
-      return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
+      return `yup.array(${maybeLazy(type.type, gen)}).defined().${config.maybeSchemaValue ? config.maybeSchemaValue : 'nullable'}()`;
     }
     return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
   }
@@ -296,7 +296,7 @@ const generateFieldTypeYupSchema = (
     if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
       return `${gen}`;
     }
-    return `${gen}.nullable()`;
+    return `${gen}.${config.maybeSchemaValue ? config.maybeSchemaValue : 'nullable'}()`;
   }
   console.warn('unhandled type:', type);
   return '';
