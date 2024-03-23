@@ -137,7 +137,7 @@ describe('yup', () => {
           }
         `,
         wantContains: [
-          'export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.Public, PageType.BasicAuth]).defined();',
+          'export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined();',
           'export function PageInputSchema(): yup.ObjectSchema<PageInput>',
           'pageType: PageTypeSchema.nonNullable()',
         ],
@@ -162,7 +162,7 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function HttpInputSchema(): yup.ObjectSchema<HttpInput>',
-          'export const HttpMethodSchema = yup.string<HttpMethod>().oneOf([HttpMethod.Get, HttpMethod.Post]).defined();',
+          'export const HttpMethodSchema = yup.string<HttpMethod>().oneOf(Object.values(HttpMethod)).defined();',
           'method: HttpMethodSchema.nullable().optional(),',
           'url: yup.mixed().nonNullable()',
         ],
@@ -931,7 +931,7 @@ describe('yup', () => {
     );
 
     expect(result.content).toContain(
-      'export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.Public, PageType.BasicAuth]).defined()'
+      'export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined()'
     );
     expect(result.content).toContain('export function PageInputSchema(): yup.ObjectSchema<PageInput>');
 

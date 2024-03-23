@@ -128,21 +128,12 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               .withContent(`yup.string().oneOf([${enums?.join(', ')}]).defined()`).string
           );
         } else {
-          const values = node.values
-            ?.map(
-              enumOption =>
-                `${enumname}.${visitor.convertName(enumOption.name, {
-                  useTypesPrefix: false,
-                  transformUnderscore: true,
-                })}`
-            )
-            .join(', ');
           this.enumDeclarations.push(
             new DeclarationBlock({})
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`yup.string<${enumname}>().oneOf([${values}]).defined()`).string
+              .withContent(`yup.string<${enumname}>().oneOf(Object.values(${enumname})).defined()`).string
           );
         }
       },
