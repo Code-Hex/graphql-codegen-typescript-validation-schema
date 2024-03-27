@@ -32,8 +32,8 @@ devDependencies:
     specifier: ^4.0.0
     version: 4.0.6(graphql@16.8.1)
   '@tsconfig/recommended':
-    specifier: 1.0.4
-    version: 1.0.4
+    specifier: 1.0.5
+    version: 1.0.5
   '@types/graphlib':
     specifier: ^2.1.8
     version: 2.1.12
@@ -2381,8 +2381,8 @@ packages:
       '@sinonjs/commons': 2.0.0
     dev: true
 
-  /@tsconfig/recommended@1.0.4:
-    resolution: {integrity: sha512-7RfsHlJYsqASGpV7R7zJ72baBBoqvbTj9dD4SHYSeLSMkMjSUhi15SZQK/7GQPCAmOhEoEC87HneaXihVXF6YA==}
+  /@tsconfig/recommended@1.0.5:
+    resolution: {integrity: sha512-bbozf0TZVH1Tu9hET9HYTtKeOMBBR01kjhc8s+c9cDFQU8Jw6F9A3tRZYOWiMEyMqpf/3LSw2b528g1k8TkYvg==}
     dev: true
 
   /@types/babel__core@7.1.18:
