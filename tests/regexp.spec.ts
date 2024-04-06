@@ -2,7 +2,7 @@ import { isConvertableRegexp } from '../src/regexp';
 
 describe('isConvertableRegexp', () => {
   describe('match', () => {
-    test.each([
+    it.each([
       '//',
       '/hello/',
       '/hello/d',
@@ -14,20 +14,20 @@ describe('isConvertableRegexp', () => {
       '/hello/y',
       '/hello/dgimsuy',
       `/\\w+\\s/g`,
-      // eslint-disable-next-line no-useless-escape
+
       `/^[a-z]+:[\\\/]$/i`,
-      // eslint-disable-next-line no-useless-escape
+
       `/^(?:\d{3}|\(\d{3}\))([-\/\.])\d{3}\\1\d{4}$/`,
-    ])('%s', maybeRegexp => {
+    ])('%s', (maybeRegexp) => {
       expect(isConvertableRegexp(maybeRegexp)).toBeTruthy();
     });
   });
   describe('does not match', () => {
-    test.each(['hello', '/world', 'world/', 'https://example.com/', '  /hello/', '/hello/d  ', '/hello/dgimsuy  '])(
+    it.each(['hello', '/world', 'world/', 'https://example.com/', '  /hello/', '/hello/d  ', '/hello/dgimsuy  '])(
       '%s',
-      maybeRegexp => {
+      (maybeRegexp) => {
         expect(isConvertableRegexp(maybeRegexp)).toBeFalsy();
-      }
+      },
     );
   });
 });
