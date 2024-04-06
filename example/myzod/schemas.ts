@@ -1,5 +1,5 @@
 import * as myzod from 'myzod'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, PageInput, PageType, User } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User } from '../types'
 
 export const definedNonNullAnySchema = myzod.object({});
 
@@ -89,6 +89,12 @@ export function MyTypeFooArgsSchema(): myzod.Type<MyTypeFooArgs> {
     b: myzod.number(),
     c: myzod.boolean().optional().nullable(),
     d: myzod.number()
+  })
+}
+
+export function NamerSchema(): myzod.Type<Namer> {
+  return myzod.object({
+    name: myzod.string().optional().nullable()
   })
 }
 

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, PageInput, PageType, User } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User } from '../types'
 
 type Properties<T> = Required<{
   [K in keyof T]: z.ZodType<T[K], any, T[K]>;
@@ -97,6 +97,12 @@ export function MyTypeFooArgsSchema(): z.ZodObject<Properties<MyTypeFooArgs>> {
     b: z.number(),
     c: z.boolean().nullish(),
     d: z.number()
+  })
+}
+
+export function NamerSchema(): z.ZodObject<Properties<Namer>> {
+  return z.object({
+    name: z.string().nullish()
   })
 }
 

@@ -1,4 +1,10 @@
-import type { FieldDefinitionNode, GraphQLSchema, InputValueDefinitionNode, ObjectTypeDefinitionNode } from 'graphql';
+import type {
+  FieldDefinitionNode,
+  GraphQLSchema,
+  InputValueDefinitionNode,
+  InterfaceTypeDefinitionNode,
+  ObjectTypeDefinitionNode,
+} from 'graphql';
 
 import type { ValidationSchemaPluginConfig } from './config';
 import type { SchemaVisitor } from './types';
@@ -39,7 +45,10 @@ export abstract class BaseSchemaVisitor implements SchemaVisitor {
     name: string
   ): string;
 
-  protected buildObjectTypeDefinitionArguments(node: ObjectTypeDefinitionNode, visitor: Visitor) {
+  protected buildTypeDefinitionArguments(
+    node: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
+    visitor: Visitor,
+  ) {
     return visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
       this.importTypes.push(typeName);
       return this.buildInputFields(field.arguments ?? [], visitor, typeName);
