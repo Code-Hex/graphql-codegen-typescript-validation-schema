@@ -40,7 +40,7 @@ export class Visitor extends TsVisitor {
   }
 
   public getScalarType(scalarName: string): string | null {
-    if (this.scalarDirection === 'both')
+    if (this.scalarDirection === 'both') {
       return null;
     }
     const scalar = this.scalars[scalarName];
