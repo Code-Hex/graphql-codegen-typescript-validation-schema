@@ -5,7 +5,7 @@ jobs:
   labels:
     runs-on: ubuntu-latest
     steps:
-      - uses: Code-Hex/first-label-interaction@v1.0.2
+      - uses: Code-Hex/first-label-interaction@v1.0.3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-labels: '["good first issue"]'
