@@ -4,9 +4,11 @@
     "incremental": false,
     "rootDir": "src",
     "declaration": false,
-    "outDir": "dist/main"
+    "outDir": "dist/main",
+    "types": ["node"]
   },
   "exclude": [
-    "example"
+    "example",
+    "tests"
   ]
 }

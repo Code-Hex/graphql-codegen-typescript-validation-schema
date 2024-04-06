@@ -8,12 +8,11 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {},
-    "types": [
-      "node"
-    ]
+    "types": ["node", "vitest/globals"]
   },
   "include": [
     "src",
+    "tests",
     "example"
   ],
   "exclude": [

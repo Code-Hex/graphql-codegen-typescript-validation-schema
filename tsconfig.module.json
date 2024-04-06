@@ -8,10 +8,12 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "declaration": false,
-    "outDir": "dist/module"
+    "outDir": "dist/module",
+    "types": ["node"]
   },
   "exclude": [
     "node_modules/**",
-    "example"
+    "example",
+    "tests"
   ]
 }

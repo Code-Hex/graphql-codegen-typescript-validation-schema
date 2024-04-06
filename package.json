@@ -36,10 +36,10 @@
   "typings": "dist/types/index.d.ts",
   "module": "dist/module/index.js",
   "files": [
-    "!**/*.tsbuildinfo",
     "LICENSE",
     "README.md",
-    "dist/**/*.{js,ts}"
+    "dist/**/*.{js,ts}",
+    "!dist/**/*.tsbuildinfo"
   ],
   "scripts": {
     "type-check": "tsc --noEmit",

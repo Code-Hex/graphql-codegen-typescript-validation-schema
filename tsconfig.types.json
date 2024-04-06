@@ -4,9 +4,11 @@
     "rootDir": "src",
     "declarationDir": "dist/types",
     "emitDeclarationOnly": true,
-    "outDir": "dist/types"
+    "outDir": "dist/types",
+    "types": ["node"]
   },
   "exclude": [
-    "example"
+    "example",
+    "tests"
   ]
 }
