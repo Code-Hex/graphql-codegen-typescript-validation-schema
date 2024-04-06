@@ -79,7 +79,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
 
   get InterfaceTypeDefinition() {
     return {
-      leave: InterfaceTypeDefinitionBuilder(this.config.withInterfaceType, (node: InterfaceTypeDefinitionNode) => {
+      leave: InterfaceTypeDefinitionBuilder(this.config.withObjectType, (node: InterfaceTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
         this.importTypes.push(name);
