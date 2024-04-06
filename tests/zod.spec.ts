@@ -1,5 +1,4 @@
-import { getCachedDocumentNodeFromSchema } from '@graphql-codegen/plugin-helpers';
-import { buildClientSchema, buildSchema, introspectionFromSchema, isSpecifiedScalarType } from 'graphql';
+import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import { dedent } from 'ts-dedent';
 
 import { plugin } from '../src/index';
@@ -603,7 +602,7 @@ describe('zod', () => {
         {
           schema: 'zod',
         },
-        {}
+        {},
       );
       expect(result.content).not.toContain('export function UserSchema(): z.ZodObject<Properties<User>>');
     });
@@ -621,19 +620,18 @@ describe('zod', () => {
           schema: 'zod',
           withInterfaceType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function BookSchema(): z.ZodObject<Properties<Book>> {',
         'title: z.string().nullish()',
       ];
-      const wantNotContains = ["__typename: z.literal('Book')"];
-      for (const wantContain of wantContains) {
+      const wantNotContains = ['__typename: z.literal(\'Book\')'];
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
-      for (const wantNotContain of wantNotContains) {
+
+      for (const wantNotContain of wantNotContains)
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
 
     it('generate interface type contains interface type', async () => {
@@ -655,7 +653,7 @@ describe('zod', () => {
           schema: 'zod',
           withInterfaceType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function AuthorSchema(): z.ZodObject<Properties<Author>> {',
@@ -666,9 +664,8 @@ describe('zod', () => {
         'author: AuthorSchema().nullish(),',
         'title: z.string().nullish()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate object type contains interface type', async () => {
@@ -703,7 +700,7 @@ describe('zod', () => {
           withInterfaceType: true,
           withObjectType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         [
@@ -718,7 +715,7 @@ describe('zod', () => {
         [
           'export function TextbookSchema(): z.ZodObject<Properties<Textbook>> {',
           'return z.object({',
-          "__typename: z.literal('Textbook').optional(),",
+          '__typename: z.literal(\'Textbook\').optional(),',
           'title: z.string(),',
           'author: AuthorSchema(),',
           'courses: z.array(z.string())',
@@ -729,7 +726,7 @@ describe('zod', () => {
         [
           'export function ColoringBookSchema(): z.ZodObject<Properties<ColoringBook>> {',
           'return z.object({',
-          "__typename: z.literal('ColoringBook').optional(),",
+          '__typename: z.literal(\'ColoringBook\').optional(),',
           'title: z.string(),',
           'author: AuthorSchema(),',
           'colors: z.array(z.string())',
@@ -740,7 +737,7 @@ describe('zod', () => {
         [
           'export function AuthorSchema(): z.ZodObject<Properties<Author>> {',
           'return z.object({',
-          "__typename: z.literal('Author').optional()",
+          '__typename: z.literal(\'Author\').optional()',
           'books: z.array(BookSchema()).nullish()',
           'name: z.string().nullish()',
           '})',
@@ -749,9 +746,8 @@ describe('zod', () => {
       ];
 
       for (const wantContain of wantContains) {
-        for (const wantContainLine of wantContain) {
+        for (const wantContainLine of wantContain)
           expect(result.content).toContain(wantContainLine);
-        }
       }
     });
   });

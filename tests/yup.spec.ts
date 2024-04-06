@@ -407,7 +407,7 @@ describe('yup', () => {
         {
           schema: 'yup',
         },
-        {}
+        {},
       );
       expect(result.content).not.toContain('export function UserSchema(): yup.ObjectSchema<User> {');
     });
@@ -425,19 +425,18 @@ describe('yup', () => {
           schema: 'yup',
           withInterfaceType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function BookSchema(): yup.ObjectSchema<Book> {',
         'title: yup.string().defined().nullable().optional()',
       ];
-      const wantNotContains = ["__typename: yup.string<'Book'>().optional()"];
-      for (const wantContain of wantContains) {
+      const wantNotContains = ['__typename: yup.string<\'Book\'>().optional()'];
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
-      for (const wantNotContain of wantNotContains) {
+
+      for (const wantNotContain of wantNotContains)
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
 
     it('generate interface type contains interface type', async () => {
@@ -464,7 +463,7 @@ describe('yup', () => {
           schema: 'yup',
           withInterfaceType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function AuthorSchema(): yup.ObjectSchema<Author> {',
@@ -479,13 +478,11 @@ describe('yup', () => {
         'author: AuthorSchema().nonNullable(),',
         'title: yup.string().defined().nonNullable()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
 
-      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
     it('generate object type contains interface type', async () => {
       const schema = buildSchema(/* GraphQL */ `
@@ -519,7 +516,7 @@ describe('yup', () => {
           withInterfaceType: true,
           withObjectType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         [
@@ -534,7 +531,7 @@ describe('yup', () => {
         [
           'export function TextbookSchema(): yup.ObjectSchema<Textbook> {',
           'return yup.object({',
-          "__typename: yup.string<'Textbook'>().optional(),",
+          '__typename: yup.string<\'Textbook\'>().optional(),',
           'title: yup.string().defined().nonNullable(),',
           'author: AuthorSchema().nonNullable(),',
           'courses: yup.array(yup.string().defined().nonNullable()).defined()',
@@ -545,7 +542,7 @@ describe('yup', () => {
         [
           'export function ColoringBookSchema(): yup.ObjectSchema<ColoringBook> {',
           'return yup.object({',
-          "__typename: yup.string<'ColoringBook'>().optional(),",
+          '__typename: yup.string<\'ColoringBook\'>().optional(),',
           'title: yup.string().defined().nonNullable(),',
           'author: AuthorSchema().nonNullable(),',
           'colors: yup.array(yup.string().defined().nonNullable()).defined()',
@@ -556,7 +553,7 @@ describe('yup', () => {
         [
           'export function AuthorSchema(): yup.ObjectSchema<Author> {',
           'return yup.object({',
-          "__typename: yup.string<'Author'>().optional(),",
+          '__typename: yup.string<\'Author\'>().optional(),',
           'books: yup.array(BookSchema().nonNullable()).defined().nullable().optional(),',
           'name: yup.string().defined().nullable().optional()',
           '})',
@@ -565,9 +562,8 @@ describe('yup', () => {
       ];
 
       for (const wantContain of wantContains) {
-        for (const wantContainLine of wantContain) {
+        for (const wantContainLine of wantContain)
           expect(result.content).toContain(wantContainLine);
-        }
       }
     });
   });

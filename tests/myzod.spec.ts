@@ -500,7 +500,7 @@ describe('myzod', () => {
         {
           schema: 'myzod',
         },
-        {}
+        {},
       );
       expect(result.content).not.toContain('export function UserSchema(): myzod.Type<User> {');
     });
@@ -518,19 +518,18 @@ describe('myzod', () => {
           schema: 'myzod',
           withInterfaceType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function BookSchema(): myzod.Type<Book> {',
         'title: myzod.string().optional().nullable()',
       ];
-      const wantNotContains = ["__typename: myzod.literal('Book')"];
-      for (const wantContain of wantContains) {
+      const wantNotContains = ['__typename: myzod.literal(\'Book\')'];
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
-      for (const wantNotContain of wantNotContains) {
+
+      for (const wantNotContain of wantNotContains)
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
 
     it('generate interface type contains interface type', async () => {
@@ -552,7 +551,7 @@ describe('myzod', () => {
           schema: 'myzod',
           withInterfaceType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function AuthorSchema(): myzod.Type<Author> {',
@@ -563,9 +562,8 @@ describe('myzod', () => {
         'author: AuthorSchema().optional().nullable(),',
         'title: myzod.string().optional().nullable()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
     it('generate object type contains interface type', async () => {
       const schema = buildSchema(/* GraphQL */ `
@@ -599,7 +597,7 @@ describe('myzod', () => {
           withInterfaceType: true,
           withObjectType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         [
@@ -614,7 +612,7 @@ describe('myzod', () => {
         [
           'export function TextbookSchema(): myzod.Type<Textbook> {',
           'return myzod.object({',
-          "__typename: myzod.literal('Textbook').optional(),",
+          '__typename: myzod.literal(\'Textbook\').optional(),',
           'title: myzod.string(),',
           'author: AuthorSchema(),',
           'courses: myzod.array(myzod.string())',
@@ -625,7 +623,7 @@ describe('myzod', () => {
         [
           'export function ColoringBookSchema(): myzod.Type<ColoringBook> {',
           'return myzod.object({',
-          "__typename: myzod.literal('ColoringBook').optional(),",
+          '__typename: myzod.literal(\'ColoringBook\').optional(),',
           'title: myzod.string(),',
           'author: AuthorSchema(),',
           'colors: myzod.array(myzod.string())',
@@ -636,7 +634,7 @@ describe('myzod', () => {
         [
           'export function AuthorSchema(): myzod.Type<Author> {',
           'return myzod.object({',
-          "__typename: myzod.literal('Author').optional()",
+          '__typename: myzod.literal(\'Author\').optional()',
           'books: myzod.array(BookSchema()).optional().nullable()',
           'name: myzod.string().optional().nullable()',
           '})',
@@ -644,9 +642,8 @@ describe('myzod', () => {
         ],
       ];
       for (const wantContain of wantContains) {
-        for (const wantContainLine of wantContain) {
+        for (const wantContainLine of wantContain)
           expect(result.content).toContain(wantContainLine);
-        }
       }
     });
   });

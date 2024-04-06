@@ -1,4 +1,4 @@
-import {
+import type {
   FieldDefinitionNode,
   GraphQLSchema,
   InputValueDefinitionNode,
@@ -47,7 +47,7 @@ export abstract class BaseSchemaVisitor implements SchemaVisitor {
 
   protected buildTypeDefinitionArguments(
     node: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
-    visitor: Visitor
+    visitor: Visitor,
   ) {
     return visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
       this.importTypes.push(typeName);

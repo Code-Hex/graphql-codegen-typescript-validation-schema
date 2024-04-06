@@ -1,10 +1,12 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
-import {
+import type {
   FieldDefinitionNode,
   GraphQLSchema,
   InterfaceTypeDefinitionNode,
   NameNode,
   ObjectTypeDefinitionNode,
+} from 'graphql';
+import {
   specifiedScalarTypes,
 } from 'graphql';
 
@@ -40,13 +42,13 @@ export class Visitor extends TsVisitor {
   }
 
   public getScalarType(scalarName: string): string | null {
-    if (this.scalarDirection === 'both') {
+    if (this.scalarDirection === 'both')
       return null;
-    }
+
     const scalar = this.scalars[scalarName];
-    if (!scalar) {
+    if (!scalar)
       throw new Error(`Unknown scalar ${scalarName}`);
-    }
+
     return scalar[this.scalarDirection];
   }
 
@@ -64,7 +66,7 @@ export class Visitor extends TsVisitor {
 
   public buildArgumentsSchemaBlock(
     node: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
-    callback: (typeName: string, field: FieldDefinitionNode) => string
+    callback: (typeName: string, field: FieldDefinitionNode) => string,
   ) {
     const fieldsWithArguments = node.fields?.filter(field => field.arguments && field.arguments.length > 0) ?? [];
     if (fieldsWithArguments.length === 0)

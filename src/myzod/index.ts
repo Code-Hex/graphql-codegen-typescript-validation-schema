@@ -18,14 +18,14 @@ import {
 import type { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
-import { Visitor } from '../visitor';
+import type { Visitor } from '../visitor';
 import {
   InterfaceTypeDefinitionBuilder,
+  ObjectTypeDefinitionBuilder,
   isInput,
   isListType,
   isNamedType,
   isNonNullType,
-  ObjectTypeDefinitionBuilder,
 } from './../graphql';
 
 const anySchema = `definedNonNullAnySchema`;
@@ -70,7 +70,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
 
         // Building schema for field arguments.
         const argumentBlocks = this.buildTypeDefinitionArguments(node, visitor);
-        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+        const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
         const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
@@ -108,7 +108,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
 
         // Building schema for field arguments.
         const argumentBlocks = this.buildTypeDefinitionArguments(node, visitor);
-        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+        const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
         const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
@@ -329,9 +329,9 @@ function generateNameNodeMyZodSchema(config: ValidationSchemaPluginConfig, visit
     case 'ScalarTypeDefinition':
       return myzod4Scalar(config, visitor, node.value);
     default:
-      if (converter?.targetKind) {
+      if (converter?.targetKind)
         console.warn('Unknown target kind', converter.targetKind);
-      }
+
       return myzod4Scalar(config, visitor, node.value);
   }
 }

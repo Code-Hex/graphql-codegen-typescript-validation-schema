@@ -37,17 +37,15 @@ export function ObjectTypeDefinitionBuilder(useObjectTypes: boolean | undefined,
   };
 }
 
-export const InterfaceTypeDefinitionBuilder = (
-  useInterfaceTypes: boolean | undefined,
-  callback: InterfaceTypeDefinitionFn
-): InterfaceTypeDefinitionFn | undefined => {
-  if (!useInterfaceTypes) return undefined;
-  return node => {
+export function InterfaceTypeDefinitionBuilder(useInterfaceTypes: boolean | undefined, callback: InterfaceTypeDefinitionFn): InterfaceTypeDefinitionFn | undefined {
+  if (!useInterfaceTypes)
+    return undefined;
+  return (node) => {
     return callback(node);
   };
-};
+}
 
-export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): DocumentNode => {
+export function topologicalSortAST(schema: GraphQLSchema, ast: DocumentNode): DocumentNode {
   const dependencyGraph = new Graph();
   const targetKinds = [
     'ObjectTypeDefinition',
