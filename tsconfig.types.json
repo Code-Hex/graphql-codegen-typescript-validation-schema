@@ -1,10 +1,10 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "declaration": false,
-    "incremental": false,
     "rootDir": "src",
-    "outDir": "dist/main"
+    "emitDeclarationOnly": true,
+    "declarationDir": "dist/types",
+    "outDir": "dist/types"
   },
   "exclude": [
     "example"

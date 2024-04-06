@@ -7,10 +7,18 @@
     "url": "https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema.git"
   },
   "main": "dist/main/index.js",
-  "typings": "dist/main/index.d.ts",
+  "typings": "dist/types/index.d.ts",
   "module": "dist/module/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/module/index.js",
+      "require": "./dist/main/index.js"
+    }
+  },
   "files": [
     "dist/**/*.{js,ts}",
+    "!**/*.tsbuildinfo",
     "LICENSE",
     "README.md"
   ],
@@ -23,10 +31,9 @@
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.main.json",
     "build:module": "tsc -p tsconfig.module.json",
+    "build:types": "tsc -p tsconfig.types.json",
     "lint": "eslint --ext .ts .",
     "lint-fix": "eslint --fix --ext .ts .",
-    "prettier": "prettier --write --list-different \"**/*.{ts,graphql,yml}\"",
-    "prettier:check": "prettier --check \"**/*.{ts,graphql,yml}\"",
     "generate": "run-p build:* && graphql-codegen",
     "prepublish": "run-p build:*"
   },
@@ -47,21 +54,16 @@
   "author": "codehex",
   "license": "MIT",
   "devDependencies": {
+    "@antfu/eslint-config": "^2.12.2",
     "@graphql-codegen/cli": "5.0.2",
     "@graphql-codegen/typescript": "^4.0.0",
     "@tsconfig/recommended": "1.0.6",
     "@types/graphlib": "^2.1.8",
-    "@types/jest": "29.5.12",
     "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "7.5.0",
-    "@typescript-eslint/parser": "7.5.0",
     "eslint": "9.0.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-simple-import-sort": "^12.0.0",
     "jest": "29.7.0",
     "myzod": "1.11.0",
     "npm-run-all2": "6.1.2",
-    "prettier": "3.2.5",
     "ts-dedent": "^2.2.0",
     "ts-jest": "29.1.2",
     "typescript": "5.4.4",

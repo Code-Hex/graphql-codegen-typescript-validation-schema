@@ -4,13 +4,11 @@
     "target": "esnext",
     "module": "esnext",
     "declaration": false,
+    "incremental": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "rootDir": "src",
-    "outDir": "dist/module",
-    "types": [
-      "node"
-    ]
+    "outDir": "dist/module"
   },
   "exclude": [
     "node_modules/**",
