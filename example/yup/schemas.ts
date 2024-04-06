@@ -1,13 +1,13 @@
 import * as yup from 'yup'
 import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, PageInput, PageType, User, UserKind } from '../types'
 
-export const ButtonComponentTypeSchema = yup.string<ButtonComponentType>().oneOf([ButtonComponentType.Button, ButtonComponentType.Submit]).defined();
+export const ButtonComponentTypeSchema = yup.string<ButtonComponentType>().oneOf(Object.values(ButtonComponentType)).defined();
 
-export const EventOptionTypeSchema = yup.string<EventOptionType>().oneOf([EventOptionType.Reload, EventOptionType.Retry]).defined();
+export const EventOptionTypeSchema = yup.string<EventOptionType>().oneOf(Object.values(EventOptionType)).defined();
 
-export const HttpMethodSchema = yup.string<HttpMethod>().oneOf([HttpMethod.Get, HttpMethod.Post]).defined();
+export const HttpMethodSchema = yup.string<HttpMethod>().oneOf(Object.values(HttpMethod)).defined();
 
-export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.BasicAuth, PageType.Lp, PageType.Restricted, PageType.Service]).defined();
+export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined();
 
 function union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T> {
   return yup.mixed<T>().test({
