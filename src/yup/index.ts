@@ -1,5 +1,5 @@
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
-import {
+import type {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
   GraphQLSchema,
@@ -10,12 +10,15 @@ import {
   TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
+import {
+  Kind,
+} from 'graphql';
 
-import { ValidationSchemaPluginConfig } from '../config';
+import type { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
-import { Visitor } from '../visitor';
-import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
+import type { Visitor } from '../visitor';
+import { ObjectTypeDefinitionBuilder, isInput, isListType, isNamedType, isNonNullType } from './../graphql';
 
 export class YupSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
@@ -27,11 +30,12 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
   }
 
   initialEmit(): string {
-    if (!this.config.withObjectType) return '\n' + this.enumDeclarations.join('\n');
+    if (!this.config.withObjectType)
+      return `\n${this.enumDeclarations.join('\n')}`;
     return (
-      '\n' +
-      this.enumDeclarations.join('\n') +
-      '\n' +
+      `\n${
+      this.enumDeclarations.join('\n')
+      }\n${
       new DeclarationBlock({})
         .asKind('function')
         .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
@@ -40,8 +44,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
             indent('return yup.mixed<T>().test({'),
             indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
             indent('}).defined()'),
-          ].join('\n')
-        ).string
+          ].join('\n'),
+        ).string}`
     );
   }
 
@@ -65,15 +69,10 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
 
         // Building schema for field arguments.
         const argumentBlocks = this.buildObjectTypeDefinitionArguments(node, visitor);
-        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+        const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields
-          ?.map(field => {
-            const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
-            return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
-          })
-          .join(',\n');
+        const shape = shapeFields(node.fields, this.config, visitor);
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -88,7 +87,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
                     indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
                     shape,
                     '})',
-                  ].join('\n')
+                  ].join('\n'),
                 ).string + appendArguments
             );
 
@@ -105,7 +104,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
                     indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
                     shape,
                     indent('})'),
-                  ].join('\n')
+                  ].join('\n'),
                 ).string + appendArguments
             );
         }
@@ -129,24 +128,16 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`yup.string().oneOf([${enums?.join(', ')}]).defined()`).string
+              .withContent(`yup.string().oneOf([${enums?.join(', ')}]).defined()`).string,
           );
-        } else {
-          const values = node.values
-            ?.map(
-              enumOption =>
-                `${enumname}.${visitor.convertName(enumOption.name, {
-                  useTypesPrefix: false,
-                  transformUnderscore: true,
-                })}`
-            )
-            .join(', ');
+        }
+        else {
           this.enumDeclarations.push(
             new DeclarationBlock({})
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`yup.string<${enumname}>().oneOf([${values}]).defined()`).string
+              .withContent(`yup.string<${enumname}>().oneOf(Object.values(${enumname})).defined()`).string,
           );
         }
       },
@@ -156,19 +147,20 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
   get UnionTypeDefinition() {
     return {
       leave: (node: UnionTypeDefinitionNode) => {
-        if (!node.types || !this.config.withObjectType) return;
+        if (!node.types || !this.config.withObjectType)
+          return;
         const visitor = this.createVisitor('output');
 
         const unionName = visitor.convertName(node.name.value);
         this.importTypes.push(unionName);
 
         const unionElements = node.types
-          ?.map(t => {
+          ?.map((t) => {
             const element = visitor.convertName(t.name.value);
             const typ = visitor.getType(t.name.value);
-            if (typ?.astNode?.kind === 'EnumTypeDefinition') {
+            if (typ?.astNode?.kind === 'EnumTypeDefinition')
               return `${element}Schema`;
-            }
+
             switch (this.config.validationSchemaExportType) {
               case 'const':
                 return `${element}Schema`;
@@ -201,14 +193,9 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
   protected buildInputFields(
     fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[],
     visitor: Visitor,
-    name: string
+    name: string,
   ) {
-    const shape = fields
-      ?.map(field => {
-        const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
-        return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
-      })
-      .join(',\n');
+    const shape = shapeFields(fields, this.config, visitor);
 
     switch (this.config.validationSchemaExportType) {
       case 'const':
@@ -229,31 +216,48 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
   }
 }
 
-const generateFieldYupSchema = (
-  config: ValidationSchemaPluginConfig,
-  visitor: Visitor,
-  field: InputValueDefinitionNode | FieldDefinitionNode,
-  indentCount: number
-): string => {
+function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[] | undefined, config: ValidationSchemaPluginConfig, visitor: Visitor) {
+  return fields
+    ?.map((field) => {
+      let fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
+
+      if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
+        const { defaultValue } = field;
+
+        if (
+          defaultValue?.kind === Kind.INT
+          || defaultValue?.kind === Kind.FLOAT
+          || defaultValue?.kind === Kind.BOOLEAN
+        )
+          fieldSchema = `${fieldSchema}.default(${defaultValue.value})`;
+
+        if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
+          fieldSchema = `${fieldSchema}.default("${defaultValue.value}")`;
+      }
+
+      if (isNonNullType(field.type))
+        return fieldSchema;
+
+      return `${fieldSchema}.optional()`;
+    })
+    .join(',\n');
+}
+
+function generateFieldYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
   let gen = generateFieldTypeYupSchema(config, visitor, field.type);
   if (config.directives && field.directives) {
     const formatted = formatDirectiveConfig(config.directives);
     gen += buildApi(formatted, field.directives);
   }
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
-};
+}
 
-const generateFieldTypeYupSchema = (
-  config: ValidationSchemaPluginConfig,
-  visitor: Visitor,
-  type: TypeNode,
-  parentType?: TypeNode
-): string => {
+function generateFieldTypeYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, type: TypeNode, parentType?: TypeNode): string {
   if (isListType(type)) {
     const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
-    if (!isNonNullType(parentType)) {
+    if (!isNonNullType(parentType))
       return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
-    }
+
     return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
   }
   if (isNonNullType(type)) {
@@ -263,22 +267,22 @@ const generateFieldTypeYupSchema = (
   if (isNamedType(type)) {
     const gen = generateNameNodeYupSchema(config, visitor, type.name);
     if (isNonNullType(parentType)) {
-      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
+      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
         return `${gen}.required()`;
-      }
+
       return `${gen}.nonNullable()`;
     }
     const typ = visitor.getType(type.name.value);
-    if (typ?.astNode?.kind === 'InputObjectTypeDefinition') {
+    if (typ?.astNode?.kind === 'InputObjectTypeDefinition')
       return `${gen}`;
-    }
+
     return `${gen}.nullable()`;
   }
   console.warn('unhandled type:', type);
   return '';
-};
+}
 
-const generateNameNodeYupSchema = (config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string => {
+function generateNameNodeYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string {
   const converter = visitor.getNameNodeConverter(node);
 
   switch (converter?.targetKind) {
@@ -298,20 +302,20 @@ const generateNameNodeYupSchema = (config: ValidationSchemaPluginConfig, visitor
     default:
       return yup4Scalar(config, visitor, node.value);
   }
-};
+}
 
-const maybeLazy = (type: TypeNode, schema: string): string => {
+function maybeLazy(type: TypeNode, schema: string): string {
   if (isNamedType(type) && isInput(type.name.value)) {
     // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
     return `yup.lazy(() => ${schema})`;
   }
   return schema;
-};
+}
 
-const yup4Scalar = (config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string => {
-  if (config.scalarSchemas?.[scalarName]) {
+function yup4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
+  if (config.scalarSchemas?.[scalarName])
     return `${config.scalarSchemas[scalarName]}.defined()`;
-  }
+
   const tsType = visitor.getScalarType(scalarName);
   switch (tsType) {
     case 'string':
@@ -323,4 +327,4 @@ const yup4Scalar = (config: ValidationSchemaPluginConfig, visitor: Visitor, scal
   }
   console.warn('unhandled name:', scalarName);
   return `yup.mixed()`;
-};
+}

@@ -1,5 +1,5 @@
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
-import {
+import type {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
   GraphQLSchema,
@@ -10,12 +10,15 @@ import {
   TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
+import {
+  Kind,
+} from 'graphql';
 
-import { ValidationSchemaPluginConfig } from '../config';
+import type { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
-import { Visitor } from '../visitor';
-import { isInput, isListType, isNamedType, isNonNullType, ObjectTypeDefinitionBuilder } from './../graphql';
+import type { Visitor } from '../visitor';
+import { ObjectTypeDefinitionBuilder, isInput, isListType, isNamedType, isNonNullType } from './../graphql';
 
 const anySchema = `definedNonNullAnySchema`;
 
@@ -30,7 +33,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
 
   initialEmit(): string {
     return (
-      '\n' +
+      `\n${
       [
         new DeclarationBlock({})
           .asKind('type')
@@ -51,7 +54,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .withName(`${anySchema}`)
           .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
         ...this.enumDeclarations,
-      ].join('\n')
+      ].join('\n')}`
     );
   }
 
@@ -75,7 +78,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
 
         // Building schema for field arguments.
         const argumentBlocks = this.buildObjectTypeDefinitionArguments(node, visitor);
-        const appendArguments = argumentBlocks ? '\n' + argumentBlocks : '';
+        const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
         const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
@@ -93,7 +96,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                     indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
                     '})',
-                  ].join('\n')
+                  ].join('\n'),
                 ).string + appendArguments
             );
 
@@ -110,7 +113,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                     indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
                     indent('})'),
-                  ].join('\n')
+                  ].join('\n'),
                 ).string + appendArguments
             );
         }
@@ -129,16 +132,16 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         this.enumDeclarations.push(
           this.config.enumsAsTypes
             ? new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${enumname}Schema`)
-                .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`)
-                .string
+              .export()
+              .asKind('const')
+              .withName(`${enumname}Schema`)
+              .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`)
+              .string
             : new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${enumname}Schema`)
-                .withContent(`z.nativeEnum(${enumname})`).string
+              .export()
+              .asKind('const')
+              .withName(`${enumname}Schema`)
+              .withContent(`z.nativeEnum(${enumname})`).string,
         );
       },
     };
@@ -147,16 +150,17 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
   get UnionTypeDefinition() {
     return {
       leave: (node: UnionTypeDefinitionNode) => {
-        if (!node.types || !this.config.withObjectType) return;
+        if (!node.types || !this.config.withObjectType)
+          return;
         const visitor = this.createVisitor('output');
         const unionName = visitor.convertName(node.name.value);
         const unionElements = node.types
-          .map(t => {
+          .map((t) => {
             const element = visitor.convertName(t.name.value);
             const typ = visitor.getType(t.name.value);
-            if (typ?.astNode?.kind === 'EnumTypeDefinition') {
+            if (typ?.astNode?.kind === 'EnumTypeDefinition')
               return `${element}Schema`;
-            }
+
             switch (this.config.validationSchemaExportType) {
               case 'const':
                 return `${element}Schema`;
@@ -189,7 +193,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
   protected buildInputFields(
     fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[],
     visitor: Visitor,
-    name: string
+    name: string,
   ) {
     const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
 
@@ -212,23 +216,12 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
   }
 }
 
-const generateFieldZodSchema = (
-  config: ValidationSchemaPluginConfig,
-  visitor: Visitor,
-  field: InputValueDefinitionNode | FieldDefinitionNode,
-  indentCount: number
-): string => {
+function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
   const gen = generateFieldTypeZodSchema(config, visitor, field, field.type);
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
-};
+}
 
-const generateFieldTypeZodSchema = (
-  config: ValidationSchemaPluginConfig,
-  visitor: Visitor,
-  field: InputValueDefinitionNode | FieldDefinitionNode,
-  type: TypeNode,
-  parentType?: TypeNode
-): string => {
+function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
   if (isListType(type)) {
     const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
     if (!isNonNullType(parentType)) {
@@ -244,38 +237,45 @@ const generateFieldTypeZodSchema = (
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeZodSchema(config, visitor, type.name);
-    if (isListType(parentType)) {
+    if (isListType(parentType))
       return `${gen}.nullable()`;
+
+    let appliedDirectivesGen = applyDirectives(config, field, gen);
+
+    if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
+      const { defaultValue } = field;
+
+      if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN)
+        appliedDirectivesGen = `${appliedDirectivesGen}.default(${defaultValue.value})`;
+
+      if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
+        appliedDirectivesGen = `${appliedDirectivesGen}.default("${defaultValue.value}")`;
     }
-    const appliedDirectivesGen = applyDirectives(config, field, gen);
+
     if (isNonNullType(parentType)) {
-      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
+      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
         return `${appliedDirectivesGen}.min(1)`;
-      }
+
       return appliedDirectivesGen;
     }
-    if (isListType(parentType)) {
+    if (isListType(parentType))
       return `${appliedDirectivesGen}.nullable()`;
-    }
+
     return `${appliedDirectivesGen}.nullish()`;
   }
   console.warn('unhandled type:', type);
   return '';
-};
+}
 
-const applyDirectives = (
-  config: ValidationSchemaPluginConfig,
-  field: InputValueDefinitionNode | FieldDefinitionNode,
-  gen: string
-): string => {
+function applyDirectives(config: ValidationSchemaPluginConfig, field: InputValueDefinitionNode | FieldDefinitionNode, gen: string): string {
   if (config.directives && field.directives) {
     const formatted = formatDirectiveConfig(config.directives);
     return gen + buildApi(formatted, field.directives);
   }
   return gen;
-};
+}
 
-const generateNameNodeZodSchema = (config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string => {
+function generateNameNodeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string {
   const converter = visitor.getNameNodeConverter(node);
 
   switch (converter?.targetKind) {
@@ -295,19 +295,19 @@ const generateNameNodeZodSchema = (config: ValidationSchemaPluginConfig, visitor
     default:
       return zod4Scalar(config, visitor, node.value);
   }
-};
+}
 
-const maybeLazy = (type: TypeNode, schema: string): string => {
-  if (isNamedType(type) && isInput(type.name.value)) {
+function maybeLazy(type: TypeNode, schema: string): string {
+  if (isNamedType(type) && isInput(type.name.value))
     return `z.lazy(() => ${schema})`;
-  }
-  return schema;
-};
 
-const zod4Scalar = (config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string => {
-  if (config.scalarSchemas?.[scalarName]) {
+  return schema;
+}
+
+function zod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
+  if (config.scalarSchemas?.[scalarName])
     return config.scalarSchemas[scalarName];
-  }
+
   const tsType = visitor.getScalarType(scalarName);
   switch (tsType) {
     case 'string':
@@ -319,4 +319,4 @@ const zod4Scalar = (config: ValidationSchemaPluginConfig, visitor: Visitor, scal
   }
   console.warn('unhandled scalar name:', scalarName);
   return anySchema;
-};
+}

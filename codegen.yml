@@ -1,5 +1,5 @@
 overwrite: true
-schema: './example/test.graphql'
+schema: ./example/test.graphql
 generates:
   example/types.ts:
     plugins:
@@ -21,11 +21,11 @@ generates:
             constraint:
               minLength: min # same as ['min', '$1']
               maxLength: max
-              startsWith: ['matches', '/^$1/']
-              endsWith: ['matches', '/$1$/']
-              contains: ['matches', '/$1/']
-              notContains: ['matches', '/^((?!$1).)*$/']
-              pattern: ['matches', '/$1/']
+              startsWith: [matches, /^$1/]
+              endsWith: [matches, /$1$/]
+              contains: [matches, /$1/]
+              notContains: [matches, '/^((?!$1).)*$/']
+              pattern: [matches, /$1/]
               format:
                 # For example, `@constraint(format: "uri")`. this case $1 will be "uri".
                 # Therefore the generator generates yup schema `.url()` followed by `uri: 'url'`
@@ -37,8 +37,8 @@ generates:
                 # you need to add the logic using `yup.addMethod`.
                 # see: https://github.com/jquense/yup#addmethodschematype-schema-name-string-method--schema-void
                 ipv4: ipv4
-              min: ['min', '$1 - 1']
-              max: ['max', '$1 + 1']
+              min: [min, $1 - 1]
+              max: [max, '$1 + 1']
               exclusiveMin: min
               exclusiveMax: max
           scalars:
@@ -61,7 +61,7 @@ generates:
             constraint:
               minLength: min
               # Replace $1 with specified `startsWith` argument value of the constraint directive
-              startsWith: ['regex', '/^$1/', 'message']
+              startsWith: [regex, /^$1/, message]
               format:
                 email: email
           scalars:
@@ -76,7 +76,7 @@ generates:
             constraint:
               minLength: min
               # Replace $1 with specified `startsWith` argument value of the constraint directive
-              startsWith: ['pattern', '/^$1/']
+              startsWith: [pattern, /^$1/]
               format:
                 email: email
           scalars:

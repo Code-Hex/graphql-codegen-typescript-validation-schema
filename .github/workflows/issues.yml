@@ -1,4 +1,4 @@
-name: 'good first issue'
+name: good first issue
 on: [issues]
 
 jobs:

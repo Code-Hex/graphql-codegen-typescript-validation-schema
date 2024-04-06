@@ -1,20 +1,20 @@
-import { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
+import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 
 export type ValidationSchema = 'yup' | 'zod' | 'myzod';
 export type ValidationSchemaExportType = 'function' | 'const';
 
 export interface DirectiveConfig {
   [directive: string]: {
-    [argument: string]: string | string[] | DirectiveObjectArguments;
-  };
+    [argument: string]: string | string[] | DirectiveObjectArguments
+  }
 }
 
 export interface DirectiveObjectArguments {
-  [matched: string]: string | string[];
+  [matched: string]: string | string[]
 }
 
 interface ScalarSchemas {
-  [name: string]: string;
+  [name: string]: string
 }
 
 export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
@@ -33,7 +33,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       schema: yup
    * ```
    */
-  schema?: ValidationSchema;
+  schema?: ValidationSchema
   /**
    * @description import types from generated typescript type path
    * if not given, omit import statement.
@@ -52,7 +52,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       importFrom: ./path/to/types
    * ```
    */
-  importFrom?: string;
+  importFrom?: string
   /**
    * @description Will use `import type {}` rather than `import {}` when importing generated typescript types.
    * This gives compatibility with TypeScript's "importsNotUsedAsValues": "error" option
@@ -74,7 +74,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       useTypeImports: true
    * ```
    */
-  useTypeImports?: boolean;
+  useTypeImports?: boolean
   /**
    * @description Prefixes all import types from generated typescript type.
    * @default ""
@@ -93,7 +93,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       importFrom: ./path/to/types
    * ```
    */
-  typesPrefix?: string;
+  typesPrefix?: string
   /**
    * @description Suffixes all import types from generated typescript type.
    * @default ""
@@ -112,7 +112,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       importFrom: ./path/to/types
    * ```
    */
-  typesSuffix?: string;
+  typesSuffix?: string
   /**
    * @description Generates validation schema for enum as TypeScript `type`
    * @default false
@@ -137,7 +137,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       enumsAsTypes: true
    * ```
    */
-  enumsAsTypes?: boolean;
+  enumsAsTypes?: boolean
   /**
    * @description Generates validation string schema as do not allow empty characters by default.
    * @default false
@@ -152,7 +152,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       notAllowEmptyString: true
    * ```
    */
-  notAllowEmptyString?: boolean;
+  notAllowEmptyString?: boolean
   /**
    * @description Extends or overrides validation schema for the built-in scalars and custom GraphQL scalars.
    *
@@ -174,7 +174,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *     Email: z.string().email()
    * ```
    */
-  scalarSchemas?: ScalarSchemas;
+  scalarSchemas?: ScalarSchemas
   /**
    * @description Generates validation schema with GraphQL type objects.
    * but excludes "Query", "Mutation", "Subscription" objects.
@@ -193,7 +193,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       withObjectType: true
    * ```
    */
-  withObjectType?: boolean;
+  withObjectType?: boolean
   /**
    * @description Specify validation schema export type.
    * @default function
@@ -209,7 +209,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       validationSchemaExportType: const
    * ```
    */
-  validationSchemaExportType?: ValidationSchemaExportType;
+  validationSchemaExportType?: ValidationSchemaExportType
   /**
    * @description Generates validation schema with more API based on directive schema.
    * @exampleMarkdown
@@ -250,5 +250,5 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *           exclusiveMax: max
    * ```
    */
-  directives?: DirectiveConfig;
+  directives?: DirectiveConfig
 }

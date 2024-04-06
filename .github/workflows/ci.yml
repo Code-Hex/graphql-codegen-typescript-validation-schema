@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: current
-          cache: 'pnpm'
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
         env:
@@ -32,10 +32,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: current
-          cache: 'pnpm'
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint-fix
-      - run: pnpm prettier
       - name: Auto commit fixed code
         id: auto-commit-action
         uses: stefanzweifel/git-auto-commit-action@v4

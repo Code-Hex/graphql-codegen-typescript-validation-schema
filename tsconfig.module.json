@@ -1,19 +1,19 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
+    "incremental": false,
     "target": "esnext",
+    "rootDir": "src",
     "module": "esnext",
-    "declaration": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "rootDir": "src",
-    "outDir": "dist/module",
-    "types": [
-      "node"
-    ]
+    "types": ["node"],
+    "declaration": false,
+    "outDir": "dist/module"
   },
   "exclude": [
     "node_modules/**",
-    "example"
+    "example",
+    "tests"
   ]
 }

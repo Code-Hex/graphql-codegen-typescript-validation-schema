@@ -4,7 +4,7 @@ import dedent from 'ts-dedent';
 import { plugin } from '../src/index';
 
 describe('myzod', () => {
-  test.each([
+  it.each([
     [
       'non-null and defined',
       {
@@ -172,11 +172,10 @@ describe('myzod', () => {
   ])('%s', async (_, { textSchema, wantContains, scalars }) => {
     const schema = buildSchema(textSchema);
     const result = await plugin(schema, [], { schema: 'myzod', scalars }, {});
-    expect(result.prepend).toContain("import * as myzod from 'myzod'");
+    expect(result.prepend).toContain('import * as myzod from \'myzod\'');
 
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('with scalars', async () => {
@@ -199,7 +198,7 @@ describe('myzod', () => {
           Count: 'number',
         },
       },
-      {}
+      {},
     );
     expect(result.content).toContain('phrase: myzod.string()');
     expect(result.content).toContain('times: myzod.number()');
@@ -218,9 +217,9 @@ describe('myzod', () => {
         schema: 'myzod',
         importFrom: './types',
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import { Say } from './types'");
+    expect(result.prepend).toContain('import { Say } from \'./types\'');
     expect(result.content).toContain('phrase: myzod.string()');
   });
 
@@ -238,9 +237,9 @@ describe('myzod', () => {
         importFrom: './types',
         useTypeImports: true,
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import type { Say } from './types'");
+    expect(result.prepend).toContain('import type { Say } from \'./types\'');
     expect(result.content).toContain('phrase: myzod.string()');
   });
 
@@ -258,9 +257,9 @@ describe('myzod', () => {
         schema: 'myzod',
         enumsAsTypes: true,
       },
-      {}
+      {},
     );
-    expect(result.content).toContain("export type PageTypeSchema = myzod.literals('PUBLIC', 'BASIC_AUTH')");
+    expect(result.content).toContain('export type PageTypeSchema = myzod.literals(\'PUBLIC\', \'BASIC_AUTH\')');
   });
 
   it('with notAllowEmptyString', async () => {
@@ -283,7 +282,7 @@ describe('myzod', () => {
           ID: 'string',
         },
       },
-      {}
+      {},
     );
     const wantContains = [
       'export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {',
@@ -293,9 +292,8 @@ describe('myzod', () => {
       'd: myzod.number(),',
       'e: myzod.number()',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('with notAllowEmptyString issue #386', async () => {
@@ -318,7 +316,7 @@ describe('myzod', () => {
           ID: 'string',
         },
       },
-      {}
+      {},
     );
     const wantContain = dedent`
     export function InputNestedSchema(): myzod.Type<InputNested> {
@@ -349,7 +347,7 @@ describe('myzod', () => {
           Email: 'myzod.string()', // generate the basic type. User can later extend it using `withPredicate(fn: (val: string) => boolean), errMsg?: string }`
         },
       },
-      {}
+      {},
     );
     const wantContains = [
       'export function ScalarsInputSchema(): myzod.Type<ScalarsInput> {',
@@ -357,9 +355,8 @@ describe('myzod', () => {
       'email: myzod.string()', // TODO: Test implementation
       'str: myzod.string()',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
   it('with typesPrefix', async () => {
     const schema = buildSchema(/* GraphQL */ `
@@ -375,9 +372,9 @@ describe('myzod', () => {
         typesPrefix: 'I',
         importFrom: './types',
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import { ISay } from './types'");
+    expect(result.prepend).toContain('import { ISay } from \'./types\'');
     expect(result.content).toContain('export function ISaySchema(): myzod.Type<ISay> {');
   });
   it('with typesSuffix', async () => {
@@ -394,9 +391,9 @@ describe('myzod', () => {
         typesSuffix: 'I',
         importFrom: './types',
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import { SayI } from './types'");
+    expect(result.prepend).toContain('import { SayI } from \'./types\'');
     expect(result.content).toContain('export function SayISchema(): myzod.Type<SayI> {');
   });
   describe('issues #19', () => {
@@ -420,15 +417,14 @@ describe('myzod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
         'profile: myzod.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000").optional().nullable()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
     it('not null field', async () => {
       const schema = buildSchema(/* GraphQL */ `
@@ -450,15 +446,14 @@ describe('myzod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
         'profile: myzod.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000")',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
     it('list field', async () => {
       const schema = buildSchema(/* GraphQL */ `
@@ -480,15 +475,14 @@ describe('myzod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
         'profile: myzod.array(myzod.string().nullable()).min(1, "Please input more than 1").max(5000, "Please input less than 5000").optional().nullable()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
   });
 
@@ -506,7 +500,7 @@ describe('myzod', () => {
         {
           schema: 'myzod',
         },
-        {}
+        {},
       );
       expect(result.content).not.toContain('export function UserSchema(): myzod.Type<User> {');
     });
@@ -530,26 +524,24 @@ describe('myzod', () => {
           schema: 'myzod',
           withObjectType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function AuthorSchema(): myzod.Type<Author> {',
-        "__typename: myzod.literal('Author').optional(),",
+        '__typename: myzod.literal(\'Author\').optional(),',
         'books: myzod.array(BookSchema().nullable()).optional().nullable(),',
         'name: myzod.string().optional().nullable()',
 
         'export function BookSchema(): myzod.Type<Book> {',
-        "__typename: myzod.literal('Book').optional(),",
+        '__typename: myzod.literal(\'Book\').optional(),',
         'author: AuthorSchema().optional().nullable(),',
         'title: myzod.string().optional().nullable()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
 
-      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
 
     it('generate both input & type', async () => {
@@ -603,7 +595,7 @@ describe('myzod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         // User Create Input
@@ -617,7 +609,7 @@ describe('myzod', () => {
         'updateName: myzod.string()',
         // User
         'export function UserSchema(): myzod.Type<User> {',
-        "__typename: myzod.literal('User').optional(),",
+        '__typename: myzod.literal(\'User\').optional(),',
         'id: myzod.string(),',
         'name: myzod.string().optional().nullable(),',
         'age: myzod.number().optional().nullable(),',
@@ -625,13 +617,11 @@ describe('myzod', () => {
         'isMember: myzod.boolean().optional().nullable(),',
         'createdAt: myzod.date()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
 
-      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
 
     it('generate union types', async () => {
@@ -652,7 +642,7 @@ describe('myzod', () => {
           schema: 'myzod',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
@@ -661,9 +651,8 @@ describe('myzod', () => {
         'return myzod.union([CircleSchema(), SquareSchema()])',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate union types with single element', async () => {
@@ -688,19 +677,18 @@ describe('myzod', () => {
           schema: 'myzod',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
         'export function GeometrySchema(): myzod.Type<Geometry> {',
         'return myzod.object({',
-        "__typename: myzod.literal('Geometry').optional(),",
+        '__typename: myzod.literal(\'Geometry\').optional(),',
         'shape: ShapeSchema().optional().nullable()',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('correctly reference generated union types', async () => {
@@ -718,7 +706,7 @@ describe('myzod', () => {
           schema: 'myzod',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
@@ -727,9 +715,8 @@ describe('myzod', () => {
         'return CircleSchema()',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate enum union types', async () => {
@@ -754,7 +741,7 @@ describe('myzod', () => {
           schema: 'myzod',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
@@ -762,9 +749,8 @@ describe('myzod', () => {
         'return myzod.union([PageTypeSchema, MethodTypeSchema])',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate union types with single element, export as const', async () => {
@@ -790,18 +776,17 @@ describe('myzod', () => {
           withObjectType: true,
           validationSchemaExportType: 'const',
         },
-        {}
+        {},
       );
 
       const wantContains = [
         'export const GeometrySchema: myzod.Type<Geometry> = myzod.object({',
-        "__typename: myzod.literal('Geometry').optional(),",
+        '__typename: myzod.literal(\'Geometry\').optional(),',
         'shape: ShapeSchema.optional().nullable()',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('with object arguments', async () => {
@@ -821,7 +806,7 @@ describe('myzod', () => {
             Text: 'string',
           },
         },
-        {}
+        {},
       );
       const wantContain = dedent`
       export function MyTypeFooArgsSchema(): myzod.Type<MyTypeFooArgs> {
@@ -858,7 +843,7 @@ describe('myzod', () => {
           },
         },
       },
-      {}
+      {},
     );
     const wantContains = [
       // User Create Input
@@ -866,9 +851,8 @@ describe('myzod', () => {
       'name: myzod.string().pattern(/^Sir/),',
       'age: myzod.number().min(0).max(100)',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('exports as const instead of func', async () => {
@@ -884,7 +868,7 @@ describe('myzod', () => {
         schema: 'myzod',
         validationSchemaExportType: 'const',
       },
-      {}
+      {},
     );
     expect(result.content).toContain('export const SaySchema: myzod.Type<Say> = myzod.object({');
   });
@@ -928,7 +912,7 @@ describe('myzod', () => {
         },
         validationSchemaExportType: 'const',
       },
-      {}
+      {},
     );
     const wantContains = [
       // User Create Input
@@ -938,7 +922,7 @@ describe('myzod', () => {
       'email: myzod.string().email()',
       // User
       'export const UserSchema: myzod.Type<User> = myzod.object({',
-      "__typename: myzod.literal('User').optional(),",
+      '__typename: myzod.literal(\'User\').optional(),',
       'id: myzod.string(),',
       'name: myzod.string().optional().nullable(),',
       'age: myzod.number().optional().nullable(),',
@@ -946,13 +930,11 @@ describe('myzod', () => {
       'isMember: myzod.boolean().optional().nullable(),',
       'createdAt: myzod.date()',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
 
-    for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+    for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
       expect(result.content).not.toContain(wantNotContain);
-    }
   });
 
   it('issue #394', async () => {
@@ -981,7 +963,7 @@ describe('myzod', () => {
           ID: 'string',
         },
       },
-      {}
+      {},
     );
     const wantContain = dedent`
     export function QueryInputSchema(): myzod.Type<QueryInput> {
@@ -990,5 +972,39 @@ describe('myzod', () => {
       })
     }`;
     expect(result.content).toContain(wantContain);
+  });
+
+  it('with default input values', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType! = PUBLIC
+        greeting: String = "Hello"
+        score: Int = 100
+        ratio: Float = 0.5
+        isMember: Boolean = true
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        importFrom: './types',
+      },
+      {},
+    );
+
+    expect(result.content).toContain('export const PageTypeSchema = myzod.enum(PageType)');
+    expect(result.content).toContain('export function PageInputSchema(): myzod.Type<PageInput>');
+
+    expect(result.content).toContain('pageType: PageTypeSchema.default("PUBLIC")');
+    expect(result.content).toContain('greeting: myzod.string().default("Hello").optional().nullable()');
+    expect(result.content).toContain('score: myzod.number().default(100).optional().nullable()');
+    expect(result.content).toContain('ratio: myzod.number().default(0.5).optional().nullable()');
+    expect(result.content).toContain('isMember: myzod.boolean().default(true).optional().nullable()');
   });
 });

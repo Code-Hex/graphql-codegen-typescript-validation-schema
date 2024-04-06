@@ -1,45 +1,53 @@
-import { ConstArgumentNode, ConstDirectiveNode, ConstValueNode, Kind, NameNode, parseConstValue } from 'graphql';
+import type { ConstArgumentNode, ConstDirectiveNode, ConstValueNode, NameNode } from 'graphql';
+import { Kind, parseConstValue } from 'graphql';
 
-import { DirectiveConfig, DirectiveObjectArguments } from '../src/config';
+import type { DirectiveConfig, DirectiveObjectArguments } from '../src/config';
+import type {
+  FormattedDirectiveArguments,
+  FormattedDirectiveConfig,
+  FormattedDirectiveObjectArguments,
+} from '../src/directive';
 import {
   buildApi,
   exportedForTesting,
   formatDirectiveConfig,
   formatDirectiveObjectArguments,
-  FormattedDirectiveArguments,
-  FormattedDirectiveConfig,
-  FormattedDirectiveObjectArguments,
 } from '../src/directive';
 
-const { applyArgToApiSchemaTemplate, buildApiFromDirectiveObjectArguments, buildApiFromDirectiveArguments } =
-  exportedForTesting;
+const { applyArgToApiSchemaTemplate, buildApiFromDirectiveObjectArguments, buildApiFromDirectiveArguments }
+  = exportedForTesting;
 
-const buildNameNode = (name: string): NameNode => ({
-  kind: Kind.NAME,
-  value: name,
-});
+function buildNameNode(name: string): NameNode {
+  return {
+    kind: Kind.NAME,
+    value: name,
+  }
+}
 
-const buildConstArgumentNodes = (args: Record<string, string>): ConstArgumentNode[] =>
-  Object.entries(args).map(
+function buildConstArgumentNodes(args: Record<string, string>): ConstArgumentNode[] {
+  return Object.entries(args).map(
     ([argName, argValue]): ConstArgumentNode => ({
       kind: Kind.ARGUMENT,
       name: buildNameNode(argName),
       value: parseConstValue(argValue),
-    })
-  );
+    }),
+  )
+}
 
-const buildConstDirectiveNodes = (name: string, args: Record<string, string>): ConstDirectiveNode => ({
-  kind: Kind.DIRECTIVE,
-  name: buildNameNode(name),
-  arguments: buildConstArgumentNodes(args),
-});
+function buildConstDirectiveNodes(name: string, args: Record<string, string>): ConstDirectiveNode {
+  return {
+    kind: Kind.DIRECTIVE,
+    name: buildNameNode(name),
+    arguments: buildConstArgumentNodes(args),
+  }
+}
 
 describe('format directive config', () => {
   describe('formatDirectiveObjectArguments', () => {
     const cases: {
-      name: string;
-      arg: DirectiveObjectArguments;
-      want: FormattedDirectiveObjectArguments;
+      name: string
+      arg: DirectiveObjectArguments
+      want: FormattedDirectiveObjectArguments
     }[] = [
       {
         name: 'normal',
@@ -65,7 +73,7 @@ describe('format directive config', () => {
       },
     ];
     for (const tc of cases) {
-      test(tc.name, () => {
+      it(tc.name, () => {
         const got = formatDirectiveObjectArguments(tc.arg);
         expect(got).toStrictEqual(tc.want);
       });
@@ -74,9 +82,9 @@ describe('format directive config', () => {
 
   describe('formatDirectiveConfig', () => {
     const cases: {
-      name: string;
-      arg: DirectiveConfig;
-      want: FormattedDirectiveConfig;
+      name: string
+      arg: DirectiveConfig
+      want: FormattedDirectiveConfig
     }[] = [
       {
         name: 'normal',
@@ -134,7 +142,7 @@ describe('format directive config', () => {
       },
     ];
     for (const tc of cases) {
-      test(tc.name, () => {
+      it(tc.name, () => {
         const got = formatDirectiveConfig(tc.arg);
         expect(got).toStrictEqual(tc.want);
       });
@@ -143,12 +151,12 @@ describe('format directive config', () => {
 
   describe('applyArgToApiSchemaTemplate', () => {
     const cases: {
-      name: string;
+      name: string
       args: {
-        template: string;
-        apiArgs: any[];
-      };
-      want: string;
+        template: string
+        apiArgs: any[]
+      }
+      want: string
     }[] = [
       {
         name: 'string',
@@ -183,6 +191,38 @@ describe('format directive config', () => {
         want: 'true',
       },
       {
+        name: 'eval number',
+        args: {
+          template: '$1',
+          apiArgs: ['10 + 1'],
+        },
+        want: '11',
+      },
+      {
+        name: 'eval boolean',
+        args: {
+          template: '$1',
+          apiArgs: ['!true'],
+        },
+        want: 'false',
+      },
+      {
+        name: 'eval template with number',
+        args: {
+          template: '$1 + 1',
+          apiArgs: [10],
+        },
+        want: '11',
+      },
+      {
+        name: 'eval template with boolean',
+        args: {
+          template: '$1 && false',
+          apiArgs: [true],
+        },
+        want: 'false',
+      },
+      {
         name: 'array',
         args: {
           template: '$1',
@@ -197,6 +237,22 @@ describe('format directive config', () => {
           apiArgs: [{ hello: 'world' }],
         },
         want: `{"hello":"world"}`,
+      },
+      {
+        name: 'undefined',
+        args: {
+          template: '$1',
+          apiArgs: ['undefined'],
+        },
+        want: 'undefined',
+      },
+      {
+        name: 'null',
+        args: {
+          template: '$1',
+          apiArgs: ['null'],
+        },
+        want: 'null',
       },
       {
         name: 'multiple',
@@ -232,7 +288,7 @@ describe('format directive config', () => {
       },
     ];
     for (const tc of cases) {
-      test(tc.name, () => {
+      it(tc.name, () => {
         const { template, apiArgs } = tc.args;
         const got = applyArgToApiSchemaTemplate(template, apiArgs);
         expect(got).toBe(tc.want);
@@ -242,12 +298,12 @@ describe('format directive config', () => {
 
   describe('buildApiFromDirectiveObjectArguments', () => {
     const cases: {
-      name: string;
+      name: string
       args: {
-        config: FormattedDirectiveObjectArguments;
-        argValue: ConstValueNode;
-      };
-      want: string;
+        config: FormattedDirectiveObjectArguments
+        argValue: ConstValueNode
+      }
+      want: string
     }[] = [
       {
         name: 'contains in config',
@@ -281,7 +337,7 @@ describe('format directive config', () => {
       },
     ];
     for (const tc of cases) {
-      test(tc.name, () => {
+      it(tc.name, () => {
         const { config, argValue } = tc.args;
         const got = buildApiFromDirectiveObjectArguments(config, argValue);
         expect(got).toBe(tc.want);
@@ -291,12 +347,12 @@ describe('format directive config', () => {
 
   describe('buildApiFromDirectiveArguments', () => {
     const cases: {
-      name: string;
+      name: string
       args: {
-        config: FormattedDirectiveArguments;
-        args: ReadonlyArray<ConstArgumentNode>;
-      };
-      want: string;
+        config: FormattedDirectiveArguments
+        args: ReadonlyArray<ConstArgumentNode>
+      }
+      want: string
     }[] = [
       {
         name: 'string',
@@ -426,7 +482,7 @@ describe('format directive config', () => {
         want: `.url()`,
       },
       {
-        name: "argument matched argument but doesn't match api",
+        name: 'argument matched argument but doesn\'t match api',
         args: {
           config: {
             format: {
@@ -473,7 +529,7 @@ describe('format directive config', () => {
       },
     ];
     for (const tc of cases) {
-      test(tc.name, () => {
+      it(tc.name, () => {
         const { config, args } = tc.args;
         const got = buildApiFromDirectiveArguments(config, args);
         expect(got).toStrictEqual(tc.want);
@@ -483,12 +539,12 @@ describe('format directive config', () => {
 
   describe('buildApi', () => {
     const cases: {
-      name: string;
+      name: string
       args: {
-        config: FormattedDirectiveConfig;
-        args: ReadonlyArray<ConstDirectiveNode>;
-      };
-      want: string;
+        config: FormattedDirectiveConfig
+        args: ReadonlyArray<ConstDirectiveNode>
+      }
+      want: string
     }[] = [
       {
         name: 'valid',
@@ -521,7 +577,7 @@ describe('format directive config', () => {
       },
     ];
     for (const tc of cases) {
-      test(tc.name, () => {
+      it(tc.name, () => {
         const { config, args } = tc.args;
         const got = buildApi(config, args);
         expect(got).toStrictEqual(tc.want);
