@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, PageInput, PageType, User, UserKind } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User, UserKind } from '../types'
 
 export const ButtonComponentTypeSchema = yup.string<ButtonComponentType>().oneOf(Object.values(ButtonComponentType)).defined();
 
@@ -93,6 +93,12 @@ export function MyTypeFooArgsSchema(): yup.ObjectSchema<MyTypeFooArgs> {
     b: yup.number().defined().nonNullable(),
     c: yup.boolean().defined().nullable().optional(),
     d: yup.number().defined().nonNullable()
+  })
+}
+
+export function NamerSchema(): yup.ObjectSchema<Namer> {
+  return yup.object({
+    name: yup.string().defined().nullable().optional()
   })
 }
 

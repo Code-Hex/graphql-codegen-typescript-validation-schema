@@ -15,7 +15,7 @@ type Guest {
 
 union UserKind = Admin | Guest
 
-type User {
+type User implements Namer {
   id: ID
   name: String
   email: String
@@ -23,6 +23,10 @@ type User {
   kind: UserKind
   createdAt: Date
   updatedAt: Date
+}
+
+interface Namer {
+  name: String
 }
 
 input PageInput {
