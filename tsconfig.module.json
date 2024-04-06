@@ -7,9 +7,9 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "types": ["node"],
     "declaration": false,
-    "outDir": "dist/module",
-    "types": ["node"]
+    "outDir": "dist/module"
   },
   "exclude": [
     "node_modules/**",

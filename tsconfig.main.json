@@ -3,9 +3,9 @@
   "compilerOptions": {
     "incremental": false,
     "rootDir": "src",
+    "types": ["node"],
     "declaration": false,
-    "outDir": "dist/main",
-    "types": ["node"]
+    "outDir": "dist/main"
   },
   "exclude": [
     "example",

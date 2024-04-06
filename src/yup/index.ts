@@ -130,13 +130,14 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               .withName(`${enumname}Schema`)
               .withContent(`yup.string().oneOf([${enums?.join(', ')}]).defined()`).string,
           );
-        } else {
+        }
+        else {
           this.enumDeclarations.push(
             new DeclarationBlock({})
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`yup.string<${enumname}>().oneOf(Object.values(${enumname})).defined()`).string
+              .withContent(`yup.string<${enumname}>().oneOf(Object.values(${enumname})).defined()`).string,
           );
         }
       },

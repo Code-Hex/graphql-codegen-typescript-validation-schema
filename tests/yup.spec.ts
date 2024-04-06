@@ -916,7 +916,7 @@ describe('yup', () => {
     );
 
     expect(result.content).toContain(
-      'export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined()'
+      'export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined()',
     );
     expect(result.content).toContain('export function PageInputSchema(): yup.ObjectSchema<PageInput>');
 
