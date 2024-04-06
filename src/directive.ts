@@ -182,10 +182,15 @@ function stringify(arg: any, quoteString?: boolean): string {
     if (isConvertableRegexp(arg))
       return arg;
 
+    const v = tryEval(arg)
+    if (v !== undefined)
+      arg = v
+
     if (quoteString)
       return JSON.stringify(arg);
   }
-  if (typeof arg === 'boolean' || typeof arg === 'number' || typeof arg === 'bigint')
+
+  if (typeof arg === 'boolean' || typeof arg === 'number' || typeof arg === 'bigint' || arg === 'undefined' || arg === null)
     return `${arg}`;
 
   return JSON.stringify(arg);
@@ -197,6 +202,16 @@ function apiArgsFromConstValueNode(value: ConstValueNode): any[] {
     return val;
 
   return [val];
+}
+
+function tryEval(maybeValidJavaScript: string): any | undefined {
+  try {
+    // eslint-disable-next-line no-eval
+    return eval(maybeValidJavaScript)
+  }
+  catch {
+    return undefined
+  }
 }
 
 export const exportedForTesting = {

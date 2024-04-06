@@ -191,6 +191,38 @@ describe('format directive config', () => {
         want: 'true',
       },
       {
+        name: 'eval number',
+        args: {
+          template: '$1',
+          apiArgs: ['10 + 1'],
+        },
+        want: '11',
+      },
+      {
+        name: 'eval boolean',
+        args: {
+          template: '$1',
+          apiArgs: ['!true'],
+        },
+        want: 'false',
+      },
+      {
+        name: 'eval template with number',
+        args: {
+          template: '$1 + 1',
+          apiArgs: [10],
+        },
+        want: '11',
+      },
+      {
+        name: 'eval template with boolean',
+        args: {
+          template: '$1 && false',
+          apiArgs: [true],
+        },
+        want: 'false',
+      },
+      {
         name: 'array',
         args: {
           template: '$1',
@@ -205,6 +237,22 @@ describe('format directive config', () => {
           apiArgs: [{ hello: 'world' }],
         },
         want: `{"hello":"world"}`,
+      },
+      {
+        name: 'undefined',
+        args: {
+          template: '$1',
+          apiArgs: ['undefined'],
+        },
+        want: 'undefined',
+      },
+      {
+        name: 'null',
+        args: {
+          template: '$1',
+          apiArgs: ['null'],
+        },
+        want: 'null',
       },
       {
         name: 'multiple',
