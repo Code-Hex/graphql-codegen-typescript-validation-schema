@@ -2,8 +2,8 @@
   "extends": "./tsconfig",
   "compilerOptions": {
     "rootDir": "src",
-    "emitDeclarationOnly": true,
     "declarationDir": "dist/types",
+    "emitDeclarationOnly": true,
     "outDir": "dist/types"
   },
   "exclude": [

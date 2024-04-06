@@ -239,7 +239,7 @@ generates:
         constraint:
           minLength: min
           # Replace $1 with specified `startsWith` argument value of the constraint directive
-          startsWith: ["matches", "/^$1/"]
+          startsWith: [matches, /^$1/]
           format:
             email: email
 ```
@@ -249,7 +249,7 @@ Then generates yup validation schema like below.
 ```ts
 export function ExampleInputSchema(): yup.SchemaOf<ExampleInput> {
   return yup.object({
-    email: yup.string().defined().required("Hello, World!").min(50).email(),
+    email: yup.string().defined().required('Hello, World!').min(50).email(),
     message: yup.string().defined().matches(/^Hello/)
   })
 }
@@ -277,7 +277,7 @@ generates:
         constraint:
           minLength: min
           # Replace $1 with specified `startsWith` argument value of the constraint directive
-          startsWith: ["regex", "/^$1/", "message"]
+          startsWith: [regex, /^$1/, message]
           format:
             email: email
 ```
@@ -288,7 +288,7 @@ Then generates zod validation schema like below.
 export function ExampleInputSchema(): z.ZodSchema<ExampleInput> {
   return z.object({
     email: z.string().min(50).email(),
-    message: z.string().regex(/^Hello/, "message")
+    message: z.string().regex(/^Hello/, 'message')
   })
 }
 ```

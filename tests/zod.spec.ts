@@ -1,11 +1,10 @@
-import { getCachedDocumentNodeFromSchema } from '@graphql-codegen/plugin-helpers';
-import { buildClientSchema, buildSchema, introspectionFromSchema, isSpecifiedScalarType } from 'graphql';
+import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 import { dedent } from 'ts-dedent';
 
 import { plugin } from '../src/index';
 
 describe('zod', () => {
-  test.each([
+  it.each([
     [
       'non-null and defined',
       {
@@ -173,11 +172,10 @@ describe('zod', () => {
   ])('%s', async (_, { textSchema, wantContains, scalars }) => {
     const schema = buildSchema(textSchema);
     const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
-    expect(result.prepend).toContain("import { z } from 'zod'");
+    expect(result.prepend).toContain('import { z } from \'zod\'');
 
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('with scalars', async () => {
@@ -200,7 +198,7 @@ describe('zod', () => {
           Count: 'number',
         },
       },
-      {}
+      {},
     );
     expect(result.content).toContain('phrase: z.string()');
     expect(result.content).toContain('times: z.number()');
@@ -219,9 +217,9 @@ describe('zod', () => {
         schema: 'zod',
         importFrom: './types',
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import { Say } from './types'");
+    expect(result.prepend).toContain('import { Say } from \'./types\'');
     expect(result.content).toContain('phrase: z.string()');
   });
 
@@ -239,9 +237,9 @@ describe('zod', () => {
         importFrom: './types',
         useTypeImports: true,
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import type { Say } from './types'");
+    expect(result.prepend).toContain('import type { Say } from \'./types\'');
     expect(result.content).toContain('phrase: z.string()');
   });
 
@@ -259,9 +257,9 @@ describe('zod', () => {
         schema: 'zod',
         enumsAsTypes: true,
       },
-      {}
+      {},
     );
-    expect(result.content).toContain("export const PageTypeSchema = z.enum(['PUBLIC', 'BASIC_AUTH'])");
+    expect(result.content).toContain('export const PageTypeSchema = z.enum([\'PUBLIC\', \'BASIC_AUTH\'])');
   });
 
   it('with notAllowEmptyString', async () => {
@@ -284,7 +282,7 @@ describe('zod', () => {
           ID: 'string',
         },
       },
-      {}
+      {},
     );
     const wantContains = [
       'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
@@ -294,9 +292,8 @@ describe('zod', () => {
       'd: z.number(),',
       'e: z.number()',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('with notAllowEmptyString issue #386', async () => {
@@ -319,7 +316,7 @@ describe('zod', () => {
           ID: 'string',
         },
       },
-      {}
+      {},
     );
     const wantContain = dedent`
     export function InputNestedSchema(): z.ZodObject<Properties<InputNested>> {
@@ -350,7 +347,7 @@ describe('zod', () => {
           Email: 'z.string().email()',
         },
       },
-      {}
+      {},
     );
     const wantContains = [
       'export function ScalarsInputSchema(): z.ZodObject<Properties<ScalarsInput>>',
@@ -358,9 +355,8 @@ describe('zod', () => {
       'email: z.string().email().nullish(),',
       'str: z.string()',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('with typesPrefix', async () => {
@@ -377,9 +373,9 @@ describe('zod', () => {
         typesPrefix: 'I',
         importFrom: './types',
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import { ISay } from './types'");
+    expect(result.prepend).toContain('import { ISay } from \'./types\'');
     expect(result.content).toContain('export function ISaySchema(): z.ZodObject<Properties<ISay>> {');
   });
 
@@ -397,9 +393,9 @@ describe('zod', () => {
         typesSuffix: 'I',
         importFrom: './types',
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import { SayI } from './types'");
+    expect(result.prepend).toContain('import { SayI } from \'./types\'');
     expect(result.content).toContain('export function SayISchema(): z.ZodObject<Properties<SayI>> {');
   });
 
@@ -424,7 +420,7 @@ describe('zod', () => {
         schema: 'zod',
         importFrom: './types',
       },
-      {}
+      {},
     );
 
     expect(result.content).toContain('export const PageTypeSchema = z.nativeEnum(PageType)');
@@ -458,15 +454,14 @@ describe('zod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
         'profile: z.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000").nullish()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('not null field', async () => {
@@ -489,15 +484,14 @@ describe('zod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
         'profile: z.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000")',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('list field', async () => {
@@ -520,19 +514,18 @@ describe('zod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
         'profile: z.array(z.string().nullable()).min(1, "Please input more than 1").max(5000, "Please input less than 5000").nullish()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
   });
 
-  describe('PR #112', () => {
+  describe('pR #112', () => {
     it('with notAllowEmptyString', async () => {
       const schema = buildSchema(/* GraphQL */ `
         input UserCreateInput {
@@ -554,15 +547,14 @@ describe('zod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
         'profile: z.string().max(5000, "Please input less than 5000").min(1),',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('without notAllowEmptyString', async () => {
@@ -585,15 +577,14 @@ describe('zod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>>',
         'profile: z.string().max(5000, "Please input less than 5000"),',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
   });
 
@@ -611,7 +602,7 @@ describe('zod', () => {
         {
           schema: 'zod',
         },
-        {}
+        {},
       );
       expect(result.content).not.toContain('export function UserSchema(): z.ZodObject<Properties<User>>');
     });
@@ -635,26 +626,24 @@ describe('zod', () => {
           schema: 'zod',
           withObjectType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function AuthorSchema(): z.ZodObject<Properties<Author>> {',
-        "__typename: z.literal('Author').optional(),",
+        '__typename: z.literal(\'Author\').optional(),',
         'books: z.array(BookSchema().nullable()).nullish(),',
         'name: z.string().nullish()',
 
         'export function BookSchema(): z.ZodObject<Properties<Book>> {',
-        "__typename: z.literal('Book').optional(),",
+        '__typename: z.literal(\'Book\').optional(),',
         'author: AuthorSchema().nullish(),',
         'title: z.string().nullish()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
 
-      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
 
     it('generate both input & type', async () => {
@@ -708,7 +697,7 @@ describe('zod', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         // User Create Input
@@ -722,7 +711,7 @@ describe('zod', () => {
         'updateName: z.string()',
         // User
         'export function UserSchema(): z.ZodObject<Properties<User>> {',
-        "__typename: z.literal('User').optional()",
+        '__typename: z.literal(\'User\').optional()',
         'id: z.string(),',
         'name: z.string().nullish(),',
         'age: z.number().nullish(),',
@@ -730,13 +719,11 @@ describe('zod', () => {
         'email: z.string().email().nullish(),',
         'createdAt: z.date()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
 
-      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
 
     it('generate union types', async () => {
@@ -757,7 +744,7 @@ describe('zod', () => {
           schema: 'zod',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
@@ -766,9 +753,8 @@ describe('zod', () => {
         'return z.union([CircleSchema(), SquareSchema()])',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate union types with single element', async () => {
@@ -793,17 +779,16 @@ describe('zod', () => {
           schema: 'zod',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
         'export function GeometrySchema(): z.ZodObject<Properties<Geometry>> {',
-        "__typename: z.literal('Geometry').optional(),",
+        '__typename: z.literal(\'Geometry\').optional(),',
         'shape: ShapeSchema().nullish()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('correctly reference generated union types', async () => {
@@ -821,7 +806,7 @@ describe('zod', () => {
           schema: 'zod',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
@@ -830,9 +815,8 @@ describe('zod', () => {
         'return CircleSchema()',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate enum union types', async () => {
@@ -857,7 +841,7 @@ describe('zod', () => {
           schema: 'zod',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
@@ -865,9 +849,8 @@ describe('zod', () => {
         'return z.union([PageTypeSchema, MethodTypeSchema])',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate union types with single element, export as const', async () => {
@@ -893,17 +876,16 @@ describe('zod', () => {
           withObjectType: true,
           validationSchemaExportType: 'const',
         },
-        {}
+        {},
       );
 
       const wantContains = [
         'export const GeometrySchema: z.ZodObject<Properties<Geometry>> = z.object({',
-        "__typename: z.literal('Geometry').optional(),",
+        '__typename: z.literal(\'Geometry\').optional(),',
         'shape: ShapeSchema.nullish()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('with object arguments', async () => {
@@ -923,7 +905,7 @@ describe('zod', () => {
             Text: 'string',
           },
         },
-        {}
+        {},
       );
       const wantContain = dedent`
       export function MyTypeFooArgsSchema(): z.ZodObject<Properties<MyTypeFooArgs>> {
@@ -960,7 +942,7 @@ describe('zod', () => {
           },
         },
       },
-      {}
+      {},
     );
     const wantContains = [
       // User Create Input
@@ -968,9 +950,8 @@ describe('zod', () => {
       'name: z.string().regex(/^Sir/),',
       'age: z.number().min(0).max(100)',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('exports as const instead of func', async () => {
@@ -986,7 +967,7 @@ describe('zod', () => {
         schema: 'zod',
         validationSchemaExportType: 'const',
       },
-      {}
+      {},
     );
     expect(result.content).toContain('export const SaySchema: z.ZodObject<Properties<Say>> = z.object({');
   });
@@ -1030,7 +1011,7 @@ describe('zod', () => {
         },
         validationSchemaExportType: 'const',
       },
-      {}
+      {},
     );
     const wantContains = [
       // User Create Input
@@ -1040,7 +1021,7 @@ describe('zod', () => {
       'email: z.string().email()',
       // User
       'export const UserSchema: z.ZodObject<Properties<User>> = z.object({',
-      "__typename: z.literal('User').optional()",
+      '__typename: z.literal(\'User\').optional()',
       'id: z.string(),',
       'name: z.string().nullish(),',
       'age: z.number().nullish(),',
@@ -1048,13 +1029,11 @@ describe('zod', () => {
       'email: z.string().email().nullish(),',
       'createdAt: z.date()',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
 
-    for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+    for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
       expect(result.content).not.toContain(wantNotContain);
-    }
   });
 
   it('issue #394', async () => {
@@ -1083,7 +1062,7 @@ describe('zod', () => {
           ID: 'string',
         },
       },
-      {}
+      {},
     );
     const wantContain = dedent`
     export function QueryInputSchema(): z.ZodObject<Properties<QueryInput>> {

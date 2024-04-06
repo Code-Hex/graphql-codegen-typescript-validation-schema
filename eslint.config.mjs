@@ -9,5 +9,8 @@ export default antfu({
     'example/**',
     'vitest.config.ts',
     'tsconfig.json',
+    'README.md',
   ],
+}, {
+  rules: { 'style/semi': 'off' },
 })

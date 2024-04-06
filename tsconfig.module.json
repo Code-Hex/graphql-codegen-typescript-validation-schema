@@ -1,13 +1,13 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "declaration": false,
     "incremental": false,
+    "target": "esnext",
+    "rootDir": "src",
+    "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "rootDir": "src",
+    "declaration": false,
     "outDir": "dist/module"
   },
   "exclude": [

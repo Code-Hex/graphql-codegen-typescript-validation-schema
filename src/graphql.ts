@@ -1,16 +1,18 @@
 import { Graph } from 'graphlib';
-import {
+import type {
   ASTNode,
   DefinitionNode,
   DocumentNode,
   GraphQLSchema,
-  isSpecifiedScalarType,
   ListTypeNode,
-  NamedTypeNode,
   NameNode,
+  NamedTypeNode,
   NonNullTypeNode,
   ObjectTypeDefinitionNode,
   TypeNode,
+} from 'graphql';
+import {
+  isSpecifiedScalarType,
   visit,
 } from 'graphql';
 
@@ -22,20 +24,18 @@ export const isInput = (kind: string) => kind.includes('Input');
 
 type ObjectTypeDefinitionFn = (node: ObjectTypeDefinitionNode) => any;
 
-export const ObjectTypeDefinitionBuilder = (
-  useObjectTypes: boolean | undefined,
-  callback: ObjectTypeDefinitionFn
-): ObjectTypeDefinitionFn | undefined => {
-  if (!useObjectTypes) return undefined;
-  return node => {
-    if (/^(Query|Mutation|Subscription)$/.test(node.name.value)) {
+export function ObjectTypeDefinitionBuilder(useObjectTypes: boolean | undefined, callback: ObjectTypeDefinitionFn): ObjectTypeDefinitionFn | undefined {
+  if (!useObjectTypes)
+    return undefined;
+  return (node) => {
+    if (/^(Query|Mutation|Subscription)$/.test(node.name.value))
       return;
-    }
+
     return callback(node);
   };
-};
+}
 
-export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): DocumentNode => {
+export function topologicalSortAST(schema: GraphQLSchema, ast: DocumentNode): DocumentNode {
   const dependencyGraph = new Graph();
   const targetKinds = [
     'ObjectTypeDefinition',
@@ -46,7 +46,7 @@ export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): Do
   ];
 
   visit<DocumentNode>(ast, {
-    enter: node => {
+    enter: (node) => {
       switch (node.kind) {
         case 'ObjectTypeDefinition':
         case 'InputObjectTypeDefinition': {
@@ -54,16 +54,16 @@ export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): Do
           dependencyGraph.setNode(typeName);
 
           if (node.fields) {
-            node.fields.forEach(field => {
+            node.fields.forEach((field) => {
               if (field.type.kind === 'NamedType') {
                 const dependency = field.type.name.value;
                 const typ = schema.getType(dependency);
-                if (typ?.astNode?.kind === undefined || !targetKinds.includes(typ.astNode.kind)) {
+                if (typ?.astNode?.kind === undefined || !targetKinds.includes(typ.astNode.kind))
                   return;
-                }
-                if (!dependencyGraph.hasNode(dependency)) {
+
+                if (!dependencyGraph.hasNode(dependency))
                   dependencyGraph.setNode(dependency);
-                }
+
                 dependencyGraph.setEdge(typeName, dependency);
               }
             });
@@ -77,15 +77,15 @@ export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): Do
         }
         case 'UnionTypeDefinition': {
           const dependency = node.name.value;
-          if (!dependencyGraph.hasNode(dependency)) {
+          if (!dependencyGraph.hasNode(dependency))
             dependencyGraph.setNode(dependency);
-          }
-          node.types?.forEach(type => {
+
+          node.types?.forEach((type) => {
             const dependency = type.name.value;
             const typ = schema.getType(dependency);
-            if (typ?.astNode?.kind === undefined || !targetKinds.includes(typ.astNode.kind)) {
+            if (typ?.astNode?.kind === undefined || !targetKinds.includes(typ.astNode.kind))
               return;
-            }
+
             dependencyGraph.setEdge(node.name.value, dependency);
           });
           break;
@@ -105,10 +105,9 @@ export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): Do
   // https://spec.graphql.org/October2021/#sec-Schema
   const astDefinitions = ast.definitions.filter(def => def.kind !== 'SchemaDefinition');
 
-  astDefinitions.forEach(definition => {
-    if (hasNameField(definition) && definition.name) {
+  astDefinitions.forEach((definition) => {
+    if (hasNameField(definition) && definition.name)
       definitionsMap.set(definition.name.value, definition);
-    }
   });
 
   // Two arrays to store sorted and not sorted definitions.
@@ -116,7 +115,7 @@ export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): Do
   const notSortedDefinitions: DefinitionNode[] = [];
 
   // Iterate over sorted type names and retrieve their corresponding definitions.
-  sorted.forEach(sortedType => {
+  sorted.forEach((sortedType) => {
     const definition = definitionsMap.get(sortedType);
     if (definition) {
       sortedDefinitions.push(definition);
@@ -132,7 +131,7 @@ export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): Do
 
   if (newDefinitions.length !== astDefinitions.length) {
     throw new Error(
-      `unexpected definition length after sorted: want ${astDefinitions.length} but got ${newDefinitions.length}`
+      `unexpected definition length after sorted: want ${astDefinitions.length} but got ${newDefinitions.length}`,
     );
   }
 
@@ -140,15 +139,15 @@ export const topologicalSortAST = (schema: GraphQLSchema, ast: DocumentNode): Do
     ...ast,
     definitions: newDefinitions as ReadonlyArray<DefinitionNode>,
   };
-};
+}
 
-const hasNameField = (node: ASTNode): node is DefinitionNode & { name?: NameNode } => {
+function hasNameField(node: ASTNode): node is DefinitionNode & { name?: NameNode } {
   return 'name' in node;
-};
+}
 
 // Re-implemented w/o CycleException version
 // https://github.com/dagrejs/graphlib/blob/8d27cb89029081c72eb89dde652602805bdd0a34/lib/alg/topsort.js
-export const topsort = (g: Graph): string[] => {
+export function topsort(g: Graph): string[] {
   const visited: Record<string, boolean> = {};
   const stack: Record<string, boolean> = {};
   const results: any[] = [];
@@ -158,9 +157,9 @@ export const topsort = (g: Graph): string[] => {
       stack[node] = true;
       visited[node] = true;
       const predecessors = g.predecessors(node);
-      if (Array.isArray(predecessors)) {
+      if (Array.isArray(predecessors))
         predecessors.forEach(node => visit(node));
-      }
+
       delete stack[node];
       results.push(node);
     }
@@ -169,9 +168,10 @@ export const topsort = (g: Graph): string[] => {
   g.sinks().forEach(node => visit(node));
 
   return results.reverse();
-};
+}
 
-export const isGeneratedByIntrospection = (schema: GraphQLSchema): boolean =>
-  Object.entries(schema.getTypeMap())
+export function isGeneratedByIntrospection(schema: GraphQLSchema): boolean {
+  return Object.entries(schema.getTypeMap())
     .filter(([name, type]) => !name.startsWith('__') && !isSpecifiedScalarType(type))
-    .every(([, type]) => type.astNode === undefined);
+    .every(([, type]) => type.astNode === undefined)
+}

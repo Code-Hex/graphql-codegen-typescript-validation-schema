@@ -1,7 +1,7 @@
-import { FieldDefinitionNode, GraphQLSchema, InputValueDefinitionNode, ObjectTypeDefinitionNode } from 'graphql';
+import type { FieldDefinitionNode, GraphQLSchema, InputValueDefinitionNode, ObjectTypeDefinitionNode } from 'graphql';
 
-import { ValidationSchemaPluginConfig } from './config';
-import { SchemaVisitor } from './types';
+import type { ValidationSchemaPluginConfig } from './config';
+import type { SchemaVisitor } from './types';
 import { Visitor } from './visitor';
 
 export abstract class BaseSchemaVisitor implements SchemaVisitor {
@@ -10,7 +10,7 @@ export abstract class BaseSchemaVisitor implements SchemaVisitor {
 
   constructor(
     protected schema: GraphQLSchema,
-    protected config: ValidationSchemaPluginConfig
+    protected config: ValidationSchemaPluginConfig,
   ) {}
 
   abstract importValidationSchema(): string;

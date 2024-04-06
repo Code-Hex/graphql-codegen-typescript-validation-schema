@@ -4,7 +4,7 @@ import dedent from 'ts-dedent';
 import { plugin } from '../src/index';
 
 describe('yup', () => {
-  test.each([
+  it.each([
     [
       'defined',
       {
@@ -172,11 +172,10 @@ describe('yup', () => {
   ])('%s', async (_, { textSchema, wantContains, scalars }) => {
     const schema = buildSchema(textSchema);
     const result = await plugin(schema, [], { scalars }, {});
-    expect(result.prepend).toContain("import * as yup from 'yup'");
+    expect(result.prepend).toContain('import * as yup from \'yup\'');
 
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('with scalars', async () => {
@@ -198,7 +197,7 @@ describe('yup', () => {
           Count: 'number',
         },
       },
-      {}
+      {},
     );
     expect(result.content).toContain('phrase: yup.string().defined()');
     expect(result.content).toContain('times: yup.number().defined()');
@@ -216,9 +215,9 @@ describe('yup', () => {
       {
         importFrom: './types',
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import { Say } from './types'");
+    expect(result.prepend).toContain('import { Say } from \'./types\'');
     expect(result.content).toContain('phrase: yup.string().defined()');
   });
 
@@ -235,9 +234,9 @@ describe('yup', () => {
         importFrom: './types',
         useTypeImports: true,
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import type { Say } from './types'");
+    expect(result.prepend).toContain('import type { Say } from \'./types\'');
     expect(result.content).toContain('phrase: yup.string().defined()');
   });
 
@@ -254,10 +253,10 @@ describe('yup', () => {
       {
         enumsAsTypes: true,
       },
-      {}
+      {},
     );
     expect(result.content).toContain(
-      "export const PageTypeSchema = yup.string().oneOf(['PUBLIC', 'BASIC_AUTH']).defined();"
+      'export const PageTypeSchema = yup.string().oneOf([\'PUBLIC\', \'BASIC_AUTH\']).defined();',
     );
   });
 
@@ -280,7 +279,7 @@ describe('yup', () => {
           ID: 'string',
         },
       },
-      {}
+      {},
     );
     const wantContains = [
       'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
@@ -290,9 +289,8 @@ describe('yup', () => {
       'd: yup.number().defined().nonNullable(),',
       'e: yup.number().defined().nonNullable()',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('with notAllowEmptyString issue #386', async () => {
@@ -315,7 +313,7 @@ describe('yup', () => {
           ID: 'string',
         },
       },
-      {}
+      {},
     );
     const wantContain = dedent`
     export function InputNestedSchema(): yup.ObjectSchema<InputNested> {
@@ -345,7 +343,7 @@ describe('yup', () => {
           Email: 'yup.string().email()',
         },
       },
-      {}
+      {},
     );
     const wantContains = [
       'export function ScalarsInputSchema(): yup.ObjectSchema<ScalarsInput>',
@@ -353,9 +351,8 @@ describe('yup', () => {
       'email: yup.string().email().defined().nullable().optional(),',
       'str: yup.string().defined().nonNullable()',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('with typesPrefix', async () => {
@@ -371,9 +368,9 @@ describe('yup', () => {
         typesPrefix: 'I',
         importFrom: './types',
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import { ISay } from './types'");
+    expect(result.prepend).toContain('import { ISay } from \'./types\'');
     expect(result.content).toContain('export function ISaySchema(): yup.ObjectSchema<ISay> {');
   });
 
@@ -390,9 +387,9 @@ describe('yup', () => {
         typesSuffix: 'I',
         importFrom: './types',
       },
-      {}
+      {},
     );
-    expect(result.prepend).toContain("import { SayI } from './types'");
+    expect(result.prepend).toContain('import { SayI } from \'./types\'');
     expect(result.content).toContain('export function SayISchema(): yup.ObjectSchema<SayI> {');
   });
   describe('with withObjectType', () => {
@@ -409,7 +406,7 @@ describe('yup', () => {
         {
           schema: 'yup',
         },
-        {}
+        {},
       );
       expect(result.content).not.toContain('export function UserSchema(): yup.ObjectSchema<User> {');
     });
@@ -438,31 +435,29 @@ describe('yup', () => {
           schema: 'yup',
           withObjectType: true,
         },
-        {}
+        {},
       );
       const wantContains = [
         'export function AuthorSchema(): yup.ObjectSchema<Author> {',
-        "__typename: yup.string<'Author'>().optional(),",
+        '__typename: yup.string<\'Author\'>().optional(),',
         'books: yup.array(BookSchema().nullable()).defined().nullable().optional(),',
         'name: yup.string().defined().nullable().optional()',
 
         'export function BookSchema(): yup.ObjectSchema<Book> {',
-        "__typename: yup.string<'Book'>().optional(),",
+        '__typename: yup.string<\'Book\'>().optional(),',
         'author: AuthorSchema().nullable().optional(),',
         'title: yup.string().defined().nonNullable()',
 
         'export function Book2Schema(): yup.ObjectSchema<Book2> {',
-        "__typename: yup.string<'Book2'>().optional(),",
+        '__typename: yup.string<\'Book2\'>().optional(),',
         'author: AuthorSchema().nonNullable(),',
         'title: yup.string().defined().nullable().optional()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
 
-      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
 
     it('generate both input & type if withObjectType true', async () => {
@@ -517,7 +512,7 @@ describe('yup', () => {
             },
           },
         },
-        {}
+        {},
       );
       const wantContains = [
         // User Create Input
@@ -531,7 +526,7 @@ describe('yup', () => {
         'updateName: yup.string().defined().nonNullable()',
         // User
         'export function UserSchema(): yup.ObjectSchema<User> {',
-        "__typename: yup.string<'User'>().optional(),",
+        '__typename: yup.string<\'User\'>().optional(),',
         'id: yup.string().defined().nonNullable(),',
         'name: yup.string().defined().nullable().optional(),',
         'age: yup.number().defined().nullable().optional(),',
@@ -539,13 +534,11 @@ describe('yup', () => {
         'email: yup.string().email().defined().nullable().optional(),',
         'createdAt: yup.date().defined().nonNullable()',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
 
-      for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+      for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
         expect(result.content).not.toContain(wantNotContain);
-      }
     });
 
     it('generate union types', async () => {
@@ -566,7 +559,7 @@ describe('yup', () => {
           schema: 'yup',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
@@ -575,9 +568,8 @@ describe('yup', () => {
         'union<Shape>(CircleSchema(), SquareSchema())',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate union types with single element', async () => {
@@ -602,19 +594,18 @@ describe('yup', () => {
           schema: 'yup',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
         'export function GeometrySchema(): yup.ObjectSchema<Geometry> {',
         'return yup.object({',
-        "__typename: yup.string<'Geometry'>().optional(),",
+        '__typename: yup.string<\'Geometry\'>().optional(),',
         'shape: ShapeSchema().nullable().optional()',
         '})',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('correctly reference generated union types', async () => {
@@ -632,7 +623,7 @@ describe('yup', () => {
           schema: 'yup',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
@@ -641,9 +632,8 @@ describe('yup', () => {
         'return union<Shape>(CircleSchema())',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate enum union types', async () => {
@@ -668,7 +658,7 @@ describe('yup', () => {
           schema: 'yup',
           withObjectType: true,
         },
-        {}
+        {},
       );
 
       const wantContains = [
@@ -676,9 +666,8 @@ describe('yup', () => {
         'union<AnyType>(PageTypeSchema, MethodTypeSchema)',
         '}',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('generate union types with single element, export as const', async () => {
@@ -704,18 +693,17 @@ describe('yup', () => {
           withObjectType: true,
           validationSchemaExportType: 'const',
         },
-        {}
+        {},
       );
 
       const wantContains = [
         'export const GeometrySchema: yup.ObjectSchema<Geometry> = yup.object({',
-        "__typename: yup.string<'Geometry'>().optional(),",
+        '__typename: yup.string<\'Geometry\'>().optional(),',
         'shape: ShapeSchema.nullable().optional()',
         '})',
       ];
-      for (const wantContain of wantContains) {
+      for (const wantContain of wantContains)
         expect(result.content).toContain(wantContain);
-      }
     });
 
     it('with object arguments', async () => {
@@ -735,7 +723,7 @@ describe('yup', () => {
             Text: 'string',
           },
         },
-        {}
+        {},
       );
       const wantContain = dedent`
       export function MyTypeFooArgsSchema(): yup.ObjectSchema<MyTypeFooArgs> {
@@ -772,7 +760,7 @@ describe('yup', () => {
           },
         },
       },
-      {}
+      {},
     );
     const wantContains = [
       // User Create Input
@@ -780,9 +768,8 @@ describe('yup', () => {
       'name: yup.string().defined().nonNullable().matches(/^Sir/),',
       'age: yup.number().defined().nonNullable().min(0).max(100)',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
   });
 
   it('exports as const instead of func', async () => {
@@ -798,7 +785,7 @@ describe('yup', () => {
         schema: 'yup',
         validationSchemaExportType: 'const',
       },
-      {}
+      {},
     );
     expect(result.content).toContain('export const SaySchema: yup.ObjectSchema<Say> = yup.object({');
   });
@@ -842,7 +829,7 @@ describe('yup', () => {
         },
         validationSchemaExportType: 'const',
       },
-      {}
+      {},
     );
     const wantContains = [
       // User Create Input
@@ -852,7 +839,7 @@ describe('yup', () => {
       'email: yup.string().email().defined().nonNullable()',
       // User
       'export const UserSchema: yup.ObjectSchema<User> = yup.object({',
-      "__typename: yup.string<'User'>().optional(),",
+      '__typename: yup.string<\'User\'>().optional(),',
       'id: yup.string().defined().nonNullable(),',
       'name: yup.string().defined().nullable().optional(),',
       'age: yup.number().defined().nullable().optional(),',
@@ -860,13 +847,11 @@ describe('yup', () => {
       'isMember: yup.boolean().defined().nullable().optional(),',
       'createdAt: yup.date().defined().nonNullable()',
     ];
-    for (const wantContain of wantContains) {
+    for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-    }
 
-    for (const wantNotContain of ['Query', 'Mutation', 'Subscription']) {
+    for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
       expect(result.content).not.toContain(wantNotContain);
-    }
   });
 
   it('issue #394', async () => {
@@ -895,7 +880,7 @@ describe('yup', () => {
           ID: 'string',
         },
       },
-      {}
+      {},
     );
     const wantContain = dedent`
     export function QueryInputSchema(): yup.ObjectSchema<QueryInput> {
@@ -927,7 +912,7 @@ describe('yup', () => {
         schema: 'yup',
         importFrom: './types',
       },
-      {}
+      {},
     );
 
     expect(result.content).toContain(

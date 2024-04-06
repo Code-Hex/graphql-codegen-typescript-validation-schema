@@ -1,9 +1,9 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "declaration": false,
     "incremental": false,
     "rootDir": "src",
+    "declaration": false,
     "outDir": "dist/main"
   },
   "exclude": [

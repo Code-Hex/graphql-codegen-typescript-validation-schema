@@ -6,36 +6,10 @@
     "type": "git",
     "url": "https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema.git"
   },
-  "main": "dist/main/index.js",
-  "typings": "dist/types/index.d.ts",
-  "module": "dist/module/index.js",
-  "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/module/index.js",
-      "require": "./dist/main/index.js"
-    }
-  },
-  "files": [
-    "dist/**/*.{js,ts}",
-    "!**/*.tsbuildinfo",
-    "LICENSE",
-    "README.md"
-  ],
-  "scripts": {
-    "type-check": "tsc --noEmit",
-    "type-check:yup": "tsc --strict --skipLibCheck --noEmit example/yup/schemas.ts",
-    "type-check:zod": "tsc --strict --skipLibCheck --noEmit example/zod/schemas.ts",
-    "type-check:myzod": "tsc --strict --skipLibCheck --noEmit example/myzod/schemas.ts",
-    "test": "vitest run",
-    "build": "run-p build:*",
-    "build:main": "tsc -p tsconfig.main.json",
-    "build:module": "tsc -p tsconfig.module.json",
-    "build:types": "tsc -p tsconfig.types.json",
-    "lint": "eslint --ext .ts .",
-    "lint-fix": "eslint --fix --ext .ts .",
-    "generate": "run-p build:* && graphql-codegen",
-    "prepublish": "run-p build:*"
+  "author": "codehex",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/issues"
   },
   "keywords": [
     "gql",
@@ -51,8 +25,48 @@
     "types",
     "typings"
   ],
-  "author": "codehex",
-  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/module/index.js",
+      "require": "./dist/main/index.js"
+    }
+  },
+  "main": "dist/main/index.js",
+  "typings": "dist/types/index.d.ts",
+  "module": "dist/module/index.js",
+  "files": [
+    "!**/*.tsbuildinfo",
+    "LICENSE",
+    "README.md",
+    "dist/**/*.{js,ts}"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "type-check:yup": "tsc --strict --skipLibCheck --noEmit example/yup/schemas.ts",
+    "type-check:zod": "tsc --strict --skipLibCheck --noEmit example/zod/schemas.ts",
+    "type-check:myzod": "tsc --strict --skipLibCheck --noEmit example/myzod/schemas.ts",
+    "test": "vitest run",
+    "build": "run-p build:*",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:module": "tsc -p tsconfig.module.json",
+    "build:types": "tsc -p tsconfig.types.json",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
+    "generate": "run-p build:* && graphql-codegen",
+    "prepublish": "run-p build:*"
+  },
+  "peerDependencies": {
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0"
+  },
+  "dependencies": {
+    "@graphql-codegen/plugin-helpers": "^5.0.0",
+    "@graphql-codegen/schema-ast": "4.0.2",
+    "@graphql-codegen/visitor-plugin-common": "^5.0.0",
+    "@graphql-tools/utils": "^10.0.0",
+    "graphlib": "^2.1.8",
+    "graphql": "^16.6.0"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^2.12.2",
     "@graphql-codegen/cli": "5.0.2",
@@ -70,19 +84,5 @@
     "vitest": "^1.0.0",
     "yup": "1.4.0",
     "zod": "3.22.4"
-  },
-  "dependencies": {
-    "@graphql-codegen/plugin-helpers": "^5.0.0",
-    "@graphql-codegen/schema-ast": "4.0.2",
-    "@graphql-codegen/visitor-plugin-common": "^5.0.0",
-    "@graphql-tools/utils": "^10.0.0",
-    "graphlib": "^2.1.8",
-    "graphql": "^16.6.0"
-  },
-  "peerDependencies": {
-    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0"
-  },
-  "bugs": {
-    "url": "https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/issues"
   }
 }
