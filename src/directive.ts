@@ -146,7 +146,7 @@ function buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, arg
 }
 
 function buildApiFromDirectiveObjectArguments(config: FormattedDirectiveObjectArguments, argValue: ConstValueNode): string {
-  if (argValue.kind !== Kind.STRING)
+  if (argValue.kind !== Kind.STRING && argValue.kind !== Kind.ENUM)
     return '';
 
   const validationSchema = config[argValue.value];
