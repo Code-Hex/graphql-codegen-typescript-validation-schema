@@ -575,6 +575,25 @@ describe('format directive config', () => {
         },
         want: `.required("message").min(100).email()`,
       },
+      {
+        name: 'enum',
+        args: {
+          config: {
+            constraint: {
+              format: {
+                URI: ['uri'],
+              },
+            },
+          },
+          args: [
+            // @constraint(format: EMAIL)
+            buildConstDirectiveNodes('constraint', {
+              format: 'URI',
+            }),
+          ],
+        },
+        want: `.uri()`,
+      },
     ];
     for (const tc of cases) {
       it(tc.name, () => {
