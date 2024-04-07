@@ -241,6 +241,8 @@ generates:
           # Replace $1 with specified `startsWith` argument value of the constraint directive
           startsWith: [matches, /^$1/]
           format:
+            # This example means `validation-schema: directive-arg`
+            # directive-arg is supported String and Enum.
             email: email
 ```
 
@@ -279,6 +281,8 @@ generates:
           # Replace $1 with specified `startsWith` argument value of the constraint directive
           startsWith: [regex, /^$1/, message]
           format:
+            # This example means `validation-schema: directive-arg`
+            # directive-arg is supported String and Enum.
             email: email
 ```
 
