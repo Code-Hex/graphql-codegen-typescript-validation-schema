@@ -27,7 +27,7 @@ dependencies:
 devDependencies:
   '@antfu/eslint-config':
     specifier: ^2.12.2
-    version: 2.13.0(@vue/compiler-sfc@3.4.21)(eslint@9.0.0)(typescript@5.4.4)(vitest@1.4.0)
+    version: 2.13.2(@vue/compiler-sfc@3.4.21)(eslint@9.0.0)(typescript@5.4.4)(vitest@1.4.0)
   '@graphql-codegen/cli':
     specifier: 5.0.2
     version: 5.0.2(@babel/core@7.24.4)(@types/node@20.12.6)(graphql@16.8.1)
@@ -96,8 +96,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.25
     dev: true
 
-  /@antfu/eslint-config@2.13.0(@vue/compiler-sfc@3.4.21)(eslint@9.0.0)(typescript@5.4.4)(vitest@1.4.0):
-    resolution: {integrity: sha512-yI3X5ispR8jWnUz9gtPoEF5Wug/a+7rF/bQ34nVWnAB86LZUhOOR8jbR+ihD+OGkU/BTcfzVEKCK78SgqoS5xA==}
+  /@antfu/eslint-config@2.13.2(@vue/compiler-sfc@3.4.21)(eslint@9.0.0)(typescript@5.4.4)(vitest@1.4.0):
+    resolution: {integrity: sha512-twfke7tx29F2lAyfMm412caEcgVh/msiwkuyWI+ZoskdPLHzSkKh9mql/EdijGO8Z/DjzWhpRObo94Vl74fL5w==}
     hasBin: true
     peerDependencies:
       '@unocss/eslint-plugin': '>=0.50.0'
@@ -154,13 +154,13 @@ packages:
       eslint-plugin-jsdoc: 48.2.3(eslint@9.0.0)
       eslint-plugin-jsonc: 2.15.0(eslint@9.0.0)
       eslint-plugin-markdown: 4.0.1(eslint@9.0.0)
-      eslint-plugin-n: 17.0.0(eslint@9.0.0)
+      eslint-plugin-n: 17.1.0(eslint@9.0.0)
       eslint-plugin-no-only-tests: 3.1.0
       eslint-plugin-perfectionist: 2.8.0(eslint@9.0.0)(typescript@5.4.4)(vue-eslint-parser@9.4.2)
       eslint-plugin-toml: 0.11.0(eslint@9.0.0)
       eslint-plugin-unicorn: 52.0.0(eslint@9.0.0)
       eslint-plugin-unused-imports: 3.1.0(@typescript-eslint/eslint-plugin@7.6.0)(eslint@9.0.0)
-      eslint-plugin-vitest: 0.4.1(@typescript-eslint/eslint-plugin@7.6.0)(eslint@9.0.0)(typescript@5.4.4)(vitest@1.4.0)
+      eslint-plugin-vitest: 0.5.0(@typescript-eslint/eslint-plugin@7.6.0)(eslint@9.0.0)(typescript@5.4.4)(vitest@1.4.0)
       eslint-plugin-vue: 9.24.1(eslint@9.0.0)
       eslint-plugin-yml: 1.14.0(eslint@9.0.0)
       eslint-processor-vue-blocks: 0.1.1(@vue/compiler-sfc@3.4.21)(eslint@9.0.0)
@@ -3315,7 +3315,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001607
-      electron-to-chromium: 1.4.729
+      electron-to-chromium: 1.4.730
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.23.0)
 
@@ -3785,8 +3785,8 @@ packages:
     resolution: {integrity: sha512-20TuZZHCEZ2O71q9/+8BwKwZ0QtD9D8ObhrihJPr+vLLYlSuAU3/zL4cSlgbfeoGHTjCSJBa7NGcrF9/Bx/WJQ==}
     engines: {node: '>=4'}
 
-  /electron-to-chromium@1.4.729:
-    resolution: {integrity: sha512-bx7+5Saea/qu14kmPTDHQxkp2UnziG3iajUQu3BxFvCOnpAJdDbMV4rSl+EqFDkkpNNVUFlR1kDfpL59xfy1HA==}
+  /electron-to-chromium@1.4.730:
+    resolution: {integrity: sha512-oJRPo82XEqtQAobHpJIR3zW5YO3sSRRkPz2an4yxi1UvqhsGm54vR/wzTFV74a3soDOJ8CKW7ajOOX5ESzddwg==}
 
   /emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -4010,8 +4010,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-n@17.0.0(eslint@9.0.0):
-    resolution: {integrity: sha512-0Ihff+kWUIiXYTNTotGj/yRI1X5uCh/lef5Hr7ih/mFeYMQ3bPfN0KxlrfhU+Xn4x697l/TPO6zxqE33M1yD0w==}
+  /eslint-plugin-n@17.1.0(eslint@9.0.0):
+    resolution: {integrity: sha512-+MTiTej3B07+8vS/RfSMD1w4O9VVR9BSJT9kSa9QUsBlXzKi5PZc+lB3w+iu/2eIS3drFU7zCikSrD8Yn8PEBQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: '>=8.23.0'
@@ -4023,7 +4023,6 @@ packages:
       get-tsconfig: 4.7.3
       globals: 14.0.0
       ignore: 5.3.1
-      is-builtin-module: 3.2.1
       minimatch: 9.0.4
       semver: 7.6.0
     dev: true
@@ -4118,12 +4117,12 @@ packages:
       eslint-rule-composer: 0.3.0
     dev: true
 
-  /eslint-plugin-vitest@0.4.1(@typescript-eslint/eslint-plugin@7.6.0)(eslint@9.0.0)(typescript@5.4.4)(vitest@1.4.0):
-    resolution: {integrity: sha512-+PnZ2u/BS+f5FiuHXz4zKsHPcMKHie+K+1Uvu/x91ovkCMEOJqEI8E9Tw1Wzx2QRz4MHOBHYf1ypO8N1K0aNAA==}
+  /eslint-plugin-vitest@0.5.0(@typescript-eslint/eslint-plugin@7.6.0)(eslint@9.0.0)(typescript@5.4.4)(vitest@1.4.0):
+    resolution: {integrity: sha512-zaXzIjNUJgAkDUODagPNOcm9tO+CxlB0tnmKMkH3eRioXZ9YGuwr6eQzv9Vodot0qfPwqb5+SMjy7KfwJBd8tw==}
     engines: {node: ^18.0.0 || >= 20.0.0}
     peerDependencies:
       '@typescript-eslint/eslint-plugin': '*'
-      eslint: '>=8.0.0'
+      eslint: ^8.57.0 || ^9.0.0
       vitest: '*'
     peerDependenciesMeta:
       '@typescript-eslint/eslint-plugin':
