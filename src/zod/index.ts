@@ -288,7 +288,8 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
 
     let appliedDirectivesGen = applyDirectives(config, field, gen);
 
-    if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
+    const hasDefaultValue = field.kind === Kind.INPUT_VALUE_DEFINITION && field.defaultValue
+    if (hasDefaultValue) {
       const { defaultValue } = field;
 
       if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN)
@@ -298,7 +299,7 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
         appliedDirectivesGen = `${appliedDirectivesGen}.default("${defaultValue.value}")`;
     }
 
-    if (isNonNullType(parentType)) {
+    if (isNonNullType(parentType) || hasDefaultValue) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
         return `${appliedDirectivesGen}.min(1)`;
 

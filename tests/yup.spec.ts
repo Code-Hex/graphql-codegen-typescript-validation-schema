@@ -1097,9 +1097,9 @@ describe('yup', () => {
     expect(result.content).toContain('export function PageInputSchema(): yup.ObjectSchema<PageInput>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.nonNullable().default("PUBLIC")');
-    expect(result.content).toContain('greeting: yup.string().defined().nullable().default("Hello").optional()');
-    expect(result.content).toContain('score: yup.number().defined().nullable().default(100).optional()');
-    expect(result.content).toContain('ratio: yup.number().defined().nullable().default(0.5).optional()');
-    expect(result.content).toContain('isMember: yup.boolean().defined().nullable().default(true).optional()');
+    expect(result.content).toContain('greeting: yup.string().defined().default("Hello")');
+    expect(result.content).toContain('score: yup.number().defined().default(100)');
+    expect(result.content).toContain('ratio: yup.number().defined().default(0.5)');
+    expect(result.content).toContain('isMember: yup.boolean().defined().default(true)');
   });
 });

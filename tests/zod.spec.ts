@@ -427,10 +427,10 @@ describe('zod', () => {
     expect(result.content).toContain('export function PageInputSchema(): z.ZodObject<Properties<PageInput>>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.default("PUBLIC")');
-    expect(result.content).toContain('greeting: z.string().default("Hello").nullish()');
-    expect(result.content).toContain('score: z.number().default(100).nullish()');
-    expect(result.content).toContain('ratio: z.number().default(0.5).nullish()');
-    expect(result.content).toContain('isMember: z.boolean().default(true).nullish()');
+    expect(result.content).toContain('greeting: z.string().default("Hello")');
+    expect(result.content).toContain('score: z.number().default(100)');
+    expect(result.content).toContain('ratio: z.number().default(0.5)');
+    expect(result.content).toContain('isMember: z.boolean().default(true)');
   });
 
   describe('issues #19', () => {

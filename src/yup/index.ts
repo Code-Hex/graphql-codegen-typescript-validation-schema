@@ -272,7 +272,8 @@ function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitio
     ?.map((field) => {
       let fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
 
-      if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
+      const hasDefaultValue = field.kind === Kind.INPUT_VALUE_DEFINITION && field.defaultValue
+      if (hasDefaultValue) {
         const { defaultValue } = field;
 
         if (
@@ -284,9 +285,11 @@ function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitio
 
         if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
           fieldSchema = `${fieldSchema}.default("${defaultValue.value}")`;
+
+        fieldSchema = fieldSchema.replace('.nullable()', '')
       }
 
-      if (isNonNullType(field.type))
+      if (isNonNullType(field.type) || hasDefaultValue)
         return fieldSchema;
 
       return `${fieldSchema}.optional()`;

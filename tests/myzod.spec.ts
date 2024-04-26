@@ -1163,9 +1163,9 @@ describe('myzod', () => {
     expect(result.content).toContain('export function PageInputSchema(): myzod.Type<PageInput>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.default("PUBLIC")');
-    expect(result.content).toContain('greeting: myzod.string().default("Hello").optional().nullable()');
-    expect(result.content).toContain('score: myzod.number().default(100).optional().nullable()');
-    expect(result.content).toContain('ratio: myzod.number().default(0.5).optional().nullable()');
-    expect(result.content).toContain('isMember: myzod.boolean().default(true).optional().nullable()');
+    expect(result.content).toContain('greeting: myzod.string().default("Hello")');
+    expect(result.content).toContain('score: myzod.number().default(100)');
+    expect(result.content).toContain('ratio: myzod.number().default(0.5)');
+    expect(result.content).toContain('isMember: myzod.boolean().default(true)');
   });
 });
