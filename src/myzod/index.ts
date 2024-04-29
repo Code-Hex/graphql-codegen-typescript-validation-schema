@@ -1,4 +1,4 @@
-import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+import { DeclarationBlock, convertNameParts, indent } from '@graphql-codegen/visitor-plugin-common';
 import type {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
@@ -15,6 +15,7 @@ import {
   Kind,
 } from 'graphql';
 
+import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
 import type { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
@@ -22,7 +23,6 @@ import type { Visitor } from '../visitor';
 import {
   InterfaceTypeDefinitionBuilder,
   ObjectTypeDefinitionBuilder,
-  escapeGraphQLCharacters,
   isInput,
   isListType,
   isNamedType,
@@ -282,8 +282,19 @@ function generateFieldTypeMyZodSchema(config: ValidationSchemaPluginConfig, visi
       if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN)
         appliedDirectivesGen = `${appliedDirectivesGen}.default(${defaultValue.value})`;
 
-      if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
-        appliedDirectivesGen = `${appliedDirectivesGen}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;
+      if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM) {
+        if (config.useEnumTypeAsDefaultValue && defaultValue?.kind !== Kind.STRING) {
+          let value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn('change-case-all#pascalCase'));
+
+          if (config.namingConvention?.enumValues)
+            value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues));
+
+          appliedDirectivesGen = `${appliedDirectivesGen}.default(${visitor.convertName(type.name.value)}.${value})`;
+        }
+        else {
+          appliedDirectivesGen = `${appliedDirectivesGen}.default("${defaultValue.value}")`;
+        }
+      }
     }
 
     if (isNonNullType(parentType)) {

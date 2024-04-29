@@ -1,4 +1,5 @@
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
+import type { NamingConventionMap } from '@graphql-codegen/visitor-plugin-common';
 
 export type ValidationSchema = 'yup' | 'zod' | 'myzod' | 'valibot';
 export type ValidationSchemaExportType = 'function' | 'const';
@@ -210,6 +211,42 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   validationSchemaExportType?: ValidationSchemaExportType
+  /**
+   * @description Uses the full path of the enum type as the default value instead of the stringified value.
+   * @default false
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - typescript
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       useEnumTypeAsDefault: true
+   * ```
+   */
+  useEnumTypeAsDefaultValue?: boolean
+  /**
+   * @description Uses the full path of the enum type as the default value instead of the stringified value.
+   * @default { enumValues: "change-case-all#pascalCase" }
+   *
+   * Note: This option has not been tested with `namingConvention.transformUnderscore` and `namingConvention.typeNames` options,
+   * and may not work as expected.
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - typescript
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       namingConvention:
+   *        enumValues: change-case-all#pascalCase
+   * ```
+   */
+  namingConvention?: NamingConventionMap
   /**
    * @description Generates validation schema with more API based on directive schema.
    * @exampleMarkdown
