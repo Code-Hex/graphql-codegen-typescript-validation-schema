@@ -56,6 +56,31 @@ describe('valibot', () => {
         },
       },
     ],
+    [
+      'array',
+      {
+        textSchema: /* GraphQL */ `
+          input ArrayInput {
+            a: [String]
+            b: [String!]
+            c: [String!]!
+            d: [[String]]
+            e: [[String]!]
+            f: [[String]!]!
+          }
+        `,
+        wantContains: [
+          'export function ArrayInputSchema()',
+          'a: v.nullish(v.array(v.nullable(v.string()))),',
+          'b: v.nullish(v.array(v.string())),',
+          'c: v.array(v.string()),',
+          'd: v.nullish(v.array(v.nullish(v.array(v.nullable(v.string()))))),',
+          'e: v.nullish(v.array(v.array(v.nullable(v.string())))),',
+          'f: v.array(v.array(v.nullable(v.string())))',
+        ],
+        scalars: undefined,
+      },
+    ],
   ])('%s', async (_, { textSchema, wantContains, scalars }) => {
     const schema = buildSchema(textSchema);
     const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
