@@ -66,6 +66,9 @@ importers:
       typescript:
         specifier: 5.4.5
         version: 5.4.5
+      valibot:
+        specifier: 0.31.0-rc.5
+        version: 0.31.0-rc.5
       vitest:
         specifier: ^1.0.0
         version: 1.6.0(@types/node@20.12.12)
@@ -3714,6 +3717,9 @@ packages:
   v8-to-istanbul@9.0.1:
     resolution: {integrity: sha512-74Y4LqY74kLE6IFyIjPtkSTWzUZmj8tdHT9Ii/26dvQ6K9Dl2NbEfj0XgU2sHCtKgt5VupqhlO/5aWuqS+IY1w==}
     engines: {node: '>=10.12.0'}
+
+  valibot@0.31.0-rc.5:
+    resolution: {integrity: sha512-yv1koEWTUIajUkMW9QVUoZFF2b8cAS6EOZpZTIme6QXXH8K+Tl+b/1yen/VIyqVOf8WAZaYdqAzzU2ccF5CJfQ==}
 
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
@@ -8425,6 +8431,8 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.18
       '@types/istanbul-lib-coverage': 2.0.4
       convert-source-map: 1.9.0
+
+  valibot@0.31.0-rc.5: {}
 
   validate-npm-package-license@3.0.4:
     dependencies:
