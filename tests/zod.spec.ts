@@ -4,63 +4,68 @@ import { dedent } from 'ts-dedent';
 import { plugin } from '../src/index';
 
 describe('zod', () => {
-  it.each([
-    [
-      'non-null and defined',
-      {
-        textSchema: /* GraphQL */ `
-          input PrimitiveInput {
-            a: ID!
-            b: String!
-            c: Boolean!
-            d: Int!
-            e: Float!
-          }
-        `,
-        wantContains: [
-          'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
-          'a: z.string()',
-          'b: z.string()',
-          'c: z.boolean()',
-          'd: z.number()',
-          'e: z.number()',
-        ],
-        scalars: {
-          ID: 'string',
-        },
-      },
-    ],
-    [
-      'nullish',
-      {
-        textSchema: /* GraphQL */ `
-          input PrimitiveInput {
-            a: ID
-            b: String
-            c: Boolean
-            d: Int
-            e: Float
-            z: String! # no defined check
-          }
-        `,
-        wantContains: [
-          'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
-          // alphabet order
-          'a: z.string().nullish(),',
-          'b: z.string().nullish(),',
-          'c: z.boolean().nullish(),',
-          'd: z.number().nullish(),',
-          'e: z.number().nullish(),',
-        ],
-        scalars: {
-          ID: 'string',
-        },
-      },
-    ],
-    [
-      'array',
-      {
-        textSchema: /* GraphQL */ `
+  it("non-null and defined", async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PrimitiveInput {
+        a: ID!
+        b: String!
+        c: Boolean!
+        d: Int!
+        e: Float!
+      }
+    `);
+    const scalars = {
+      ID: 'string',
+    }
+    const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
+    expect(result.prepend).toContain('import { z } from \'zod\'');
+
+    const wantContains = [
+      'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
+      'a: z.string()',
+      'b: z.string()',
+      'c: z.boolean()',
+      'd: z.number()',
+      'e: z.number()',
+    ]
+
+    for (const wantContain of wantContains)
+      expect(result.content).toContain(wantContain);
+  })
+
+  it("nullish", async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PrimitiveInput {
+        a: ID
+        b: String
+        c: Boolean
+        d: Int
+        e: Float
+        z: String! # no defined check
+      }
+    `);
+    const scalars = {
+      ID: 'string',
+    }
+    const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
+    expect(result.prepend).toContain('import { z } from \'zod\'');
+
+    const wantContains = [
+      'export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>>',
+      // alphabet order
+      'a: z.string().nullish(),',
+      'b: z.string().nullish(),',
+      'c: z.boolean().nullish(),',
+      'd: z.number().nullish(),',
+      'e: z.number().nullish(),',
+    ]
+
+    for (const wantContain of wantContains)
+      expect(result.content).toContain(wantContain);
+  })
+
+  it("array", async () => {
+    const schema = buildSchema(/* GraphQL */ `
           input ArrayInput {
             a: [String]
             b: [String!]
@@ -69,23 +74,27 @@ describe('zod', () => {
             e: [[String]!]
             f: [[String]!]!
           }
-        `,
-        wantContains: [
-          'export function ArrayInputSchema(): z.ZodObject<Properties<ArrayInput>>',
-          'a: z.array(z.string().nullable()).nullish(),',
-          'b: z.array(z.string()).nullish(),',
-          'c: z.array(z.string()),',
-          'd: z.array(z.array(z.string().nullable()).nullish()).nullish(),',
-          'e: z.array(z.array(z.string().nullable())).nullish(),',
-          'f: z.array(z.array(z.string().nullable()))',
-        ],
-        scalars: undefined,
-      },
-    ],
-    [
-      'ref input object',
-      {
-        textSchema: /* GraphQL */ `
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
+    expect(result.prepend).toContain('import { z } from \'zod\'');
+
+    const wantContains = [
+      'export function ArrayInputSchema(): z.ZodObject<Properties<ArrayInput>>',
+      'a: z.array(z.string().nullable()).nullish(),',
+      'b: z.array(z.string()).nullish(),',
+      'c: z.array(z.string()),',
+      'd: z.array(z.array(z.string().nullable()).nullish()).nullish(),',
+      'e: z.array(z.array(z.string().nullable())).nullish(),',
+      'f: z.array(z.array(z.string().nullable()))',
+    ]
+
+    for (const wantContain of wantContains)
+      expect(result.content).toContain(wantContain);
+  })
+
+  it("ref input object", async () => {
+    const schema = buildSchema(/* GraphQL */ `
           input AInput {
             b: BInput!
           }
@@ -95,39 +104,47 @@ describe('zod', () => {
           input CInput {
             a: AInput!
           }
-        `,
-        wantContains: [
-          'export function AInputSchema(): z.ZodObject<Properties<AInput>>',
-          'b: z.lazy(() => BInputSchema())',
-          'export function BInputSchema(): z.ZodObject<Properties<BInput>>',
-          'c: z.lazy(() => CInputSchema())',
-          'export function CInputSchema(): z.ZodObject<Properties<CInput>>',
-          'a: z.lazy(() => AInputSchema())',
-        ],
-        scalars: undefined,
-      },
-    ],
-    [
-      'nested input object',
-      {
-        textSchema: /* GraphQL */ `
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
+    expect(result.prepend).toContain('import { z } from \'zod\'');
+
+    const wantContains = [
+      'export function AInputSchema(): z.ZodObject<Properties<AInput>>',
+      'b: z.lazy(() => BInputSchema())',
+      'export function BInputSchema(): z.ZodObject<Properties<BInput>>',
+      'c: z.lazy(() => CInputSchema())',
+      'export function CInputSchema(): z.ZodObject<Properties<CInput>>',
+      'a: z.lazy(() => AInputSchema())',
+    ]
+
+    for (const wantContain of wantContains)
+      expect(result.content).toContain(wantContain);
+  })
+
+  it('nested input object', async () => {
+    const schema = buildSchema(/* GraphQL */ `
           input NestedInput {
             child: NestedInput
             childrens: [NestedInput]
           }
-        `,
-        wantContains: [
-          'export function NestedInputSchema(): z.ZodObject<Properties<NestedInput>>',
-          'child: z.lazy(() => NestedInputSchema().nullish()),',
-          'childrens: z.array(z.lazy(() => NestedInputSchema().nullable())).nullish()',
-        ],
-        scalars: undefined,
-      },
-    ],
-    [
-      'enum',
-      {
-        textSchema: /* GraphQL */ `
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
+    expect(result.prepend).toContain('import { z } from \'zod\'');
+
+    const wantContains = [
+      'export function NestedInputSchema(): z.ZodObject<Properties<NestedInput>>',
+      'child: z.lazy(() => NestedInputSchema().nullish()),',
+      'childrens: z.array(z.lazy(() => NestedInputSchema().nullable())).nullish()',
+    ]
+
+    for (const wantContain of wantContains)
+      expect(result.content).toContain(wantContain);
+  })
+
+  it('enum', async () => {
+    const schema = buildSchema(/* GraphQL */ `
           enum PageType {
             PUBLIC
             BASIC_AUTH
@@ -135,19 +152,23 @@ describe('zod', () => {
           input PageInput {
             pageType: PageType!
           }
-        `,
-        wantContains: [
-          'export const PageTypeSchema = z.nativeEnum(PageType)',
-          'export function PageInputSchema(): z.ZodObject<Properties<PageInput>>',
-          'pageType: PageTypeSchema',
-        ],
-        scalars: undefined,
-      },
-    ],
-    [
-      'camelcase',
-      {
-        textSchema: /* GraphQL */ `
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
+    expect(result.prepend).toContain('import { z } from \'zod\'');
+
+    const wantContains = [
+      'export const PageTypeSchema = z.nativeEnum(PageType)',
+      'export function PageInputSchema(): z.ZodObject<Properties<PageInput>>',
+      'pageType: PageTypeSchema',
+    ]
+
+    for (const wantContain of wantContains)
+      expect(result.content).toContain(wantContain);
+  })
+
+  it('camelcase', async () => {
+    const schema = buildSchema(/* GraphQL */ `
           input HTTPInput {
             method: HTTPMethod
             url: URL!
@@ -159,24 +180,21 @@ describe('zod', () => {
           }
 
           scalar URL # unknown scalar, should be any (definedNonNullAnySchema)
-        `,
-        wantContains: [
-          'export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>>',
-          'export const HttpMethodSchema = z.nativeEnum(HttpMethod)',
-          'method: HttpMethodSchema',
-          'url: definedNonNullAnySchema',
-        ],
-        scalars: undefined,
-      },
-    ],
-  ])('%s', async (_, { textSchema, wantContains, scalars }) => {
-    const schema = buildSchema(textSchema);
+    `);
+    const scalars = undefined
     const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
     expect(result.prepend).toContain('import { z } from \'zod\'');
 
+    const wantContains = [
+      'export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>>',
+      'export const HttpMethodSchema = z.nativeEnum(HttpMethod)',
+      'method: HttpMethodSchema',
+      'url: definedNonNullAnySchema',
+    ]
+
     for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
-  });
+  })
 
   it('with scalars', async () => {
     const schema = buildSchema(/* GraphQL */ `
@@ -973,7 +991,7 @@ describe('zod', () => {
             author: Author
             title: String
           }
-  
+
           interface Author {
             books: [Book]
             name: String
@@ -1007,19 +1025,19 @@ describe('zod', () => {
             title: String!
             author: Author!
           }
-  
+
           type Textbook implements Book {
             title: String!
             author: Author!
             courses: [String!]!
           }
-  
+
           type ColoringBook implements Book {
             title: String!
             author: Author!
             colors: [String!]!
           }
-  
+
           type Author {
             books: [Book!]
             name: String
