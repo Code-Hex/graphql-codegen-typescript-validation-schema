@@ -162,6 +162,9 @@ function maybeLazy(type: TypeNode, schema: string): string {
 }
 
 function valibot4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
+  if (config.scalarSchemas?.[scalarName])
+    return config.scalarSchemas[scalarName];
+
   const tsType = visitor.getScalarType(scalarName);
   switch (tsType) {
     case 'string':

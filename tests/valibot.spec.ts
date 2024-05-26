@@ -286,4 +286,40 @@ describe('valibot', () => {
       "
     `);
   });
+
+  it('with scalarSchemas', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input ScalarsInput {
+        date: Date!
+        email: Email
+        str: String!
+      }
+      scalar Date
+      scalar Email
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        scalarSchemas: {
+          Date: 'v.date()',
+          Email: 'v.string([v.email()])',
+        },
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function ScalarsInputSchema() {
+        return v.object({
+          date: v.date(),
+          email: v.nullish(v.string([v.email()])),
+          str: v.string()
+        })
+      }
+      "
+    `)
+  });
 })
