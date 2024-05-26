@@ -147,4 +147,39 @@ describe('valibot', () => {
       "
     `);
   })
+
+  it('with scalars', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: Text!
+        times: Count!
+      }
+
+      scalar Count
+      scalar Text
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        scalars: {
+          Text: 'string',
+          Count: 'number',
+        },
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function SaySchema() {
+        return v.object({
+          phrase: v.string(),
+          times: v.number()
+        })
+      }
+      "
+    `);
+  });
 })
