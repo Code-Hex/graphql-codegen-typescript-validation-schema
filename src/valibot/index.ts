@@ -18,8 +18,6 @@ import {
   isNonNullType,
 } from './../graphql';
 
-const anySchema = `definedNonNullAnySchema`;
-
 export class ValibotSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
@@ -127,11 +125,12 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
   switch (converter?.targetKind) {
     case 'EnumTypeDefinition':
       return `${converter.convertName()}Schema`;
+    case 'ScalarTypeDefinition':
+      return valibot4Scalar(config, visitor, node.value);
     case 'InterfaceTypeDefinition':
     case 'InputObjectTypeDefinition':
     case 'ObjectTypeDefinition':
     case 'UnionTypeDefinition':
-    case 'ScalarTypeDefinition':
       throw new Error('not implemented');
     default:
       if (converter?.targetKind)
@@ -156,5 +155,5 @@ function valibot4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, 
       return `v.boolean()`;
   }
   console.warn('unhandled scalar name:', scalarName);
-  return anySchema;
+  return 'v.any()';
 }
