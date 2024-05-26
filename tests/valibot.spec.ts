@@ -89,4 +89,32 @@ describe('valibot', () => {
     for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
   });
+
+  it.todo('ref input object')
+  it.todo('nested input object')
+
+  it('enum', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType!
+      }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
+      expect(result.content).toMatchInlineSnapshot(`
+        "
+        export const PageTypeSchema = v.enum_(PageType);
+
+        export function PageInputSchema() {
+          return v.object({
+            pageType: PageTypeSchema
+          })
+        }
+        "
+      `);
+  })
 })

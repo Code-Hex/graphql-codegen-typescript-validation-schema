@@ -1,5 +1,6 @@
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import type {
+  EnumTypeDefinitionNode,
   FieldDefinitionNode,
   GraphQLSchema,
   InputObjectTypeDefinitionNode,
@@ -29,7 +30,11 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
   }
 
   initialEmit(): string {
-    return '';
+    return (
+      `\n${[
+        ...this.enumDeclarations,
+      ].join('\n')}`
+    );
   }
 
   get InputObjectTypeDefinition() {
@@ -39,6 +44,25 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
         const name = visitor.convertName(node.name.value);
         this.importTypes.push(name);
         return this.buildInputFields(node.fields ?? [], visitor, name);
+      },
+    };
+  }
+
+  get EnumTypeDefinition() {
+    return {
+      leave: (node: EnumTypeDefinitionNode) => {
+        const visitor = this.createVisitor('both');
+        const enumname = visitor.convertName(node.name.value);
+        this.importTypes.push(enumname);
+
+        // hoist enum declarations
+        this.enumDeclarations.push(
+          new DeclarationBlock({})
+            .export()
+            .asKind('const')
+            .withName(`${enumname}Schema`)
+            .withContent(`v.enum_(${enumname})`).string,
+        );
       },
     };
   }
@@ -101,11 +125,12 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
   const converter = visitor.getNameNodeConverter(node);
 
   switch (converter?.targetKind) {
+    case 'EnumTypeDefinition':
+      return `${converter.convertName()}Schema`;
     case 'InterfaceTypeDefinition':
     case 'InputObjectTypeDefinition':
     case 'ObjectTypeDefinition':
     case 'UnionTypeDefinition':
-    case 'EnumTypeDefinition':
     case 'ScalarTypeDefinition':
       throw new Error('not implemented');
     default:
