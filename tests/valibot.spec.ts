@@ -90,7 +90,43 @@ describe('valibot', () => {
       expect(result.content).toContain(wantContain);
   });
 
-  it.todo('ref input object')
+  it('ref input object', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input AInput {
+        b: BInput!
+      }
+      input BInput {
+        c: CInput!
+      }
+      input CInput {
+        a: AInput!
+      }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function AInputSchema() {
+        return v.object({
+          b: v.lazy(() => BInputSchema())
+        })
+      }
+
+      export function BInputSchema() {
+        return v.object({
+          c: v.lazy(() => CInputSchema())
+        })
+      }
+
+      export function CInputSchema() {
+        return v.object({
+          a: v.lazy(() => AInputSchema())
+        })
+      }
+      "
+    `);
+  })
   it.todo('nested input object')
 
   it('enum', async () => {
@@ -274,7 +310,7 @@ describe('valibot', () => {
 
       export function InputOneSchema() {
         return v.object({
-          field: InputNestedSchema()
+          field: v.lazy(() => InputNestedSchema())
         })
       }
 

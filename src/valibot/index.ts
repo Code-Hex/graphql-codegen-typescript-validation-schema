@@ -17,6 +17,7 @@ import { buildApiForValibot, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import type { Visitor } from '../visitor';
 import {
+  isInput,
   isListType,
   isNamedType,
   isNonNullType,
@@ -190,6 +191,9 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
 }
 
 function maybeLazy(type: TypeNode, schema: string): string {
+  if (isNamedType(type) && isInput(type.name.value))
+    return `v.lazy(() => ${schema})`;
+
   return schema;
 }
 
