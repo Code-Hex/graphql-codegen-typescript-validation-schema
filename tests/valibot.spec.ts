@@ -246,4 +246,44 @@ describe('valibot', () => {
       "
     `)
   });
+
+  it('with notAllowEmptyString issue #386', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input InputOne {
+        field: InputNested!
+      }
+
+      input InputNested {
+        field: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        notAllowEmptyString: true,
+        scalars: {
+          ID: 'string',
+        },
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function InputOneSchema() {
+        return v.object({
+          field: InputNestedSchema()
+        })
+      }
+
+      export function InputNestedSchema() {
+        return v.object({
+          field: v.string([v.minLength(1)])
+        })
+      }
+      "
+    `);
+  });
 })

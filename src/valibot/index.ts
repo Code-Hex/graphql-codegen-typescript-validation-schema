@@ -142,7 +142,13 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
     case 'InputObjectTypeDefinition':
     case 'ObjectTypeDefinition':
     case 'UnionTypeDefinition':
-      throw new Error('not implemented');
+      // using switch-case rather than if-else to allow for future expansion
+      switch (config.validationSchemaExportType) {
+        case 'const':
+        case 'function':
+        default:
+          return `${converter.convertName()}Schema()`;
+      }
     default:
       if (converter?.targetKind)
         console.warn('Unknown targetKind', converter?.targetKind);
