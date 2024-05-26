@@ -115,7 +115,7 @@ export function buildApi(config: FormattedDirectiveConfig, directives: ReadonlyA
     .map((directive) => {
       const directiveName = directive.name.value;
       const argsConfig = config[directiveName];
-      return buildApiFromDirectiveArguments(argsConfig, directive.arguments ?? []);
+      return buildApiFromDirectiveArguments(argsConfig, directive.arguments ?? []).join('');
     })
     .join('')
 }
@@ -132,7 +132,7 @@ function buildApiSchema(validationSchema: string[] | undefined, argValue: ConstV
   return `.${schemaApi}(${schemaApiArgs.join(', ')})`;
 }
 
-function buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, args: ReadonlyArray<ConstArgumentNode>): string {
+function buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, args: ReadonlyArray<ConstArgumentNode>): string[] {
   return args
     .map((arg) => {
       const argName = arg.name.value;
@@ -142,7 +142,6 @@ function buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, arg
 
       return buildApiSchema(validationSchema, arg.value);
     })
-    .join('');
 }
 
 function buildApiFromDirectiveObjectArguments(config: FormattedDirectiveObjectArguments, argValue: ConstValueNode): string {
