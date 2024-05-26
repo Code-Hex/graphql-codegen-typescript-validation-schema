@@ -121,36 +121,45 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
     if (isListType(parentType))
       return `v.nullable(${gen})`;
 
-    let appliedDirectivesGen = applyDirectives(config, field, gen);
-
     if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
       const { defaultValue } = field;
       if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN)
-        appliedDirectivesGen = `v.optional(${appliedDirectivesGen}, ${defaultValue.value})`;
+        gen = `v.optional(${gen}, ${defaultValue.value})`;
 
       if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
-        appliedDirectivesGen = `v.optional(${appliedDirectivesGen}, "${defaultValue.value}")`;
-
+        gen = `v.optional(${gen}, "${defaultValue.value}")`;
     }
+
+    const actions = actionsFromDirectives(config, field);
+
     if (isNonNullType(parentType)) {
-      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
-        return "v.string([v.minLength(1)])"; // TODO
+      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
+        actions.push('v.minLength(1)');
+      }
 
-      return appliedDirectivesGen;
+      return pipeSchemaAndActions(gen, actions);
     }
 
-    return `v.nullish(${appliedDirectivesGen})`;
+    return `v.nullish(${pipeSchemaAndActions(gen, actions)})`;
   }
   console.warn('unhandled type:', type);
   return '';
 }
 
-function applyDirectives(config: ValidationSchemaPluginConfig, field: InputValueDefinitionNode | FieldDefinitionNode, gen: string): string {
+function actionsFromDirectives(config: ValidationSchemaPluginConfig, field: InputValueDefinitionNode | FieldDefinitionNode): string[] {
   if (config.directives && field.directives) {
     const formatted = formatDirectiveConfig(config.directives);
-    return `v.pipe(${gen}, ${buildApiForValibot(formatted, field.directives).join(', ')})`;
+    return buildApiForValibot(formatted, field.directives);
   }
-  return gen;
+
+  return [];
+}
+
+function pipeSchemaAndActions(schema: string, actions: string[]): string {
+  if (actions.length === 0)
+    return schema;
+
+  return `v.pipe(${schema}, ${actions.join(', ')})`;
 }
 
 function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string {

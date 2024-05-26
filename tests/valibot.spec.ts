@@ -236,8 +236,8 @@ describe('valibot', () => {
 
       export function PrimitiveInputSchema() {
         return v.object({
-          a: v.string([v.minLength(1)]),
-          b: v.string([v.minLength(1)]),
+          a: v.pipe(v.string(), v.minLength(1)),
+          b: v.pipe(v.string(), v.minLength(1)),
           c: v.boolean(),
           d: v.number(),
           e: v.number()
@@ -280,7 +280,7 @@ describe('valibot', () => {
 
       export function InputNestedSchema() {
         return v.object({
-          field: v.string([v.minLength(1)])
+          field: v.pipe(v.string(), v.minLength(1))
         })
       }
       "
@@ -439,4 +439,42 @@ describe('valibot', () => {
 
     it.todo('list field');
   })
+
+  describe('pR #112', () => {
+    it('with notAllowEmptyString', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          profile: String! @constraint(maxLength: 5000)
+          age: Int!
+        }
+
+        directive @constraint(maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'valibot',
+          notAllowEmptyString: true,
+          directives: {
+            constraint: {
+              maxLength: ['maxLength', '$1', 'Please input less than $1'],
+            },
+          },
+        },
+        {},
+      );
+      expect(result.content).toMatchInlineSnapshot(`
+        "
+
+        export function UserCreateInputSchema() {
+          return v.object({
+            profile: v.pipe(v.string(), v.maxLength(5000, "Please input less than 5000"), v.minLength(1)),
+            age: v.number()
+          })
+        }
+        "
+      `)
+    });
+  });
 })
