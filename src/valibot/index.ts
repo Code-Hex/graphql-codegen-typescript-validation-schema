@@ -1,16 +1,19 @@
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+import type {
+  EnumTypeDefinitionNode,
+  FieldDefinitionNode,
+  GraphQLSchema,
+  InputObjectTypeDefinitionNode,
+  InputValueDefinitionNode,
+  NameNode,
+  TypeNode,
+} from 'graphql';
 import {
   Kind,
-  type EnumTypeDefinitionNode,
-  type FieldDefinitionNode,
-  type GraphQLSchema,
-  type InputObjectTypeDefinitionNode,
-  type InputValueDefinitionNode,
-  type NameNode,
-  type TypeNode,
 } from 'graphql';
 
 import type { ValidationSchemaPluginConfig } from '../config';
+import { buildApiForValibot, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import type { Visitor } from '../visitor';
 import {
@@ -118,26 +121,36 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
     if (isListType(parentType))
       return `v.nullable(${gen})`;
 
+    let appliedDirectivesGen = applyDirectives(config, field, gen);
+
     if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
       const { defaultValue } = field;
       if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN)
-        gen = `v.optional(${gen}, ${defaultValue.value})`;
+        appliedDirectivesGen = `v.optional(${appliedDirectivesGen}, ${defaultValue.value})`;
 
       if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
-        gen = `v.optional(${gen}, "${defaultValue.value}")`;
+        appliedDirectivesGen = `v.optional(${appliedDirectivesGen}, "${defaultValue.value}")`;
 
     }
     if (isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
         return "v.string([v.minLength(1)])"; // TODO
 
-      return gen;
+      return appliedDirectivesGen;
     }
 
-    return `v.nullish(${gen})`;
+    return `v.nullish(${appliedDirectivesGen})`;
   }
   console.warn('unhandled type:', type);
   return '';
+}
+
+function applyDirectives(config: ValidationSchemaPluginConfig, field: InputValueDefinitionNode | FieldDefinitionNode, gen: string): string {
+  if (config.directives && field.directives) {
+    const formatted = formatDirectiveConfig(config.directives);
+    return `v.pipe(${gen}, ${buildApiForValibot(formatted, field.directives).join(', ')})`;
+  }
+  return gen;
 }
 
 function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string {
