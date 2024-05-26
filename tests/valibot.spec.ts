@@ -182,4 +182,31 @@ describe('valibot', () => {
       "
     `);
   });
+
+  it.todo('with importFrom');
+  it.todo('with importFrom & useTypeImports')
+
+  it('with enumsAsTypes', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        enumsAsTypes: true,
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = v.picklist([\'PUBLIC\', \'BASIC_AUTH\']);
+      "
+    `);
+  });
+
 })
