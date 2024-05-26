@@ -1,12 +1,13 @@
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
-import type {
-  EnumTypeDefinitionNode,
-  FieldDefinitionNode,
-  GraphQLSchema,
-  InputObjectTypeDefinitionNode,
-  InputValueDefinitionNode,
-  NameNode,
-  TypeNode,
+import {
+  Kind,
+  type EnumTypeDefinitionNode,
+  type FieldDefinitionNode,
+  type GraphQLSchema,
+  type InputObjectTypeDefinitionNode,
+  type InputValueDefinitionNode,
+  type NameNode,
+  type TypeNode,
 } from 'graphql';
 
 import type { ValidationSchemaPluginConfig } from '../config';
@@ -113,10 +114,19 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
-    const gen = generateNameNodeValibotSchema(config, visitor, type.name);
+    let gen = generateNameNodeValibotSchema(config, visitor, type.name);
     if (isListType(parentType))
       return `v.nullable(${gen})`;
 
+    if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
+      const { defaultValue } = field;
+      if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN)
+        gen = `v.optional(${gen}, ${defaultValue.value})`;
+
+      if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
+        gen = `v.optional(${gen}, "${defaultValue.value}")`;
+
+    }
     if (isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
         return "v.string([v.minLength(1)])"; // TODO

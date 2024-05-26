@@ -322,4 +322,48 @@ describe('valibot', () => {
       "
     `)
   });
+
+  it.todo('with typesPrefix');
+  it.todo('with typesSuffix');
+
+  it('with default input values', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType! = PUBLIC
+        greeting: String = "Hello"
+        score: Int = 100
+        ratio: Float = 0.5
+        isMember: Boolean = true
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        importFrom: './types',
+      },
+      {},
+    );
+
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = v.enum_(PageType);
+
+      export function PageInputSchema() {
+        return v.object({
+          pageType: v.optional(PageTypeSchema, "PUBLIC"),
+          greeting: v.nullish(v.optional(v.string(), "Hello")),
+          score: v.nullish(v.optional(v.number(), 100)),
+          ratio: v.nullish(v.optional(v.number(), 0.5)),
+          isMember: v.nullish(v.optional(v.boolean(), true))
+        })
+      }
+      "
+    `)
+  });
 })
