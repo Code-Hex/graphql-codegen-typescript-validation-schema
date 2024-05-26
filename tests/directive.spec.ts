@@ -352,7 +352,7 @@ describe('format directive config', () => {
         config: FormattedDirectiveArguments
         args: ReadonlyArray<ConstArgumentNode>
       }
-      want: string
+      want: string[]
     }[] = [
       {
         name: 'string',
@@ -364,7 +364,7 @@ describe('format directive config', () => {
             msg: `"hello"`,
           }),
         },
-        want: `.required("hello")`,
+        want: [`.required("hello")`],
       },
       {
         name: 'string with additional stuff',
@@ -376,7 +376,7 @@ describe('format directive config', () => {
             startWith: `"hello"`,
           }),
         },
-        want: `.matched("^hello")`,
+        want: [`.matched("^hello")`],
       },
       {
         name: 'number',
@@ -388,7 +388,7 @@ describe('format directive config', () => {
             minLength: `1`,
           }),
         },
-        want: `.min(1)`,
+        want: [`.min(1)`],
       },
       {
         name: 'boolean',
@@ -401,7 +401,7 @@ describe('format directive config', () => {
             enabled: `true`,
           }),
         },
-        want: `.strict(true)`,
+        want: [`.strict(true)`],
       },
       {
         name: 'list',
@@ -413,7 +413,7 @@ describe('format directive config', () => {
             minLength: `[1, "message"]`,
           }),
         },
-        want: `.min(1, "message")`,
+        want: [`.min(1, "message")`],
       },
       {
         name: 'object in list',
@@ -425,7 +425,7 @@ describe('format directive config', () => {
             matches: `["hello", {message:"message", excludeEmptyString:true}]`,
           }),
         },
-        want: `.matches("hello", {"message":"message","excludeEmptyString":true})`,
+        want: [`.matches("hello", {"message":"message","excludeEmptyString":true})`],
       },
       {
         name: 'two arguments but matched to first argument',
@@ -438,7 +438,7 @@ describe('format directive config', () => {
             msg2: `"world"`,
           }),
         },
-        want: `.required("hello")`,
+        want: [`.required("hello")`, ``],
       },
       {
         name: 'two arguments but matched to second argument',
@@ -451,7 +451,7 @@ describe('format directive config', () => {
             msg2: `"world"`,
           }),
         },
-        want: `.required("world")`,
+        want: [``, `.required("world")`],
       },
       {
         name: 'two arguments matched all',
@@ -465,7 +465,7 @@ describe('format directive config', () => {
             minLength: `1`,
           }),
         },
-        want: `.required("message").min(1)`,
+        want: [`.required("message")`, `.min(1)`],
       },
       {
         name: 'argument matches validation schema api',
@@ -479,7 +479,7 @@ describe('format directive config', () => {
             format: `"uri"`,
           }),
         },
-        want: `.url()`,
+        want: [`.url()`],
       },
       {
         name: 'argument matched argument but doesn\'t match api',
@@ -493,7 +493,7 @@ describe('format directive config', () => {
             format: `"uuid"`,
           }),
         },
-        want: ``,
+        want: [``],
       },
       {
         name: 'complex',
@@ -509,7 +509,7 @@ describe('format directive config', () => {
             format: `"uri"`,
           }),
         },
-        want: `.required("message").url()`,
+        want: [`.required("message")`, `.url()`],
       },
       {
         name: 'complex 2',
@@ -525,7 +525,7 @@ describe('format directive config', () => {
             format: `"uuid"`,
           }),
         },
-        want: `.required("message")`,
+        want: [`.required("message")`, ``],
       },
     ];
     for (const tc of cases) {
