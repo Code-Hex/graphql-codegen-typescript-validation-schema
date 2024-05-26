@@ -209,4 +209,41 @@ describe('valibot', () => {
     `);
   });
 
+  it('with notAllowEmptyString', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PrimitiveInput {
+        a: ID!
+        b: String!
+        c: Boolean!
+        d: Int!
+        e: Float!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        notAllowEmptyString: true,
+        scalars: {
+          ID: 'string',
+        },
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function PrimitiveInputSchema() {
+        return v.object({
+          a: v.string([v.minLength(1)]),
+          b: v.string([v.minLength(1)]),
+          c: v.boolean(),
+          d: v.number(),
+          e: v.number()
+        })
+      }
+      "
+    `)
+  });
 })

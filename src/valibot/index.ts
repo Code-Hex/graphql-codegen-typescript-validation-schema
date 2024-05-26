@@ -117,8 +117,12 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
     if (isListType(parentType))
       return `v.nullable(${gen})`;
 
-    if (isNonNullType(parentType))
+    if (isNonNullType(parentType)) {
+      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
+        return "v.string([v.minLength(1)])"; // TODO
+
       return gen;
+    }
 
     return `v.nullish(${gen})`;
   }
