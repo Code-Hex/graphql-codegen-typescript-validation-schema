@@ -20,7 +20,7 @@ export class ConstExportTypeStrategy implements ExportTypeStrategy {
     return new DeclarationBlock({})
       .export()
       .asKind('const')
-      .withName(`${unionName}Schema: yup.MixedSchema<${unionName}>`)
+      .withName(`${unionName}Schema: yup.ObjectSchema<${unionName}>`)
       .withContent(`union<${unionName}>(${unionElements})`).string;
   }
 

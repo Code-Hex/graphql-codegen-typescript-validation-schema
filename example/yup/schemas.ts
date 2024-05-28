@@ -9,8 +9,8 @@ export const HttpMethodSchema = yup.string<HttpMethod>().oneOf([HttpMethod.Get, 
 
 export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.BasicAuth, PageType.Lp, PageType.Restricted, PageType.Service]);
 
-function union<T extends {}>(schemas: Record<string, yup.Schema<T>>): yup.MixedSchema<T> {
-  return yup.mixed<T>().when(
+function union<T extends {}>(schemas: Record<string, yup.ObjectSchema<T>>) {
+  return (yup.object<T>() as unknown as yup.ObjectSchema<T>).when(
     ([value], schema) => schemas[value?.__typename] ?? schema
   ).defined()
 }
@@ -140,7 +140,7 @@ export function UserSchema(): yup.ObjectSchema<User> {
   }).strict()
 }
 
-export function UserKindSchema(): yup.MixedSchema<UserKind> {
+export function UserKindSchema(): yup.ObjectSchema<UserKind> {
   return union<UserKind>({
 Admin: AdminSchema(),
 Guest: GuestSchema(),

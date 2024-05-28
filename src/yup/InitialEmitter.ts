@@ -13,10 +13,10 @@ export class InitialEmitter {
   private unionFunctionDeclaration(): string {
     return new DeclarationBlock({})
       .asKind('function')
-      .withName('union<T extends {}>(schemas: Record<string, yup.Schema<T>>): yup.MixedSchema<T>')
+      .withName('union<T extends {}>(schemas: Record<string, yup.ObjectSchema<T>>)')
       .withBlock(
         [
-          indent('return yup.mixed<T>().when('),
+          indent('return (yup.object<T>() as unknown as yup.ObjectSchema<T>).when('),
           indent('([value], schema) => schemas[value?.__typename] ?? schema', 2),
           indent(').defined()'), // HACK: 型を合わせるために、union は undefined を許容しないこととした。問題が出たら考える。
         ].join('\n')

@@ -25,7 +25,7 @@ export class FunctionExportTypeStrategy implements ExportTypeStrategy {
     return new DeclarationBlock({})
       .export()
       .asKind('function')
-      .withName(`${unionName}Schema(): yup.MixedSchema<${unionName}>`)
+      .withName(`${unionName}Schema(): yup.ObjectSchema<${unionName}>`)
       .withBlock(indent(`return union<${unionName}>(${unionElements})`)).string;
   }
 

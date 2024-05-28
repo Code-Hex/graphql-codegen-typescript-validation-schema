@@ -648,7 +648,7 @@ describe('yup', () => {
 
       const wantContains = [
         // Shape Schema
-        'export function ShapeSchema(): yup.MixedSchema<Shape> {',
+        'export function ShapeSchema(): yup.ObjectSchema<Shape> {',
         'union<Shape>({',
         'Circle: CircleSchema(),',
         'Square: SquareSchema(),',
@@ -715,7 +715,7 @@ describe('yup', () => {
 
       const wantContains = [
         // Shape Schema
-        'export function ShapeSchema(): yup.MixedSchema<Shape> {',
+        'export function ShapeSchema(): yup.ObjectSchema<Shape> {',
         'return union<Shape>({',
         'Circle: CircleSchema(),',
         '})',
@@ -752,7 +752,7 @@ describe('yup', () => {
       );
 
       const wantContains = [
-        'export function AnyTypeSchema(): yup.MixedSchema<AnyType> {',
+        'export function AnyTypeSchema(): yup.ObjectSchema<AnyType> {',
         'union<AnyType>({',
         'PageType: PageTypeSchema,',
         'MethodType: MethodTypeSchema,',
