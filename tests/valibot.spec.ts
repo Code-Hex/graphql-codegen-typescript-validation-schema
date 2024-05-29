@@ -89,4 +89,40 @@ describe('valibot', () => {
       "
     `);
   })
+  it('ref input object', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input AInput {
+        b: BInput!
+      }
+      input BInput {
+        c: CInput!
+      }
+      input CInput {
+        a: AInput!
+      }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export function AInputSchema(): v.GenericSchema<AInput> {
+        return v.object({
+          b: v.lazy(() => BInputSchema())
+        })
+      }
+
+      export function BInputSchema(): v.GenericSchema<BInput> {
+        return v.object({
+          c: v.lazy(() => CInputSchema())
+        })
+      }
+
+      export function CInputSchema(): v.GenericSchema<CInput> {
+        return v.object({
+          a: v.lazy(() => AInputSchema())
+        })
+      }
+      "
+    `);
+  })
 })

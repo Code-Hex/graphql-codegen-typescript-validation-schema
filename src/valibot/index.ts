@@ -12,6 +12,7 @@ import type { ValidationSchemaPluginConfig } from '../config';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import type { Visitor } from '../visitor';
 import {
+  isInput,
   isListType,
   isNamedType,
   isNonNullType,
@@ -95,6 +96,12 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
   const converter = visitor.getNameNodeConverter(node);
 
   switch (converter?.targetKind) {
+    case 'InputObjectTypeDefinition':
+      // using switch-case rather than if-else to allow for future expansion
+      switch (config.validationSchemaExportType) {
+        default:
+          return `${converter.convertName()}Schema()`;
+      }
     default:
       if (converter?.targetKind)
         console.warn('Unknown targetKind', converter?.targetKind);
@@ -104,6 +111,9 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
 }
 
 function maybeLazy(type: TypeNode, schema: string): string {
+  if (isNamedType(type) && isInput(type.name.value))
+    return `v.lazy(() => ${schema})`;
+
   return schema;
 }
 
