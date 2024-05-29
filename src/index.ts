@@ -9,6 +9,7 @@ import { MyZodSchemaVisitor } from './myzod/index';
 import type { SchemaVisitor } from './types';
 import { YupSchemaVisitor } from './yup/index';
 import { ZodSchemaVisitor } from './zod/index';
+import { ValibotSchemaVisitor } from './valibot';
 
 export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,
@@ -33,6 +34,8 @@ function schemaVisitor(schema: GraphQLSchema, config: ValidationSchemaPluginConf
     return new ZodSchemaVisitor(schema, config);
   else if (config?.schema === 'myzod')
     return new MyZodSchemaVisitor(schema, config);
+  else if (config?.schema === 'valibot')
+    return new ValibotSchemaVisitor(schema, config);
 
   return new YupSchemaVisitor(schema, config);
 }

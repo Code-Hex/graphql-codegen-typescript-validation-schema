@@ -1,6 +1,6 @@
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 
-export type ValidationSchema = 'yup' | 'zod' | 'myzod';
+export type ValidationSchema = 'yup' | 'zod' | 'myzod' | 'valibot';
 export type ValidationSchemaExportType = 'function' | 'const';
 
 export interface DirectiveConfig {
