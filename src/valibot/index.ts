@@ -12,6 +12,7 @@ import type { ValidationSchemaPluginConfig } from '../config';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import type { Visitor } from '../visitor';
 import {
+  isListType,
   isNamedType,
   isNonNullType,
 } from './../graphql';
@@ -64,12 +65,22 @@ function generateFieldValibotSchema(config: ValidationSchemaPluginConfig, visito
 }
 
 function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
+  if (isListType(type)) {
+    const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type);
+    const arrayGen = `v.array(${maybeLazy(type.type, gen)})`;
+    if (!isNonNullType(parentType)) {
+      return `v.nullish(${arrayGen})`;
+    }
+    return arrayGen;
+  }
   if (isNonNullType(type)) {
     const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type);
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeValibotSchema(config, visitor, type.name);
+    if (isListType(parentType))
+      return `v.nullable(${gen})`;
 
     if (isNonNullType(parentType))
       return gen;

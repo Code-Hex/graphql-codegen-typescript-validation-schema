@@ -61,4 +61,32 @@ describe('valibot', () => {
       "
     `);
   })
+  it('array', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PrimitiveInput {
+        a: [String]
+        b: [String!]
+        c: [String!]!
+        d: [[String]]
+        e: [[String]!]
+        f: [[String]!]!
+      }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export function PrimitiveInputSchema(): v.GenericSchema<PrimitiveInput> {
+        return v.object({
+          a: v.nullish(v.array(v.nullable(v.string()))),
+          b: v.nullish(v.array(v.string())),
+          c: v.array(v.string()),
+          d: v.nullish(v.array(v.nullish(v.array(v.nullable(v.string()))))),
+          e: v.nullish(v.array(v.array(v.nullable(v.string())))),
+          f: v.array(v.array(v.nullable(v.string())))
+        })
+      }
+      "
+    `);
+  })
 })
