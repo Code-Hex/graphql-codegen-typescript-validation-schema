@@ -73,6 +73,8 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
 
     if (isNonNullType(parentType))
       return gen;
+
+    return `v.nullish(${gen})`;
   }
   console.warn('unhandled type:', type);
   return '';
