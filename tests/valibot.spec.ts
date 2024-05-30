@@ -338,4 +338,75 @@ describe('valibot', () => {
       "
     `)
   });
+  it.todo('with typesPrefix')
+  it.todo('with typesSuffix')
+  it.todo('with default input values')
+  describe('issues #19', () => {
+    it('string field', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          profile: String @constraint(minLength: 1, maxLength: 5000)
+        }
+        directive @constraint(minLength: Int!, maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'valibot',
+          directives: {
+            constraint: {
+              minLength: ['minLength', '$1', 'Please input more than $1'],
+              maxLength: ['maxLength', '$1', 'Please input less than $1'],
+            },
+          },
+        },
+        {},
+      );
+      expect(result.content).toMatchInlineSnapshot(`
+        "
+
+        export function UserCreateInputSchema(): v.GenericSchema<UserCreateInput> {
+          return v.object({
+            profile: v.nullish(v.pipe(v.string(), v.minLength(1, "Please input more than 1"), v.maxLength(5000, "Please input less than 5000")))
+          })
+        }
+        "
+      `)
+    });
+
+    it('not null field', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          profile: String! @constraint(minLength: 1, maxLength: 5000)
+        }
+        directive @constraint(minLength: Int!, maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'valibot',
+          directives: {
+            constraint: {
+              minLength: ['minLength', '$1', 'Please input more than $1'],
+              maxLength: ['maxLength', '$1', 'Please input less than $1'],
+            },
+          },
+        },
+        {},
+      );
+
+      expect(result.content).toMatchInlineSnapshot(`
+        "
+
+        export function UserCreateInputSchema(): v.GenericSchema<UserCreateInput> {
+          return v.object({
+            profile: v.pipe(v.string(), v.minLength(1, "Please input more than 1"), v.maxLength(5000, "Please input less than 5000"))
+          })
+        }
+        "
+      `)
+    });
+  })
 })

@@ -12,6 +12,7 @@ import type {
 import type { ValidationSchemaPluginConfig } from '../config';
 import { BaseSchemaVisitor } from '../schema_visitor';
 import type { Visitor } from '../visitor';
+import { buildApiForValibot, formatDirectiveConfig } from '../directive';
 import {
   isInput,
   isListType,
@@ -114,13 +115,31 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
     if (isListType(parentType))
       return `v.nullable(${gen})`;
 
-    if (isNonNullType(parentType))
-      return gen;
+    const actions = actionsFromDirectives(config, field);
 
-    return `v.nullish(${gen})`;
+    if (isNonNullType(parentType))
+      return pipeSchemaAndActions(gen, actions); ;
+
+    return `v.nullish(${pipeSchemaAndActions(gen, actions)})`;
   }
   console.warn('unhandled type:', type);
   return '';
+}
+
+function actionsFromDirectives(config: ValidationSchemaPluginConfig, field: InputValueDefinitionNode | FieldDefinitionNode): string[] {
+  if (config.directives && field.directives) {
+    const formatted = formatDirectiveConfig(config.directives);
+    return buildApiForValibot(formatted, field.directives);
+  }
+
+  return [];
+}
+
+function pipeSchemaAndActions(schema: string, actions: string[]): string {
+  if (actions.length === 0)
+    return schema;
+
+  return `v.pipe(${schema}, ${actions.join(', ')})`;
 }
 
 function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string {
