@@ -56,11 +56,18 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
 
         // hoist enum declarations
         this.enumDeclarations.push(
-          new DeclarationBlock({})
-            .export()
-            .asKind('const')
-            .withName(`${enumname}Schema`)
-            .withContent(`v.enum_(${enumname})`).string,
+          this.config.enumsAsTypes
+            ? new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${enumname}Schema`)
+              .withContent(`v.picklist([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`)
+              .string
+            : new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${enumname}Schema`)
+              .withContent(`v.enum_(${enumname})`).string,
         );
       },
     };
