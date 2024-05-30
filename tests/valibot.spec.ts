@@ -19,6 +19,7 @@ describe('valibot', () => {
     const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
     expect(result.content).toMatchInlineSnapshot(`
       "
+
       export function PrimitiveInputSchema(): v.GenericSchema<PrimitiveInput> {
         return v.object({
           a: v.string(),
@@ -48,6 +49,7 @@ describe('valibot', () => {
     const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
     expect(result.content).toMatchInlineSnapshot(`
       "
+
       export function PrimitiveInputSchema(): v.GenericSchema<PrimitiveInput> {
         return v.object({
           a: v.nullish(v.string()),
@@ -76,6 +78,7 @@ describe('valibot', () => {
     const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
     expect(result.content).toMatchInlineSnapshot(`
       "
+
       export function PrimitiveInputSchema(): v.GenericSchema<PrimitiveInput> {
         return v.object({
           a: v.nullish(v.array(v.nullable(v.string()))),
@@ -105,6 +108,7 @@ describe('valibot', () => {
     const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
     expect(result.content).toMatchInlineSnapshot(`
       "
+
       export function AInputSchema(): v.GenericSchema<AInput> {
         return v.object({
           b: v.lazy(() => BInputSchema())
@@ -120,6 +124,31 @@ describe('valibot', () => {
       export function CInputSchema(): v.GenericSchema<CInput> {
         return v.object({
           a: v.lazy(() => AInputSchema())
+        })
+      }
+      "
+    `);
+  })
+  it.todo('nested input object')
+  it('enum', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType!
+      }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = v.enum_(PageType);
+
+      export function PageInputSchema(): v.GenericSchema<PageInput> {
+        return v.object({
+          pageType: PageTypeSchema
         })
       }
       "
