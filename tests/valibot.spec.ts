@@ -246,4 +246,37 @@ describe('valibot', () => {
       "
     `);
   });
+  it('with importFrom & useTypeImports', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        importFrom: './types',
+        useTypeImports: true,
+      },
+      {},
+    );
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as v from 'valibot'",
+        "import type { Say } from './types'",
+      ]
+    `);
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function SaySchema(): v.GenericSchema<Say> {
+        return v.object({
+          phrase: v.string()
+        })
+      }
+      "
+    `);
+  });
 })
