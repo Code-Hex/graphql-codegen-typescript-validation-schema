@@ -154,4 +154,31 @@ describe('valibot', () => {
       "
     `);
   })
+  it('camelcase', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input HTTPInput {
+        method: HTTPMethod
+        url: URL!
+      }
+      enum HTTPMethod {
+        GET
+        POST
+      }
+      scalar URL # unknown scalar, should be any
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export const HttpMethodSchema = v.enum_(HttpMethod);
+
+      export function HttpInputSchema(): v.GenericSchema<HttpInput> {
+        return v.object({
+          method: v.nullish(HttpMethodSchema),
+          url: v.any()
+        })
+      }
+      "
+    `);
+  })
 })
