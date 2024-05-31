@@ -408,5 +408,374 @@ describe('valibot', () => {
         "
       `)
     });
+    it.todo('list field')
+    describe('pR #112', () => {
+      it.todo('with notAllowEmptyString')
+      it.todo('without notAllowEmptyString')
+    })
+    describe('with withObjectType', () => {
+      it('not generate if withObjectType false', async () => {
+        const schema = buildSchema(/* GraphQL */ `
+          type User {
+            id: ID!
+            name: String
+          }
+        `);
+        const result = await plugin(
+          schema,
+          [],
+          {
+            schema: 'valibot',
+          },
+          {},
+        );
+        expect(result.content).not.toContain('export function UserSchema(): v.GenericSchema<User>');
+      });
+      it('generate object type contains object type', async () => {
+        const schema = buildSchema(/* GraphQL */ `
+          type Book {
+            author: Author
+            title: String
+          }
+
+          type Author {
+            books: [Book]
+            name: String
+          }
+        `);
+        const result = await plugin(
+          schema,
+          [],
+          {
+            schema: 'valibot',
+            withObjectType: true,
+          },
+          {},
+        );
+        expect(result.content).toMatchInlineSnapshot(`
+          "
+
+          export function BookSchema(): v.GenericSchema<Book> {
+            return v.object({
+              __typename: v.optional(v.literal('Book')),
+              author: v.nullish(AuthorSchema()),
+              title: v.nullish(v.string())
+            })
+          }
+
+          export function AuthorSchema(): v.GenericSchema<Author> {
+            return v.object({
+              __typename: v.optional(v.literal('Author')),
+              books: v.nullish(v.array(v.nullable(BookSchema()))),
+              name: v.nullish(v.string())
+            })
+          }
+          "
+        `)
+
+        for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
+          expect(result.content).not.toContain(wantNotContain);
+      });
+      it('generate both input & type', async () => {
+        const schema = buildSchema(/* GraphQL */ `
+          scalar Date
+          scalar Email
+          input UserCreateInput {
+            name: String!
+            date: Date!
+            email: Email!
+          }
+          input UsernameUpdateInput {
+            updateInputId: ID!
+            updateName: String!
+          }
+          type User {
+            id: ID!
+            name: String
+            age: Int
+            email: Email
+            isMember: Boolean
+            createdAt: Date!
+          }
+
+          type Mutation {
+            _empty: String
+          }
+
+          type Query {
+            _empty: String
+          }
+
+          type Subscription {
+            _empty: String
+          }
+        `);
+        const result = await plugin(
+          schema,
+          [],
+          {
+            schema: 'valibot',
+            withObjectType: true,
+            scalarSchemas: {
+              Date: 'v.date()',
+              Email: 'v.pipe(v.string(), v.email())',
+            },
+            scalars: {
+              ID: {
+                input: 'number',
+                output: 'string',
+              },
+            },
+          },
+          {},
+        );
+        expect(result.content).toMatchInlineSnapshot(`
+          "
+
+          export function UserCreateInputSchema(): v.GenericSchema<UserCreateInput> {
+            return v.object({
+              name: v.string(),
+              date: v.date(),
+              email: v.pipe(v.string(), v.email())
+            })
+          }
+
+          export function UsernameUpdateInputSchema(): v.GenericSchema<UsernameUpdateInput> {
+            return v.object({
+              updateInputId: v.number(),
+              updateName: v.string()
+            })
+          }
+
+          export function UserSchema(): v.GenericSchema<User> {
+            return v.object({
+              __typename: v.optional(v.literal('User')),
+              id: v.string(),
+              name: v.nullish(v.string()),
+              age: v.nullish(v.number()),
+              email: v.nullish(v.pipe(v.string(), v.email())),
+              isMember: v.nullish(v.boolean()),
+              createdAt: v.date()
+            })
+          }
+          "
+        `)
+
+        for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
+          expect(result.content).not.toContain(wantNotContain);
+      });
+    })
+    it('generate union types', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'valibot',
+          withObjectType: true,
+        },
+        {},
+      );
+
+      expect(result.content).toMatchInlineSnapshot(`
+        "
+
+        export function SquareSchema(): v.GenericSchema<Square> {
+          return v.object({
+            __typename: v.optional(v.literal('Square')),
+            size: v.nullish(v.number())
+          })
+        }
+
+        export function CircleSchema(): v.GenericSchema<Circle> {
+          return v.object({
+            __typename: v.optional(v.literal('Circle')),
+            radius: v.nullish(v.number())
+          })
+        }
+
+        export function ShapeSchema() {
+          return v.union([CircleSchema(), SquareSchema()])
+        }
+        "
+      `)
+    });
   })
+  it('correctly reference generated union types', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      type Circle {
+        radius: Int
+      }
+      union Shape = Circle
+    `);
+
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        withObjectType: true,
+      },
+      {},
+    );
+
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function CircleSchema(): v.GenericSchema<Circle> {
+        return v.object({
+          __typename: v.optional(v.literal('Circle')),
+          radius: v.nullish(v.number())
+        })
+      }
+
+      export function ShapeSchema() {
+        return CircleSchema()
+      }
+      "
+    `)
+  });
+  it('generate enum union types', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+
+      enum MethodType {
+        GET
+        POST
+      }
+
+      union AnyType = PageType | MethodType
+    `);
+
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        withObjectType: true,
+      },
+      {},
+    );
+
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = v.enum_(PageType);
+
+      export const MethodTypeSchema = v.enum_(MethodType);
+
+      export function AnyTypeSchema() {
+        return v.union([PageTypeSchema, MethodTypeSchema])
+      }
+      "
+    `)
+  });
+  it('generate union types with single element, export as const', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      type Square {
+        size: Int
+      }
+      type Circle {
+        radius: Int
+      }
+      union Shape = Circle | Square
+
+      type Geometry {
+        shape: Shape
+      }
+    `);
+
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        withObjectType: true,
+        validationSchemaExportType: 'const',
+      },
+      {},
+    );
+
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function CircleSchema(): v.GenericSchema<Circle> {
+        return v.object({
+          __typename: v.optional(v.literal('Circle')),
+          radius: v.nullish(v.number())
+        })
+      }
+
+      export function SquareSchema(): v.GenericSchema<Square> {
+        return v.object({
+          __typename: v.optional(v.literal('Square')),
+          size: v.nullish(v.number())
+        })
+      }
+
+      export function ShapeSchema() {
+        return v.union([CircleSchema(), SquareSchema()])
+      }
+
+      export function GeometrySchema(): v.GenericSchema<Geometry> {
+        return v.object({
+          __typename: v.optional(v.literal('Geometry')),
+          shape: v.nullish(ShapeSchema())
+        })
+      }
+      "
+    `)
+  });
+  it('with object arguments', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      type MyType {
+        foo(a: String, b: Int!, c: Boolean, d: Float!, e: Text): String
+      }
+      scalar Text
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        withObjectType: true,
+        scalars: {
+          Text: 'string',
+        },
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function MyTypeSchema(): v.GenericSchema<MyType> {
+        return v.object({
+          __typename: v.optional(v.literal('MyType')),
+          foo: v.nullish(v.string())
+        })
+      }
+
+      export function MyTypeFooArgsSchema(): v.GenericSchema<MyTypeFooArgs> {
+        return v.object({
+          a: v.nullish(v.string()),
+          b: v.number(),
+          c: v.nullish(v.boolean()),
+          d: v.number(),
+          e: v.nullish(v.string())
+        })
+      }
+      "
+    `)
+  });
 })

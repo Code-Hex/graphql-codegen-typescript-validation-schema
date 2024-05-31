@@ -6,7 +6,9 @@ import type {
   InputObjectTypeDefinitionNode,
   InputValueDefinitionNode,
   NameNode,
+  ObjectTypeDefinitionNode,
   TypeNode,
+  UnionTypeDefinitionNode,
 } from 'graphql';
 
 import type { ValidationSchemaPluginConfig } from '../config';
@@ -14,6 +16,7 @@ import { BaseSchemaVisitor } from '../schema_visitor';
 import type { Visitor } from '../visitor';
 import { buildApiForValibot, formatDirectiveConfig } from '../directive';
 import {
+  ObjectTypeDefinitionBuilder,
   isInput,
   isListType,
   isNamedType,
@@ -48,6 +51,41 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
     };
   }
 
+  get ObjectTypeDefinition() {
+    return {
+      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+        const visitor = this.createVisitor('output');
+        const name = visitor.convertName(node.name.value);
+        this.importTypes.push(name);
+
+        // Building schema for field arguments.
+        const argumentBlocks = this.buildTypeDefinitionArguments(node, visitor);
+        const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
+
+        // Building schema for fields.
+        const shape = node.fields?.map(field => generateFieldValibotSchema(this.config, visitor, field, 2)).join(',\n');
+
+        switch (this.config.validationSchemaExportType) {
+          default:
+            return (
+              new DeclarationBlock({})
+                .export()
+                .asKind('function')
+                .withName(`${name}Schema(): v.GenericSchema<${name}>`)
+                .withBlock(
+                  [
+                    indent(`return v.object({`),
+                    indent(`__typename: v.optional(v.literal('${node.name.value}')),`, 2),
+                    shape,
+                    indent('})'),
+                  ].join('\n'),
+                ).string + appendArguments
+            );
+        }
+      }),
+    };
+  }
+
   get EnumTypeDefinition() {
     return {
       leave: (node: EnumTypeDefinitionNode) => {
@@ -70,6 +108,42 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
               .withName(`${enumname}Schema`)
               .withContent(`v.enum_(${enumname})`).string,
         );
+      },
+    };
+  }
+
+  get UnionTypeDefinition() {
+    return {
+      leave: (node: UnionTypeDefinitionNode) => {
+        if (!node.types || !this.config.withObjectType)
+          return;
+        const visitor = this.createVisitor('output');
+        const unionName = visitor.convertName(node.name.value);
+        const unionElements = node.types
+          .map((t) => {
+            const element = visitor.convertName(t.name.value);
+            const typ = visitor.getType(t.name.value);
+            if (typ?.astNode?.kind === 'EnumTypeDefinition')
+              return `${element}Schema`;
+
+            switch (this.config.validationSchemaExportType) {
+              default:
+                return `${element}Schema()`;
+            }
+          })
+          .join(', ');
+        const unionElementsCount = node.types.length ?? 0;
+
+        const union = unionElementsCount > 1 ? `v.union([${unionElements}])` : unionElements;
+
+        switch (this.config.validationSchemaExportType) {
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${unionName}Schema()`)
+              .withBlock(indent(`return ${union}`)).string;
+        }
       },
     };
   }
@@ -147,6 +221,8 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
 
   switch (converter?.targetKind) {
     case 'InputObjectTypeDefinition':
+    case 'ObjectTypeDefinition':
+    case 'UnionTypeDefinition':
       // using switch-case rather than if-else to allow for future expansion
       switch (config.validationSchemaExportType) {
         default:
@@ -154,6 +230,8 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
       }
     case 'EnumTypeDefinition':
       return `${converter.convertName()}Schema`;
+    case 'ScalarTypeDefinition':
+      return valibot4Scalar(config, visitor, node.value);
     default:
       if (converter?.targetKind)
         console.warn('Unknown targetKind', converter?.targetKind);
