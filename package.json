@@ -46,6 +46,7 @@
     "type-check:yup": "tsc --strict --skipLibCheck --noEmit example/yup/schemas.ts",
     "type-check:zod": "tsc --strict --skipLibCheck --noEmit example/zod/schemas.ts",
     "type-check:myzod": "tsc --strict --skipLibCheck --noEmit example/myzod/schemas.ts",
+    "type-check:valibot": "tsc --strict --skipLibCheck --noEmit example/valibot/schemas.ts",
     "test": "vitest run",
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.main.json",
