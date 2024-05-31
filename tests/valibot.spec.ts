@@ -610,6 +610,61 @@ describe('valibot', () => {
       `)
     });
   })
+  it('generate union types with single element', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      type Square {
+        size: Int
+      }
+      type Circle {
+        radius: Int
+      }
+      union Shape = Circle | Square
+
+      type Geometry {
+        shape: Shape
+      }
+    `);
+
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        withObjectType: true,
+      },
+      {},
+    );
+
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function SquareSchema(): v.GenericSchema<Square> {
+        return v.object({
+          __typename: v.optional(v.literal('Square')),
+          size: v.nullish(v.number())
+        })
+      }
+
+      export function CircleSchema(): v.GenericSchema<Circle> {
+        return v.object({
+          __typename: v.optional(v.literal('Circle')),
+          radius: v.nullish(v.number())
+        })
+      }
+
+      export function ShapeSchema() {
+        return v.union([CircleSchema(), SquareSchema()])
+      }
+
+      export function GeometrySchema(): v.GenericSchema<Geometry> {
+        return v.object({
+          __typename: v.optional(v.literal('Geometry')),
+          shape: v.nullish(ShapeSchema())
+        })
+      }
+      "
+    `)
+  });
   it('correctly reference generated union types', async () => {
     const schema = buildSchema(/* GraphQL */ `
       type Circle {
@@ -681,62 +736,7 @@ describe('valibot', () => {
       "
     `)
   });
-  it('generate union types with single element, export as const', async () => {
-    const schema = buildSchema(/* GraphQL */ `
-      type Square {
-        size: Int
-      }
-      type Circle {
-        radius: Int
-      }
-      union Shape = Circle | Square
-
-      type Geometry {
-        shape: Shape
-      }
-    `);
-
-    const result = await plugin(
-      schema,
-      [],
-      {
-        schema: 'valibot',
-        withObjectType: true,
-        validationSchemaExportType: 'const',
-      },
-      {},
-    );
-
-    expect(result.content).toMatchInlineSnapshot(`
-      "
-
-      export function CircleSchema(): v.GenericSchema<Circle> {
-        return v.object({
-          __typename: v.optional(v.literal('Circle')),
-          radius: v.nullish(v.number())
-        })
-      }
-
-      export function SquareSchema(): v.GenericSchema<Square> {
-        return v.object({
-          __typename: v.optional(v.literal('Square')),
-          size: v.nullish(v.number())
-        })
-      }
-
-      export function ShapeSchema() {
-        return v.union([CircleSchema(), SquareSchema()])
-      }
-
-      export function GeometrySchema(): v.GenericSchema<Geometry> {
-        return v.object({
-          __typename: v.optional(v.literal('Geometry')),
-          shape: v.nullish(ShapeSchema())
-        })
-      }
-      "
-    `)
-  });
+  it.todo('generate union types with single element, export as const')
   it('with object arguments', async () => {
     const schema = buildSchema(/* GraphQL */ `
       type MyType {
@@ -778,4 +778,166 @@ describe('valibot', () => {
       "
     `)
   });
+  describe('with InterfaceType', () => {
+    it('not generate if withObjectType false', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface User {
+          id: ID!
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'valibot',
+          withObjectType: false,
+        },
+        {},
+      );
+      expect(result.content).not.toContain('export function UserSchema(): v.GenericSchema<User>');
+    });
+    it('generate if withObjectType true', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface Book {
+          title: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'valibot',
+          withObjectType: true,
+        },
+        {},
+      );
+      expect(result.content).toMatchInlineSnapshot(`
+        "
+
+        export function BookSchema(): v.GenericSchema<Book> {
+          return v.object({
+            title: v.nullish(v.string())
+          })
+        }
+        "
+      `)
+    });
+    it('generate interface type contains interface type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface Book {
+          author: Author
+          title: String
+        }
+
+        interface Author {
+          books: [Book]
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'valibot',
+          withObjectType: true,
+        },
+        {},
+      );
+      expect(result.content).toMatchInlineSnapshot(`
+        "
+
+        export function BookSchema(): v.GenericSchema<Book> {
+          return v.object({
+            author: v.nullish(AuthorSchema()),
+            title: v.nullish(v.string())
+          })
+        }
+
+        export function AuthorSchema(): v.GenericSchema<Author> {
+          return v.object({
+            books: v.nullish(v.array(v.nullable(BookSchema()))),
+            name: v.nullish(v.string())
+          })
+        }
+        "
+      `)
+    });
+    it('generate object type contains interface type', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        interface Book {
+          title: String!
+          author: Author!
+        }
+
+        type Textbook implements Book {
+          title: String!
+          author: Author!
+          courses: [String!]!
+        }
+
+        type ColoringBook implements Book {
+          title: String!
+          author: Author!
+          colors: [String!]!
+        }
+
+        type Author {
+          books: [Book!]
+          name: String
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'valibot',
+          withObjectType: true,
+        },
+        {},
+      );
+      expect(result.content).toMatchInlineSnapshot(`
+        "
+
+        export function BookSchema(): v.GenericSchema<Book> {
+          return v.object({
+            title: v.string(),
+            author: AuthorSchema()
+          })
+        }
+
+        export function TextbookSchema(): v.GenericSchema<Textbook> {
+          return v.object({
+            __typename: v.optional(v.literal('Textbook')),
+            title: v.string(),
+            author: AuthorSchema(),
+            courses: v.array(v.string())
+          })
+        }
+
+        export function ColoringBookSchema(): v.GenericSchema<ColoringBook> {
+          return v.object({
+            __typename: v.optional(v.literal('ColoringBook')),
+            title: v.string(),
+            author: AuthorSchema(),
+            colors: v.array(v.string())
+          })
+        }
+
+        export function AuthorSchema(): v.GenericSchema<Author> {
+          return v.object({
+            __typename: v.optional(v.literal('Author')),
+            books: v.nullish(v.array(BookSchema())),
+            name: v.nullish(v.string())
+          })
+        }
+        "
+      `)
+    });
+  })
+  it.todo('properly generates custom directive values')
+  it.todo('exports as const instead of func')
+  it.todo('generate both input & type, export as const')
+  it.todo('issue #394')
+  it.todo('issue #394')
 })
