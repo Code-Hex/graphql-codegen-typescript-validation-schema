@@ -85,5 +85,5 @@
     "yup": "1.4.0",
     "zod": "3.23.8"
   },
-  "packageManager": "pnpm@9.1.4"
+  "packageManager": "pnpm@9.2.0"
 }
