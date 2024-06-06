@@ -939,5 +939,4 @@ describe('valibot', () => {
   it.todo('exports as const instead of func')
   it.todo('generate both input & type, export as const')
   it.todo('issue #394')
-  it.todo('issue #394')
 })
