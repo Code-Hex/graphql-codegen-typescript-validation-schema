@@ -12,5 +12,8 @@ export default antfu({
     'README.md',
   ],
 }, {
-  rules: { 'style/semi': 'off' },
+  rules: {
+    'style/semi': 'off',
+    'regexp/no-unused-capturing-group': 'off',
+  },
 })

@@ -154,7 +154,7 @@ function buildApiFromDirectiveObjectArguments(config: FormattedDirectiveObjectAr
 }
 
 function applyArgToApiSchemaTemplate(template: string, apiArgs: any[]): string {
-  const matches = template.matchAll(/[$](\d+)/g);
+  const matches = template.matchAll(/\$(\d+)/g);
   for (const match of matches) {
     const placeholder = match[0]; // `$1`
     const idx = Number.parseInt(match[1], 10) - 1; // start with `1 - 1`
