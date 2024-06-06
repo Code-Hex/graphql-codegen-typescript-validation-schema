@@ -115,7 +115,7 @@ export function buildApi(config: FormattedDirectiveConfig, directives: ReadonlyA
     .map((directive) => {
       const directiveName = directive.name.value;
       const argsConfig = config[directiveName];
-      return buildApiFromDirectiveArguments(argsConfig, directive.arguments ?? []).join('');
+      return buildApiFromDirectiveArguments(argsConfig, directive.arguments ?? []);
     })
     .join('')
 }
@@ -148,7 +148,7 @@ export function buildApiForValibot(config: FormattedDirectiveConfig, directives:
     .map((directive) => {
       const directiveName = directive.name.value;
       const argsConfig = config[directiveName];
-      const apis = buildApiFromDirectiveArguments(argsConfig, directive.arguments ?? []);
+      const apis = _buildApiFromDirectiveArguments(argsConfig, directive.arguments ?? []);
       return apis.map(api => `v${api}`);
     }).flat()
 }
@@ -165,7 +165,11 @@ function buildApiSchema(validationSchema: string[] | undefined, argValue: ConstV
   return `.${schemaApi}(${schemaApiArgs.join(', ')})`;
 }
 
-function buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, args: ReadonlyArray<ConstArgumentNode>): string[] {
+function buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, args: ReadonlyArray<ConstArgumentNode>): string {
+  return _buildApiFromDirectiveArguments(config, args).join('');
+}
+
+function _buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, args: ReadonlyArray<ConstArgumentNode>): string[] {
   return args
     .map((arg) => {
       const argName = arg.name.value;
