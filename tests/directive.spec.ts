@@ -9,6 +9,7 @@ import type {
 } from '../src/directive';
 import {
   buildApi,
+  buildApiForValibot,
   exportedForTesting,
   formatDirectiveConfig,
   formatDirectiveObjectArguments,
@@ -599,6 +600,66 @@ describe('format directive config', () => {
       it(tc.name, () => {
         const { config, args } = tc.args;
         const got = buildApi(config, args);
+        expect(got).toStrictEqual(tc.want);
+      });
+    }
+  });
+
+  describe('buildApiForValibot', () => {
+    const cases: {
+      name: string
+      args: {
+        config: FormattedDirectiveConfig
+        args: ReadonlyArray<ConstDirectiveNode>
+      }
+      want: string[]
+    }[] = [
+      {
+        name: 'valid',
+        args: {
+          config: {
+            constraint: {
+              minLength: ['minLength', '$1'],
+              format: {
+                uri: ['url'],
+                email: ['email'],
+              },
+            },
+          },
+          args: [
+            // @constraint(minLength: 100, format: "email")
+            buildConstDirectiveNodes('constraint', {
+              minLength: `100`,
+              format: `"email"`,
+            }),
+          ],
+        },
+        want: [`v.minLength(100)`, `v.email()`],
+      },
+      {
+        name: 'enum',
+        args: {
+          config: {
+            constraint: {
+              format: {
+                URI: ['uri'],
+              },
+            },
+          },
+          args: [
+            // @constraint(format: EMAIL)
+            buildConstDirectiveNodes('constraint', {
+              format: 'URI',
+            }),
+          ],
+        },
+        want: [`v.uri()`],
+      },
+    ];
+    for (const tc of cases) {
+      it(tc.name, () => {
+        const { config, args } = tc.args;
+        const got = buildApiForValibot(config, args);
         expect(got).toStrictEqual(tc.want);
       });
     }
