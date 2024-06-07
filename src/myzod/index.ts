@@ -23,6 +23,7 @@ import type { Visitor } from '../visitor';
 import {
   InterfaceTypeDefinitionBuilder,
   ObjectTypeDefinitionBuilder,
+  escapeGraphQLCharacters,
   isInput,
   isListType,
   isNamedType,
@@ -292,7 +293,7 @@ function generateFieldTypeMyZodSchema(config: ValidationSchemaPluginConfig, visi
           appliedDirectivesGen = `${appliedDirectivesGen}.default(${visitor.convertName(type.name.value)}.${value})`;
         }
         else {
-          appliedDirectivesGen = `${appliedDirectivesGen}.default("${defaultValue.value}")`;
+          appliedDirectivesGen = `${appliedDirectivesGen}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;
         }
       }
     }

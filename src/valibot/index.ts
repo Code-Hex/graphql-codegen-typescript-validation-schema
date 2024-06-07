@@ -205,9 +205,9 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
   if (isListType(type)) {
     const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type);
     const arrayGen = `v.array(${maybeLazy(type.type, gen)})`;
-    if (!isNonNullType(parentType)) {
+    if (!isNonNullType(parentType))
       return `v.nullish(${arrayGen})`;
-    }
+
     return arrayGen;
   }
   if (isNonNullType(type)) {
