@@ -22,7 +22,7 @@ function removedInitialEmitValue(content: string) {
 }
 
 describe('zod', () => {
-  it("non-null and defined", async () => {
+  it('non-null and defined', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input PrimitiveInput {
         a: ID!
@@ -57,7 +57,7 @@ describe('zod', () => {
     `);
   })
 
-  it("nullish", async () => {
+  it('nullish', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input PrimitiveInput {
         a: ID
@@ -89,7 +89,7 @@ describe('zod', () => {
     `)
   })
 
-  it("array", async () => {
+  it('array', async () => {
     const schema = buildSchema(/* GraphQL */ `
           input ArrayInput {
             a: [String]
@@ -118,7 +118,7 @@ describe('zod', () => {
     `)
   })
 
-  it("ref input object", async () => {
+  it('ref input object', async () => {
     const schema = buildSchema(/* GraphQL */ `
           input AInput {
             b: BInput!
