@@ -120,6 +120,39 @@ export function buildApi(config: FormattedDirectiveConfig, directives: ReadonlyA
     .join('')
 }
 
+// This function generates `[v.minLength(100), v.email()]`
+// NOTE: valibot's API is not a method chain, so it is prepared separately from buildApi.
+//
+// config
+// {
+//   'constraint': {
+//     'minLength': ['minLength', '$1'],
+//     'format': {
+//       'uri': ['url', '$2'],
+//       'email': ['email', '$2'],
+//     }
+//   }
+// }
+//
+// GraphQL schema
+// ```graphql
+// input ExampleInput {
+//   email: String! @required(msg: "message") @constraint(minLength: 100, format: "email")
+// }
+// ```
+//
+// FIXME: v.required() is not supported yet. v.required() is classified as `Methods` and must wrap the schema. ex) `v.required(v.object({...}))`
+export function buildApiForValibot(config: FormattedDirectiveConfig, directives: ReadonlyArray<ConstDirectiveNode>): string[] {
+  return directives
+    .filter(directive => config[directive.name.value] !== undefined)
+    .map((directive) => {
+      const directiveName = directive.name.value;
+      const argsConfig = config[directiveName];
+      const apis = _buildApiFromDirectiveArguments(argsConfig, directive.arguments ?? []);
+      return apis.map(api => `v${api}`);
+    }).flat()
+}
+
 function buildApiSchema(validationSchema: string[] | undefined, argValue: ConstValueNode): string {
   if (!validationSchema)
     return '';
@@ -133,6 +166,10 @@ function buildApiSchema(validationSchema: string[] | undefined, argValue: ConstV
 }
 
 function buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, args: ReadonlyArray<ConstArgumentNode>): string {
+  return _buildApiFromDirectiveArguments(config, args).join('');
+}
+
+function _buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, args: ReadonlyArray<ConstArgumentNode>): string[] {
   return args
     .map((arg) => {
       const argName = arg.name.value;
@@ -142,7 +179,6 @@ function buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, arg
 
       return buildApiSchema(validationSchema, arg.value);
     })
-    .join('');
 }
 
 function buildApiFromDirectiveObjectArguments(config: FormattedDirectiveObjectArguments, argValue: ConstValueNode): string {
@@ -154,7 +190,7 @@ function buildApiFromDirectiveObjectArguments(config: FormattedDirectiveObjectAr
 }
 
 function applyArgToApiSchemaTemplate(template: string, apiArgs: any[]): string {
-  const matches = template.matchAll(/[$](\d+)/g);
+  const matches = template.matchAll(/\$(\d+)/g);
   for (const match of matches) {
     const placeholder = match[0]; // `$1`
     const idx = Number.parseInt(match[1], 10) - 1; // start with `1 - 1`
