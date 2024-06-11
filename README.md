@@ -7,6 +7,7 @@
 - [x] support [yup](https://github.com/jquense/yup)
 - [x] support [zod](https://github.com/colinhacks/zod)
 - [x] support [myzod](https://github.com/davidmdm/myzod)
+- [x] support [valibot](https://valibot.dev/)
 
 ## Quick Start
 
