@@ -3,6 +3,16 @@ import dedent from 'ts-dedent';
 
 import { plugin } from '../src/index';
 
+const initialEmitValue = dedent(`
+  export const definedNonNullAnySchema = myzod.object({});
+
+
+  `)
+
+function removedInitialEmitValue(content: string) {
+  return content.replace(initialEmitValue, '');
+}
+
 describe('myzod', () => {
   it('non-null and defined', async () => {
     const schema = buildSchema(`
@@ -20,13 +30,24 @@ describe('myzod', () => {
         ID: 'string',
       },
     }, {});
-    expect(result.prepend).toContain('import * as myzod from \'myzod\'');
-    expect(result.content).toContain('export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {');
-    expect(result.content).toContain('a: myzod.string()');
-    expect(result.content).toContain('b: myzod.string()');
-    expect(result.content).toContain('c: myzod.boolean()');
-    expect(result.content).toContain('d: myzod.number()');
-    expect(result.content).toContain('e: myzod.number()');
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as myzod from 'myzod'",
+      ]
+    `);
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {
+        return myzod.object({
+          a: myzod.string(),
+          b: myzod.string(),
+          c: myzod.boolean(),
+          d: myzod.number(),
+          e: myzod.number()
+        })
+      }
+      "
+    `)
   });
 
   it('nullish', async () => {
@@ -46,13 +67,25 @@ describe('myzod', () => {
         ID: 'string',
       },
     }, {});
-    expect(result.prepend).toContain('import * as myzod from \'myzod\'');
-    expect(result.content).toContain('export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {');
-    expect(result.content).toContain('a: myzod.string().optional().nullable()');
-    expect(result.content).toContain('b: myzod.string().optional().nullable()');
-    expect(result.content).toContain('c: myzod.boolean().optional().nullable()');
-    expect(result.content).toContain('d: myzod.number().optional().nullable()');
-    expect(result.content).toContain('e: myzod.number().optional().nullable()');
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as myzod from 'myzod'",
+      ]
+    `);
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {
+        return myzod.object({
+          a: myzod.string().optional().nullable(),
+          b: myzod.string().optional().nullable(),
+          c: myzod.boolean().optional().nullable(),
+          d: myzod.number().optional().nullable(),
+          e: myzod.number().optional().nullable(),
+          z: myzod.string()
+        })
+      }
+      "
+    `)
   });
 
   it('array', async () => {
@@ -69,14 +102,20 @@ describe('myzod', () => {
     const result = await plugin(schema, [], {
       schema: 'myzod',
     }, {});
-    expect(result.prepend).toContain('import * as myzod from \'myzod\'');
-    expect(result.content).toContain('export function ArrayInputSchema(): myzod.Type<ArrayInput> {');
-    expect(result.content).toContain('a: myzod.array(myzod.string().nullable()).optional().nullable()');
-    expect(result.content).toContain('b: myzod.array(myzod.string()).optional().nullable()');
-    expect(result.content).toContain('c: myzod.array(myzod.string())');
-    expect(result.content).toContain('d: myzod.array(myzod.array(myzod.string().nullable()).optional().nullable()).optional().nullable()');
-    expect(result.content).toContain('e: myzod.array(myzod.array(myzod.string().nullable())).optional().nullable()');
-    expect(result.content).toContain('f: myzod.array(myzod.array(myzod.string().nullable()))');
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function ArrayInputSchema(): myzod.Type<ArrayInput> {
+        return myzod.object({
+          a: myzod.array(myzod.string().nullable()).optional().nullable(),
+          b: myzod.array(myzod.string()).optional().nullable(),
+          c: myzod.array(myzod.string()),
+          d: myzod.array(myzod.array(myzod.string().nullable()).optional().nullable()).optional().nullable(),
+          e: myzod.array(myzod.array(myzod.string().nullable())).optional().nullable(),
+          f: myzod.array(myzod.array(myzod.string().nullable()))
+        })
+      }
+      "
+    `)
   });
 
   it('ref input object', async () => {
@@ -94,13 +133,27 @@ describe('myzod', () => {
     const result = await plugin(schema, [], {
       schema: 'myzod',
     }, {});
-    expect(result.prepend).toContain('import * as myzod from \'myzod\'');
-    expect(result.content).toContain('export function AInputSchema(): myzod.Type<AInput> {');
-    expect(result.content).toContain('b: myzod.lazy(() => BInputSchema())');
-    expect(result.content).toContain('export function BInputSchema(): myzod.Type<BInput> {');
-    expect(result.content).toContain('c: myzod.lazy(() => CInputSchema())');
-    expect(result.content).toContain('export function CInputSchema(): myzod.Type<CInput> {');
-    expect(result.content).toContain('a: myzod.lazy(() => AInputSchema())');
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function AInputSchema(): myzod.Type<AInput> {
+        return myzod.object({
+          b: myzod.lazy(() => BInputSchema())
+        })
+      }
+
+      export function BInputSchema(): myzod.Type<BInput> {
+        return myzod.object({
+          c: myzod.lazy(() => CInputSchema())
+        })
+      }
+
+      export function CInputSchema(): myzod.Type<CInput> {
+        return myzod.object({
+          a: myzod.lazy(() => AInputSchema())
+        })
+      }
+      "
+    `)
   });
 
   it('nested input object', async () => {
@@ -113,10 +166,16 @@ describe('myzod', () => {
     const result = await plugin(schema, [], {
       schema: 'myzod',
     }, {});
-    expect(result.prepend).toContain('import * as myzod from \'myzod\'');
-    expect(result.content).toContain('export function NestedInputSchema(): myzod.Type<NestedInput> {');
-    expect(result.content).toContain('child: myzod.lazy(() => NestedInputSchema().optional().nullable())');
-    expect(result.content).toContain('childrens: myzod.array(myzod.lazy(() => NestedInputSchema().nullable())).optional().nullable()');
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function NestedInputSchema(): myzod.Type<NestedInput> {
+        return myzod.object({
+          child: myzod.lazy(() => NestedInputSchema().optional().nullable()),
+          childrens: myzod.array(myzod.lazy(() => NestedInputSchema().nullable())).optional().nullable()
+        })
+      }
+      "
+    `)
   });
 
   it('enum', async () => {
@@ -132,10 +191,17 @@ describe('myzod', () => {
     const result = await plugin(schema, [], {
       schema: 'myzod',
     }, {});
-    expect(result.prepend).toContain('import * as myzod from \'myzod\'');
-    expect(result.content).toContain('export const PageTypeSchema = myzod.enum(PageType)');
-    expect(result.content).toContain('export function PageInputSchema(): myzod.Type<PageInput> {');
-    expect(result.content).toContain('pageType: PageTypeSchema');
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = myzod.enum(PageType);
+
+      export function PageInputSchema(): myzod.Type<PageInput> {
+        return myzod.object({
+          pageType: PageTypeSchema
+        })
+      }
+      "
+    `)
   });
 
   it('camelcase', async () => {
@@ -155,11 +221,18 @@ describe('myzod', () => {
     const result = await plugin(schema, [], {
       schema: 'myzod',
     }, {});
-    expect(result.prepend).toContain('import * as myzod from \'myzod\'');
-    expect(result.content).toContain('export function HttpInputSchema(): myzod.Type<HttpInput> {');
-    expect(result.content).toContain('export const HttpMethodSchema = myzod.enum(HttpMethod)');
-    expect(result.content).toContain('method: HttpMethodSchema');
-    expect(result.content).toContain('url: definedNonNullAnySchema');
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export const HttpMethodSchema = myzod.enum(HttpMethod);
+
+      export function HttpInputSchema(): myzod.Type<HttpInput> {
+        return myzod.object({
+          method: HttpMethodSchema.optional().nullable(),
+          url: definedNonNullAnySchema
+        })
+      }
+      "
+    `)
   });
 
   it('with scalars', async () => {
@@ -184,8 +257,16 @@ describe('myzod', () => {
       },
       {},
     );
-    expect(result.content).toContain('phrase: myzod.string()');
-    expect(result.content).toContain('times: myzod.number()');
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function SaySchema(): myzod.Type<Say> {
+        return myzod.object({
+          phrase: myzod.string(),
+          times: myzod.number()
+        })
+      }
+      "
+    `)
   });
 
   it('with importFrom', async () => {
@@ -203,8 +284,21 @@ describe('myzod', () => {
       },
       {},
     );
-    expect(result.prepend).toContain('import { Say } from \'./types\'');
-    expect(result.content).toContain('phrase: myzod.string()');
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as myzod from 'myzod'",
+        "import { Say } from './types'",
+      ]
+    `)
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function SaySchema(): myzod.Type<Say> {
+        return myzod.object({
+          phrase: myzod.string()
+        })
+      }
+      "
+    `)
   });
 
   it('with importFrom & useTypeImports', async () => {
@@ -223,8 +317,21 @@ describe('myzod', () => {
       },
       {},
     );
-    expect(result.prepend).toContain('import type { Say } from \'./types\'');
-    expect(result.content).toContain('phrase: myzod.string()');
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as myzod from 'myzod'",
+        "import type { Say } from './types'",
+      ]
+    `)
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function SaySchema(): myzod.Type<Say> {
+        return myzod.object({
+          phrase: myzod.string()
+        })
+      }
+      "
+    `)
   });
 
   it('with enumsAsTypes', async () => {
@@ -243,7 +350,11 @@ describe('myzod', () => {
       },
       {},
     );
-    expect(result.content).toContain('export type PageTypeSchema = myzod.literals(\'PUBLIC\', \'BASIC_AUTH\')');
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export type PageTypeSchema = myzod.literals('PUBLIC', 'BASIC_AUTH');
+      "
+    `)
   });
 
   it('with notAllowEmptyString', async () => {
@@ -268,16 +379,19 @@ describe('myzod', () => {
       },
       {},
     );
-    const wantContains = [
-      'export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {',
-      'a: myzod.string().min(1),',
-      'b: myzod.string().min(1),',
-      'c: myzod.boolean(),',
-      'd: myzod.number(),',
-      'e: myzod.number()',
-    ];
-    for (const wantContain of wantContains)
-      expect(result.content).toContain(wantContain);
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function PrimitiveInputSchema(): myzod.Type<PrimitiveInput> {
+        return myzod.object({
+          a: myzod.string().min(1),
+          b: myzod.string().min(1),
+          c: myzod.boolean(),
+          d: myzod.number(),
+          e: myzod.number()
+        })
+      }
+      "
+    `)
   });
 
   it('with notAllowEmptyString issue #386', async () => {
@@ -302,13 +416,21 @@ describe('myzod', () => {
       },
       {},
     );
-    const wantContain = dedent`
-    export function InputNestedSchema(): myzod.Type<InputNested> {
-      return myzod.object({
-        field: myzod.string().min(1)
-      })
-    }`;
-    expect(result.content).toContain(wantContain);
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function InputOneSchema(): myzod.Type<InputOne> {
+        return myzod.object({
+          field: myzod.lazy(() => InputNestedSchema())
+        })
+      }
+
+      export function InputNestedSchema(): myzod.Type<InputNested> {
+        return myzod.object({
+          field: myzod.string().min(1)
+        })
+      }
+      "
+    `)
   });
 
   it('with scalarSchemas', async () => {
@@ -333,14 +455,17 @@ describe('myzod', () => {
       },
       {},
     );
-    const wantContains = [
-      'export function ScalarsInputSchema(): myzod.Type<ScalarsInput> {',
-      'date: myzod.date(),',
-      'email: myzod.string()', // TODO: Test implementation
-      'str: myzod.string()',
-    ];
-    for (const wantContain of wantContains)
-      expect(result.content).toContain(wantContain);
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function ScalarsInputSchema(): myzod.Type<ScalarsInput> {
+        return myzod.object({
+          date: myzod.date(),
+          email: myzod.string().optional().nullable(),
+          str: myzod.string()
+        })
+      }
+      "
+    `)
   });
   it('with typesPrefix', async () => {
     const schema = buildSchema(/* GraphQL */ `
@@ -358,8 +483,21 @@ describe('myzod', () => {
       },
       {},
     );
-    expect(result.prepend).toContain('import { ISay } from \'./types\'');
-    expect(result.content).toContain('export function ISaySchema(): myzod.Type<ISay> {');
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as myzod from 'myzod'",
+        "import { ISay } from './types'",
+      ]
+    `)
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function ISaySchema(): myzod.Type<ISay> {
+        return myzod.object({
+          phrase: myzod.string()
+        })
+      }
+      "
+    `)
   });
   it('with typesSuffix', async () => {
     const schema = buildSchema(/* GraphQL */ `
@@ -377,8 +515,21 @@ describe('myzod', () => {
       },
       {},
     );
-    expect(result.prepend).toContain('import { SayI } from \'./types\'');
-    expect(result.content).toContain('export function SayISchema(): myzod.Type<SayI> {');
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as myzod from 'myzod'",
+        "import { SayI } from './types'",
+      ]
+    `)
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function SayISchema(): myzod.Type<SayI> {
+        return myzod.object({
+          phrase: myzod.string()
+        })
+      }
+      "
+    `)
   });
   describe('issues #19', () => {
     it('string field', async () => {
@@ -403,12 +554,15 @@ describe('myzod', () => {
         },
         {},
       );
-      const wantContains = [
-        'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
-        'profile: myzod.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000").optional().nullable()',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {
+          return myzod.object({
+            profile: myzod.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000").optional().nullable()
+          })
+        }
+        "
+      `)
     });
     it('not null field', async () => {
       const schema = buildSchema(/* GraphQL */ `
@@ -432,12 +586,15 @@ describe('myzod', () => {
         },
         {},
       );
-      const wantContains = [
-        'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
-        'profile: myzod.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000")',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {
+          return myzod.object({
+            profile: myzod.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000")
+          })
+        }
+        "
+      `)
     });
     it('list field', async () => {
       const schema = buildSchema(/* GraphQL */ `
@@ -461,12 +618,15 @@ describe('myzod', () => {
         },
         {},
       );
-      const wantContains = [
-        'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
-        'profile: myzod.array(myzod.string().nullable()).min(1, "Please input more than 1").max(5000, "Please input less than 5000").optional().nullable()',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {
+          return myzod.object({
+            profile: myzod.array(myzod.string().nullable()).min(1, "Please input more than 1").max(5000, "Please input less than 5000").optional().nullable()
+          })
+        }
+        "
+      `)
     });
   });
 
@@ -510,19 +670,25 @@ describe('myzod', () => {
         },
         {},
       );
-      const wantContains = [
-        'export function AuthorSchema(): myzod.Type<Author> {',
-        '__typename: myzod.literal(\'Author\').optional(),',
-        'books: myzod.array(BookSchema().nullable()).optional().nullable(),',
-        'name: myzod.string().optional().nullable()',
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function BookSchema(): myzod.Type<Book> {
+          return myzod.object({
+            __typename: myzod.literal('Book').optional(),
+            author: AuthorSchema().optional().nullable(),
+            title: myzod.string().optional().nullable()
+          })
+        }
 
-        'export function BookSchema(): myzod.Type<Book> {',
-        '__typename: myzod.literal(\'Book\').optional(),',
-        'author: AuthorSchema().optional().nullable(),',
-        'title: myzod.string().optional().nullable()',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+        export function AuthorSchema(): myzod.Type<Author> {
+          return myzod.object({
+            __typename: myzod.literal('Author').optional(),
+            books: myzod.array(BookSchema().nullable()).optional().nullable(),
+            name: myzod.string().optional().nullable()
+          })
+        }
+        "
+      `)
 
       for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
         expect(result.content).not.toContain(wantNotContain);
@@ -581,28 +747,36 @@ describe('myzod', () => {
         },
         {},
       );
-      const wantContains = [
-        // User Create Input
-        'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
-        'name: myzod.string(),',
-        'date: myzod.date(),',
-        'email: myzod.string().email()',
-        // Username Update Input
-        'export function UsernameUpdateInputSchema(): myzod.Type<UsernameUpdateInput> {',
-        'updateInputId: myzod.number(),',
-        'updateName: myzod.string()',
-        // User
-        'export function UserSchema(): myzod.Type<User> {',
-        '__typename: myzod.literal(\'User\').optional(),',
-        'id: myzod.string(),',
-        'name: myzod.string().optional().nullable(),',
-        'age: myzod.number().optional().nullable(),',
-        'email: myzod.string().email().optional().nullable(),',
-        'isMember: myzod.boolean().optional().nullable(),',
-        'createdAt: myzod.date()',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {
+          return myzod.object({
+            name: myzod.string(),
+            date: myzod.date(),
+            email: myzod.string().email()
+          })
+        }
+
+        export function UsernameUpdateInputSchema(): myzod.Type<UsernameUpdateInput> {
+          return myzod.object({
+            updateInputId: myzod.number(),
+            updateName: myzod.string()
+          })
+        }
+
+        export function UserSchema(): myzod.Type<User> {
+          return myzod.object({
+            __typename: myzod.literal('User').optional(),
+            id: myzod.string(),
+            name: myzod.string().optional().nullable(),
+            age: myzod.number().optional().nullable(),
+            email: myzod.string().email().optional().nullable(),
+            isMember: myzod.boolean().optional().nullable(),
+            createdAt: myzod.date()
+          })
+        }
+        "
+      `)
 
       for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
         expect(result.content).not.toContain(wantNotContain);
@@ -629,14 +803,27 @@ describe('myzod', () => {
         {},
       );
 
-      const wantContains = [
-        // Shape Schema
-        'export function ShapeSchema() {',
-        'return myzod.union([CircleSchema(), SquareSchema()])',
-        '}',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function SquareSchema(): myzod.Type<Square> {
+          return myzod.object({
+            __typename: myzod.literal('Square').optional(),
+            size: myzod.number().optional().nullable()
+          })
+        }
+
+        export function CircleSchema(): myzod.Type<Circle> {
+          return myzod.object({
+            __typename: myzod.literal('Circle').optional(),
+            radius: myzod.number().optional().nullable()
+          })
+        }
+
+        export function ShapeSchema() {
+          return myzod.union([CircleSchema(), SquareSchema()])
+        }
+        "
+      `)
     });
 
     it('generate union types with single element', async () => {
@@ -664,15 +851,34 @@ describe('myzod', () => {
         {},
       );
 
-      const wantContains = [
-        'export function GeometrySchema(): myzod.Type<Geometry> {',
-        'return myzod.object({',
-        '__typename: myzod.literal(\'Geometry\').optional(),',
-        'shape: ShapeSchema().optional().nullable()',
-        '}',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function SquareSchema(): myzod.Type<Square> {
+          return myzod.object({
+            __typename: myzod.literal('Square').optional(),
+            size: myzod.number().optional().nullable()
+          })
+        }
+
+        export function CircleSchema(): myzod.Type<Circle> {
+          return myzod.object({
+            __typename: myzod.literal('Circle').optional(),
+            radius: myzod.number().optional().nullable()
+          })
+        }
+
+        export function ShapeSchema() {
+          return myzod.union([CircleSchema(), SquareSchema()])
+        }
+
+        export function GeometrySchema(): myzod.Type<Geometry> {
+          return myzod.object({
+            __typename: myzod.literal('Geometry').optional(),
+            shape: ShapeSchema().optional().nullable()
+          })
+        }
+        "
+      `)
     });
 
     it('correctly reference generated union types', async () => {
@@ -693,14 +899,20 @@ describe('myzod', () => {
         {},
       );
 
-      const wantContains = [
-        // Shape Schema
-        'export function ShapeSchema() {',
-        'return CircleSchema()',
-        '}',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function CircleSchema(): myzod.Type<Circle> {
+          return myzod.object({
+            __typename: myzod.literal('Circle').optional(),
+            radius: myzod.number().optional().nullable()
+          })
+        }
+
+        export function ShapeSchema() {
+          return CircleSchema()
+        }
+        "
+      `)
     });
 
     it('generate enum union types', async () => {
@@ -728,13 +940,17 @@ describe('myzod', () => {
         {},
       );
 
-      const wantContains = [
-        'export function AnyTypeSchema() {',
-        'return myzod.union([PageTypeSchema, MethodTypeSchema])',
-        '}',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export const PageTypeSchema = myzod.enum(PageType);
+
+        export const MethodTypeSchema = myzod.enum(MethodType);
+
+        export function AnyTypeSchema() {
+          return myzod.union([PageTypeSchema, MethodTypeSchema])
+        }
+        "
+      `)
     });
 
     it('generate union types with single element, export as const', async () => {
@@ -763,14 +979,26 @@ describe('myzod', () => {
         {},
       );
 
-      const wantContains = [
-        'export const GeometrySchema: myzod.Type<Geometry> = myzod.object({',
-        '__typename: myzod.literal(\'Geometry\').optional(),',
-        'shape: ShapeSchema.optional().nullable()',
-        '}',
-      ];
-      for (const wantContain of wantContains)
-        expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export const CircleSchema: myzod.Type<Circle> = myzod.object({
+            __typename: myzod.literal('Circle').optional(),
+            radius: myzod.number().optional().nullable()
+        });
+
+        export const SquareSchema: myzod.Type<Square> = myzod.object({
+            __typename: myzod.literal('Square').optional(),
+            size: myzod.number().optional().nullable()
+        });
+
+        export const ShapeSchema = myzod.union([CircleSchema, SquareSchema]);
+
+        export const GeometrySchema: myzod.Type<Geometry> = myzod.object({
+            __typename: myzod.literal('Geometry').optional(),
+            shape: ShapeSchema.optional().nullable()
+        });
+        "
+      `)
     });
 
     it('with object arguments', async () => {
@@ -792,17 +1020,26 @@ describe('myzod', () => {
         },
         {},
       );
-      const wantContain = dedent`
-      export function MyTypeFooArgsSchema(): myzod.Type<MyTypeFooArgs> {
-        return myzod.object({
-          a: myzod.string().optional().nullable(),
-          b: myzod.number(),
-          c: myzod.boolean().optional().nullable(),
-          d: myzod.number(),
-          e: myzod.string().optional().nullable()
-        })
-      }`;
-      expect(result.content).toContain(wantContain);
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function MyTypeSchema(): myzod.Type<MyType> {
+          return myzod.object({
+            __typename: myzod.literal('MyType').optional(),
+            foo: myzod.string().optional().nullable()
+          })
+        }
+
+        export function MyTypeFooArgsSchema(): myzod.Type<MyTypeFooArgs> {
+          return myzod.object({
+            a: myzod.string().optional().nullable(),
+            b: myzod.number(),
+            c: myzod.boolean().optional().nullable(),
+            d: myzod.number(),
+            e: myzod.string().optional().nullable()
+          })
+        }
+        "
+      `)
     });
 
     describe('with InterfaceType', () => {
@@ -839,13 +1076,16 @@ describe('myzod', () => {
           },
           {},
         );
-        const wantContains = [
-          'export function BookSchema(): myzod.Type<Book> {',
-          'title: myzod.string().optional().nullable()',
-        ];
+        expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+          "
+          export function BookSchema(): myzod.Type<Book> {
+            return myzod.object({
+              title: myzod.string().optional().nullable()
+            })
+          }
+          "
+        `)
         const wantNotContains = ['__typename: myzod.literal(\'Book\')'];
-        for (const wantContain of wantContains)
-          expect(result.content).toContain(wantContain);
 
         for (const wantNotContain of wantNotContains)
           expect(result.content).not.toContain(wantNotContain);
@@ -872,17 +1112,23 @@ describe('myzod', () => {
           },
           {},
         );
-        const wantContains = [
-          'export function AuthorSchema(): myzod.Type<Author> {',
-          'books: myzod.array(BookSchema().nullable()).optional().nullable(),',
-          'name: myzod.string().optional().nullable()',
+        expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+          "
+          export function BookSchema(): myzod.Type<Book> {
+            return myzod.object({
+              author: AuthorSchema().optional().nullable(),
+              title: myzod.string().optional().nullable()
+            })
+          }
 
-          'export function BookSchema(): myzod.Type<Book> {',
-          'author: AuthorSchema().optional().nullable(),',
-          'title: myzod.string().optional().nullable()',
-        ];
-        for (const wantContain of wantContains)
-          expect(result.content).toContain(wantContain);
+          export function AuthorSchema(): myzod.Type<Author> {
+            return myzod.object({
+              books: myzod.array(BookSchema().nullable()).optional().nullable(),
+              name: myzod.string().optional().nullable()
+            })
+          }
+          "
+        `)
       });
       it('generate object type contains interface type', async () => {
         const schema = buildSchema(/* GraphQL */ `
@@ -917,52 +1163,42 @@ describe('myzod', () => {
           },
           {},
         );
-        const wantContains = [
-          [
-            'export function BookSchema(): myzod.Type<Book> {',
-            'return myzod.object({',
-            'title: myzod.string(),',
-            'author: AuthorSchema()',
-            '})',
-            '}',
-          ],
+        expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+          "
+          export function BookSchema(): myzod.Type<Book> {
+            return myzod.object({
+              title: myzod.string(),
+              author: AuthorSchema()
+            })
+          }
 
-          [
-            'export function TextbookSchema(): myzod.Type<Textbook> {',
-            'return myzod.object({',
-            '__typename: myzod.literal(\'Textbook\').optional(),',
-            'title: myzod.string(),',
-            'author: AuthorSchema(),',
-            'courses: myzod.array(myzod.string())',
-            '})',
-            '}',
-          ],
+          export function TextbookSchema(): myzod.Type<Textbook> {
+            return myzod.object({
+              __typename: myzod.literal('Textbook').optional(),
+              title: myzod.string(),
+              author: AuthorSchema(),
+              courses: myzod.array(myzod.string())
+            })
+          }
 
-          [
-            'export function ColoringBookSchema(): myzod.Type<ColoringBook> {',
-            'return myzod.object({',
-            '__typename: myzod.literal(\'ColoringBook\').optional(),',
-            'title: myzod.string(),',
-            'author: AuthorSchema(),',
-            'colors: myzod.array(myzod.string())',
-            '})',
-            '}',
-          ],
+          export function ColoringBookSchema(): myzod.Type<ColoringBook> {
+            return myzod.object({
+              __typename: myzod.literal('ColoringBook').optional(),
+              title: myzod.string(),
+              author: AuthorSchema(),
+              colors: myzod.array(myzod.string())
+            })
+          }
 
-          [
-            'export function AuthorSchema(): myzod.Type<Author> {',
-            'return myzod.object({',
-            '__typename: myzod.literal(\'Author\').optional()',
-            'books: myzod.array(BookSchema()).optional().nullable()',
-            'name: myzod.string().optional().nullable()',
-            '})',
-            '}',
-          ],
-        ];
-        for (const wantContain of wantContains) {
-          for (const wantContainLine of wantContain)
-            expect(result.content).toContain(wantContainLine);
-        }
+          export function AuthorSchema(): myzod.Type<Author> {
+            return myzod.object({
+              __typename: myzod.literal('Author').optional(),
+              books: myzod.array(BookSchema()).optional().nullable(),
+              name: myzod.string().optional().nullable()
+            })
+          }
+          "
+        `)
       });
     });
   });
@@ -990,14 +1226,16 @@ describe('myzod', () => {
       },
       {},
     );
-    const wantContains = [
-      // User Create Input
-      'export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {',
-      'name: myzod.string().pattern(/^Sir/),',
-      'age: myzod.number().min(0).max(100)',
-    ];
-    for (const wantContain of wantContains)
-      expect(result.content).toContain(wantContain);
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function UserCreateInputSchema(): myzod.Type<UserCreateInput> {
+        return myzod.object({
+          name: myzod.string().pattern(/^Sir/),
+          age: myzod.number().min(0).max(100)
+        })
+      }
+      "
+    `)
   });
 
   it('exports as const instead of func', async () => {
@@ -1015,7 +1253,13 @@ describe('myzod', () => {
       },
       {},
     );
-    expect(result.content).toContain('export const SaySchema: myzod.Type<Say> = myzod.object({');
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export const SaySchema: myzod.Type<Say> = myzod.object({
+          phrase: myzod.string()
+      });
+      "
+    `)
   });
 
   it('generate both input & type, export as const', async () => {
@@ -1059,25 +1303,25 @@ describe('myzod', () => {
       },
       {},
     );
-    const wantContains = [
-      // User Create Input
-      'export const UserCreateInputSchema: myzod.Type<UserCreateInput> = myzod.object({',
-      'name: myzod.string(),',
-      'date: myzod.date(),',
-      'email: myzod.string().email()',
-      // User
-      'export const UserSchema: myzod.Type<User> = myzod.object({',
-      '__typename: myzod.literal(\'User\').optional(),',
-      'id: myzod.string(),',
-      'name: myzod.string().optional().nullable(),',
-      'age: myzod.number().optional().nullable(),',
-      'email: myzod.string().email().optional().nullable(),',
-      'isMember: myzod.boolean().optional().nullable(),',
-      'createdAt: myzod.date()',
-    ];
-    for (const wantContain of wantContains)
-      expect(result.content).toContain(wantContain);
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export const UserCreateInputSchema: myzod.Type<UserCreateInput> = myzod.object({
+          name: myzod.string(),
+          date: myzod.date(),
+          email: myzod.string().email()
+      });
 
+      export const UserSchema: myzod.Type<User> = myzod.object({
+          __typename: myzod.literal('User').optional(),
+          id: myzod.string(),
+          name: myzod.string().optional().nullable(),
+          age: myzod.number().optional().nullable(),
+          email: myzod.string().email().optional().nullable(),
+          isMember: myzod.boolean().optional().nullable(),
+          createdAt: myzod.date()
+      });
+      "
+    `)
     for (const wantNotContain of ['Query', 'Mutation', 'Subscription'])
       expect(result.content).not.toContain(wantNotContain);
   });
@@ -1110,13 +1354,17 @@ describe('myzod', () => {
       },
       {},
     );
-    const wantContain = dedent`
-    export function QueryInputSchema(): myzod.Type<QueryInput> {
-      return myzod.object({
-        _dummy: TestSchema.optional().nullable()
-      })
-    }`;
-    expect(result.content).toContain(wantContain);
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export const TestSchema = myzod.enum(Test);
+
+      export function QueryInputSchema(): myzod.Type<QueryInput> {
+        return myzod.object({
+          _dummy: TestSchema.optional().nullable()
+        })
+      }
+      "
+    `)
   });
 
   it('with default input values', async () => {
@@ -1143,13 +1391,20 @@ describe('myzod', () => {
       {},
     );
 
-    expect(result.content).toContain('export const PageTypeSchema = myzod.enum(PageType)');
-    expect(result.content).toContain('export function PageInputSchema(): myzod.Type<PageInput>');
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = myzod.enum(PageType);
 
-    expect(result.content).toContain('pageType: PageTypeSchema.default("PUBLIC")');
-    expect(result.content).toContain('greeting: myzod.string().default("Hello").optional().nullable()');
-    expect(result.content).toContain('score: myzod.number().default(100).optional().nullable()');
-    expect(result.content).toContain('ratio: myzod.number().default(0.5).optional().nullable()');
-    expect(result.content).toContain('isMember: myzod.boolean().default(true).optional().nullable()');
+      export function PageInputSchema(): myzod.Type<PageInput> {
+        return myzod.object({
+          pageType: PageTypeSchema.default("PUBLIC"),
+          greeting: myzod.string().default("Hello").optional().nullable(),
+          score: myzod.number().default(100).optional().nullable(),
+          ratio: myzod.number().default(0.5).optional().nullable(),
+          isMember: myzod.boolean().default(true).optional().nullable()
+        })
+      }
+      "
+    `)
   });
 });
