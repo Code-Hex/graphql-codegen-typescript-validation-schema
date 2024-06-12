@@ -825,12 +825,12 @@ describe('yup', () => {
             author: Author
             title: String
           }
-  
+
           interface Book2 {
             author: Author!
             title: String!
           }
-  
+
           interface Author {
             books: [Book]
             name: String
@@ -870,19 +870,19 @@ describe('yup', () => {
             title: String!
             author: Author!
           }
-  
+
           type Textbook implements Book {
             title: String!
             author: Author!
             courses: [String!]!
           }
-  
+
           type ColoringBook implements Book {
             title: String!
             author: Author!
             colors: [String!]!
           }
-  
+
           type Author {
             books: [Book!]
             name: String
