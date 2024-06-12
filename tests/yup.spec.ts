@@ -4,176 +4,209 @@ import dedent from 'ts-dedent';
 import { plugin } from '../src/index';
 
 describe('yup', () => {
-  it.each([
-    [
-      'defined',
-      {
-        textSchema: /* GraphQL */ `
-          input PrimitiveInput {
-            a: ID!
-            b: String!
-            c: Boolean!
-            d: Int!
-            e: Float!
-          }
-        `,
-        wantContains: [
-          'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
-          'a: yup.string().defined()',
-          'b: yup.string().defined()',
-          'c: yup.boolean().defined()',
-          'd: yup.number().defined()',
-          'e: yup.number().defined()',
-        ],
-        scalars: {
-          ID: 'string',
-        },
-      },
-    ],
-    [
-      'optional',
-      {
-        textSchema: /* GraphQL */ `
-          input PrimitiveInput {
-            a: ID
-            b: String
-            c: Boolean
-            d: Int
-            e: Float
-            z: String! # no defined check
-          }
-        `,
-        wantContains: [
-          'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
-          // alphabet order
-          'a: yup.string().defined().nullable().optional(),',
-          'b: yup.string().defined().nullable().optional(),',
-          'c: yup.boolean().defined().nullable().optional(),',
-          'd: yup.number().defined().nullable().optional(),',
-          'e: yup.number().defined().nullable().optional(),',
-        ],
-        scalars: {
-          ID: 'string',
-        },
-      },
-    ],
-    [
-      'array',
-      {
-        textSchema: /* GraphQL */ `
-          input ArrayInput {
-            a: [String]
-            b: [String!]
-            c: [String!]!
-            d: [[String]]
-            e: [[String]!]
-            f: [[String]!]!
-          }
-        `,
-        wantContains: [
-          'export function ArrayInputSchema(): yup.ObjectSchema<ArrayInput>',
-          'a: yup.array(yup.string().defined().nullable()).defined().nullable().optional(),',
-          'b: yup.array(yup.string().defined().nonNullable()).defined().nullable().optional(),',
-          'c: yup.array(yup.string().defined().nonNullable()).defined(),',
-          'd: yup.array(yup.array(yup.string().defined().nullable()).defined().nullable()).defined().nullable().optional(),',
-          'e: yup.array(yup.array(yup.string().defined().nullable()).defined()).defined().nullable().optional(),',
-          'f: yup.array(yup.array(yup.string().defined().nullable()).defined()).defined()',
-        ],
-        scalars: undefined,
-      },
-    ],
-    [
-      'ref input object',
-      {
-        textSchema: /* GraphQL */ `
-          input AInput {
-            b: BInput!
-          }
-          input BInput {
-            c: CInput!
-          }
-          input CInput {
-            a: AInput!
-          }
-        `,
-        wantContains: [
-          'export function AInputSchema(): yup.ObjectSchema<AInput>',
-          'b: yup.lazy(() => BInputSchema().nonNullable())',
-          'export function BInputSchema(): yup.ObjectSchema<BInput>',
-          'c: yup.lazy(() => CInputSchema().nonNullable())',
-          'export function CInputSchema(): yup.ObjectSchema<CInput>',
-          'a: yup.lazy(() => AInputSchema().nonNullable())',
-        ],
-        scalars: undefined,
-      },
-    ],
-    [
-      'nested input object',
-      {
-        textSchema: /* GraphQL */ `
-          input NestedInput {
-            child: NestedInput
-            childrens: [NestedInput]
-          }
-        `,
-        wantContains: [
-          'export function NestedInputSchema(): yup.ObjectSchema<NestedInput>',
-          'child: yup.lazy(() => NestedInputSchema()).optional(),',
-          'childrens: yup.array(yup.lazy(() => NestedInputSchema())).defined().nullable().optional()',
-        ],
-        scalars: undefined,
-      },
-    ],
-    [
-      'enum',
-      {
-        textSchema: /* GraphQL */ `
-          enum PageType {
-            PUBLIC
-            BASIC_AUTH
-          }
-          input PageInput {
-            pageType: PageType!
-          }
-        `,
-        wantContains: [
-          'export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined();',
-          'export function PageInputSchema(): yup.ObjectSchema<PageInput>',
-          'pageType: PageTypeSchema.nonNullable()',
-        ],
-        scalars: undefined,
-      },
-    ],
-    [
-      'camelcase',
-      {
-        textSchema: /* GraphQL */ `
-          input HTTPInput {
-            method: HTTPMethod
-            url: URL!
-          }
+  it('defined', async () => {
+    const textSchema = /* GraphQL */ `
+      input PrimitiveInput {
+        a: ID!
+        b: String!
+        c: Boolean!
+        d: Int!
+        e: Float!
+      }
+    `;
+    const wantContains = [
+      'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
+      'a: yup.string().defined()',
+      'b: yup.string().defined()',
+      'c: yup.boolean().defined()',
+      'd: yup.number().defined()',
+      'e: yup.number().defined()',
+    ];
+    const scalars = { ID: 'string' };
 
-          enum HTTPMethod {
-            GET
-            POST
-          }
-
-          scalar URL # unknown scalar, should be any (yup.mixed())
-        `,
-        wantContains: [
-          'export function HttpInputSchema(): yup.ObjectSchema<HttpInput>',
-          'export const HttpMethodSchema = yup.string<HttpMethod>().oneOf(Object.values(HttpMethod)).defined();',
-          'method: HttpMethodSchema.nullable().optional(),',
-          'url: yup.mixed().nonNullable()',
-        ],
-        scalars: undefined,
-      },
-    ],
-  ])('%s', async (_, { textSchema, wantContains, scalars }) => {
     const schema = buildSchema(textSchema);
     const result = await plugin(schema, [], { scalars }, {});
+
     expect(result.prepend).toContain('import * as yup from \'yup\'');
 
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
+
+  it('optional', async () => {
+    const textSchema = /* GraphQL */ `
+      input PrimitiveInput {
+        a: ID
+        b: String
+        c: Boolean
+        d: Int
+        e: Float
+        z: String! # no defined check
+      }
+    `;
+    const wantContains = [
+      'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
+      'a: yup.string().defined().nullable().optional(),',
+      'b: yup.string().defined().nullable().optional(),',
+      'c: yup.boolean().defined().nullable().optional(),',
+      'd: yup.number().defined().nullable().optional(),',
+      'e: yup.number().defined().nullable().optional(),',
+    ];
+    const scalars = { ID: 'string' };
+
+    const schema = buildSchema(textSchema);
+    const result = await plugin(schema, [], { scalars }, {});
+
+    expect(result.prepend).toContain('import * as yup from \'yup\'');
+
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
+
+  it('array', async () => {
+    const textSchema = /* GraphQL */ `
+      input ArrayInput {
+        a: [String]
+        b: [String!]
+        c: [String!]!
+        d: [[String]]
+        e: [[String]!]
+        f: [[String]!]!
+      }
+    `;
+    const wantContains = [
+      'export function ArrayInputSchema(): yup.ObjectSchema<ArrayInput>',
+      'a: yup.array(yup.string().defined().nullable()).defined().nullable().optional(),',
+      'b: yup.array(yup.string().defined().nonNullable()).defined().nullable().optional(),',
+      'c: yup.array(yup.string().defined().nonNullable()).defined(),',
+      'd: yup.array(yup.array(yup.string().defined().nullable()).defined().nullable()).defined().nullable().optional(),',
+      'e: yup.array(yup.array(yup.string().defined().nullable()).defined()).defined().nullable().optional(),',
+      'f: yup.array(yup.array(yup.string().defined().nullable()).defined()).defined()',
+    ];
+
+    const schema = buildSchema(textSchema);
+    const result = await plugin(schema, [], {}, {});
+
+    expect(result.prepend).toContain('import * as yup from \'yup\'');
+
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
+
+  it('ref input object', async () => {
+    const textSchema = /* GraphQL */ `
+      input AInput {
+        b: BInput!
+      }
+      input BInput {
+        c: CInput!
+      }
+      input CInput {
+        a: AInput!
+      }
+    `;
+    const wantContains = [
+      'export function AInputSchema(): yup.ObjectSchema<AInput>',
+      'b: yup.lazy(() => BInputSchema().nonNullable())',
+      'export function BInputSchema(): yup.ObjectSchema<BInput>',
+      'c: yup.lazy(() => CInputSchema().nonNullable())',
+      'export function CInputSchema(): yup.ObjectSchema<CInput>',
+      'a: yup.lazy(() => AInputSchema().nonNullable())',
+    ];
+
+    const schema = buildSchema(textSchema);
+    const result = await plugin(schema, [], {}, {});
+
+    expect(result.prepend).toContain('import * as yup from \'yup\'');
+
+    for (const wantContain of wantContains) {
+      expect(result.content).toContain(wantContain);
+    }
+  });
+
+
+  it('nested input object', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input NestedInput {
+        child: NestedInput
+        childrens: [NestedInput]
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        scalars: undefined,
+      },
+      {},
+    );
+    const wantContains = [
+      'export function NestedInputSchema(): yup.ObjectSchema<NestedInput>',
+      'child: yup.lazy(() => NestedInputSchema()).optional(),',
+      'childrens: yup.array(yup.lazy(() => NestedInputSchema())).defined().nullable().optional()',
+    ]
+    for (const wantContain of wantContains)
+      expect(result.content).toContain(wantContain);
+  });
+
+  it('enum', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        scalars: undefined,
+      },
+      {},
+    );
+    const wantContains = [
+      'export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined();',
+      'export function PageInputSchema(): yup.ObjectSchema<PageInput>',
+      'pageType: PageTypeSchema.nonNullable()',
+    ]
+    for (const wantContain of wantContains)
+      expect(result.content).toContain(wantContain);
+  });
+
+  it('camelcase', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input HTTPInput {
+        method: HTTPMethod
+        url: URL!
+      }
+
+      enum HTTPMethod {
+        GET
+        POST
+      }
+
+      scalar URL # unknown scalar, should be any (yup.mixed())
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        scalars: undefined,
+      },
+      {},
+    );
+    const wantContains = [
+      'export function HttpInputSchema(): yup.ObjectSchema<HttpInput>',
+      'export const HttpMethodSchema = yup.string<HttpMethod>().oneOf(Object.values(HttpMethod)).defined();',
+      'method: HttpMethodSchema.nullable().optional(),',
+      'url: yup.mixed().nonNullable()',
+    ]
     for (const wantContain of wantContains)
       expect(result.content).toContain(wantContain);
   });
