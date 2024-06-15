@@ -539,6 +539,7 @@ describe('zod', () => {
       input PageInput {
         pageType: PageType! = PUBLIC
         greeting: String = "Hello"
+        newline: String = "Hello\\nWorld"
         score: Int = 100
         ratio: Float = 0.5
         isMember: Boolean = true
@@ -562,6 +563,7 @@ describe('zod', () => {
         return z.object({
           pageType: PageTypeSchema.default("PUBLIC"),
           greeting: z.string().default("Hello").nullish(),
+          newline: z.string().default("Hello\\nWorld").nullish(),
           score: z.number().default(100).nullish(),
           ratio: z.number().default(0.5).nullish(),
           isMember: z.boolean().default(true).nullish()
