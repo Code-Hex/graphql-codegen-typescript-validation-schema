@@ -22,6 +22,7 @@ import type { Visitor } from '../visitor';
 import {
   InterfaceTypeDefinitionBuilder,
   ObjectTypeDefinitionBuilder,
+  escapeGraphQLCharacters,
   isInput,
   isListType,
   isNamedType,
@@ -284,7 +285,7 @@ function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitio
         }
 
         if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
-          fieldSchema = `${fieldSchema}.default("${defaultValue.value}")`;
+          fieldSchema = `${fieldSchema}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;
       }
 
       if (isNonNullType(field.type))

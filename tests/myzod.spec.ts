@@ -1376,6 +1376,7 @@ describe('myzod', () => {
       input PageInput {
         pageType: PageType! = PUBLIC
         greeting: String = "Hello"
+        newline: String = "Hello\\nWorld"
         score: Int = 100
         ratio: Float = 0.5
         isMember: Boolean = true
@@ -1399,6 +1400,7 @@ describe('myzod', () => {
         return myzod.object({
           pageType: PageTypeSchema.default("PUBLIC"),
           greeting: myzod.string().default("Hello").optional().nullable(),
+          newline: myzod.string().default("Hello\\nWorld").optional().nullable(),
           score: myzod.number().default(100).optional().nullable(),
           ratio: myzod.number().default(0.5).optional().nullable(),
           isMember: myzod.boolean().default(true).optional().nullable()

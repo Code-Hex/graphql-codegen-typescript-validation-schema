@@ -22,6 +22,7 @@ import type { Visitor } from '../visitor';
 import {
   InterfaceTypeDefinitionBuilder,
   ObjectTypeDefinitionBuilder,
+  escapeGraphQLCharacters,
   isInput,
   isListType,
   isNamedType,
@@ -295,7 +296,7 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
         appliedDirectivesGen = `${appliedDirectivesGen}.default(${defaultValue.value})`;
 
       if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
-        appliedDirectivesGen = `${appliedDirectivesGen}.default("${defaultValue.value}")`;
+        appliedDirectivesGen = `${appliedDirectivesGen}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;
     }
 
     if (isNonNullType(parentType)) {

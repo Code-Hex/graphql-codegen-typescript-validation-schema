@@ -1400,6 +1400,7 @@ describe('yup', () => {
       input PageInput {
         pageType: PageType! = PUBLIC
         greeting: String = "Hello"
+        newline: String = "Hello\\nWorld"
         score: Int = 100
         ratio: Float = 0.5
         isMember: Boolean = true
@@ -1423,6 +1424,7 @@ describe('yup', () => {
         return yup.object({
           pageType: PageTypeSchema.nonNullable().default("PUBLIC"),
           greeting: yup.string().defined().nullable().default("Hello").optional(),
+          newline: yup.string().defined().nullable().default("Hello\\nWorld").optional(),
           score: yup.number().defined().nullable().default(100).optional(),
           ratio: yup.number().defined().nullable().default(0.5).optional(),
           isMember: yup.boolean().defined().nullable().default(true).optional()

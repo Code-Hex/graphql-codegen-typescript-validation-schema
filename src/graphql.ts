@@ -185,3 +185,20 @@ export function isGeneratedByIntrospection(schema: GraphQLSchema): boolean {
     .filter(([name, type]) => !name.startsWith('__') && !isSpecifiedScalarType(type))
     .every(([, type]) => type.astNode === undefined)
 }
+
+// https://spec.graphql.org/October2021/#EscapedCharacter
+const escapeMap: { [key: string]: string } = {
+  '\"': '\\\"',
+  '\\': '\\\\',
+  '\/': '\\/',
+  '\b': '\\b',
+  '\f': '\\f',
+  '\n': '\\n',
+  '\r': '\\r',
+  '\t': '\\t',
+};
+
+export function escapeGraphQLCharacters(input: string): string {
+  // eslint-disable-next-line regexp/no-escape-backspace
+  return input.replace(/["\\/\f\n\r\t\b]/g, match => escapeMap[match]);
+}

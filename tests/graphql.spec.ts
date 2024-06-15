@@ -12,7 +12,7 @@ import {
 } from 'graphql';
 import dedent from 'ts-dedent';
 
-import { ObjectTypeDefinitionBuilder, isGeneratedByIntrospection, topologicalSortAST, topsort } from '../src/graphql';
+import { ObjectTypeDefinitionBuilder, escapeGraphQLCharacters, isGeneratedByIntrospection, topologicalSortAST, topsort } from '../src/graphql';
 
 describe('graphql', () => {
   describe('objectTypeDefinitionBuilder', () => {
@@ -295,5 +295,67 @@ describe('isGeneratedByIntrospection function', () => {
     const query = introspectionFromSchema(schema);
     const clientSchema = buildClientSchema(query);
     expect(isGeneratedByIntrospection(clientSchema)).toBe(true);
+  });
+});
+
+describe('escapeGraphQLCharacters', () => {
+  it('should escape double quotes', () => {
+    const input = 'This is a "test" string.';
+    const expected = 'This is a \\\"test\\\" string.';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
+  });
+
+  it('should escape backslashes', () => {
+    const input = 'This is a backslash: \\';
+    const expected = 'This is a backslash: \\\\';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
+  });
+
+  it('should escape forward slashes', () => {
+    const input = 'This is a forward slash: /';
+    const expected = 'This is a forward slash: \\/';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
+  });
+
+  it('should escape backspaces', () => {
+    const input = 'This is a backspace: \b';
+    const expected = 'This is a backspace: \\b';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
+  });
+
+  it('should escape form feeds', () => {
+    const input = 'This is a form feed: \f';
+    const expected = 'This is a form feed: \\f';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
+  });
+
+  it('should escape new lines', () => {
+    const input = 'This is a new line: \n';
+    const expected = 'This is a new line: \\n';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
+  });
+
+  it('should escape carriage returns', () => {
+    const input = 'This is a carriage return: \r';
+    const expected = 'This is a carriage return: \\r';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
+  });
+
+  it('should escape horizontal tabs', () => {
+    const input = 'This is a tab: \t';
+    const expected = 'This is a tab: \\t';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
+  });
+
+  it('should escape multiple special characters', () => {
+    const input = 'This is a "test" string with \n new line and \t tab.';
+    const expected = 'This is a \\\"test\\\" string with \\n new line and \\t tab.';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
+  });
+
+  it('should not escape non-special characters', () => {
+    const input = 'Normal string with no special characters.';
+    const expected = 'Normal string with no special characters.';
+    expect(escapeGraphQLCharacters(input)).toBe(expected);
   });
 });
