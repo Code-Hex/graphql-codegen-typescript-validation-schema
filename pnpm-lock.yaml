@@ -67,8 +67,8 @@ importers:
         specifier: 5.5.2
         version: 5.5.2
       valibot:
-        specifier: 0.33.3
-        version: 0.33.3
+        specifier: 0.34.0
+        version: 0.34.0
       vitest:
         specifier: ^1.0.0
         version: 1.6.0(@types/node@20.14.8)
@@ -3705,8 +3705,8 @@ packages:
     resolution: {integrity: sha512-74Y4LqY74kLE6IFyIjPtkSTWzUZmj8tdHT9Ii/26dvQ6K9Dl2NbEfj0XgU2sHCtKgt5VupqhlO/5aWuqS+IY1w==}
     engines: {node: '>=10.12.0'}
 
-  valibot@0.33.3:
-    resolution: {integrity: sha512-/fuY1DlX8uiQ7aphlzrrI2DbG0YJk84JMgvz2qKpUIdXRNsS53varfo4voPjSrjUr5BSV2K0miSEJUOlA5fQFg==}
+  valibot@0.34.0:
+    resolution: {integrity: sha512-TELvxO0hEB1/6XjTS5Jfi4dS0oyawA5flxs4/sK/tSUXnlLMiKTMYE6Atuu0a7kvtP3eqPv3yZ80msfM+qMDHA==}
 
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
@@ -8363,7 +8363,7 @@ snapshots:
       '@types/istanbul-lib-coverage': 2.0.4
       convert-source-map: 1.9.0
 
-  valibot@0.33.3: {}
+  valibot@0.34.0: {}
 
   validate-npm-package-license@3.0.4:
     dependencies:
