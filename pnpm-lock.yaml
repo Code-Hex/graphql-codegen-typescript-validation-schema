@@ -16,7 +16,7 @@ importers:
         version: 4.1.0(graphql@16.9.0)
       '@graphql-codegen/visitor-plugin-common':
         specifier: ^5.0.0
-        version: 5.3.0(graphql@16.9.0)
+        version: 5.3.1(graphql@16.9.0)
       '@graphql-tools/utils':
         specifier: ^10.0.0
         version: 10.2.3(graphql@16.9.0)
@@ -32,10 +32,10 @@ importers:
         version: 2.21.2(@vue/compiler-sfc@3.4.22)(eslint@9.6.0)(typescript@5.5.3)(vitest@1.6.0(@types/node@20.14.9))
       '@graphql-codegen/cli':
         specifier: 5.0.2
-        version: 5.0.2(@babel/core@7.24.7)(@types/node@20.14.9)(graphql@16.9.0)
+        version: 5.0.2(@babel/core@7.22.5)(@types/node@20.14.9)(graphql@16.9.0)
       '@graphql-codegen/typescript':
         specifier: ^4.0.0
-        version: 4.0.8(graphql@16.9.0)
+        version: 4.0.9(graphql@16.9.0)
       '@tsconfig/recommended':
         specifier: 1.0.7
         version: 1.0.7
@@ -62,7 +62,7 @@ importers:
         version: 2.2.0
       ts-jest:
         specifier: 29.1.5
-        version: 29.1.5(@babel/core@7.24.7)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.24.7))(jest@29.7.0(@types/node@20.14.9))(typescript@5.5.3)
+        version: 29.1.5(@babel/core@7.22.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.22.5))(jest@29.7.0(@types/node@20.14.9))(typescript@5.5.3)
       typescript:
         specifier: 5.5.3
         version: 5.5.3
@@ -161,10 +161,6 @@ packages:
 
   '@babel/code-frame@7.23.5':
     resolution: {integrity: sha512-CgH3s1a96LipHCmSUmYFPwY7MNx8C3avkq7i4Wl3cfa662ldtUe4VM1TPXX70pfmrlWTb6jLqTYrZyT2ZTJBgA==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/code-frame@7.24.2':
-    resolution: {integrity: sha512-y5+tLQyV8pg3fsiln67BVLD1P13Eg4lh5RW9mF0zUuvLrv9uIQ4MCL+CRT+FTsBlBjcIan6PGsLcBN0m3ClUyQ==}
     engines: {node: '>=6.9.0'}
 
   '@babel/code-frame@7.24.7':
@@ -307,10 +303,6 @@ packages:
     resolution: {integrity: sha512-AsUnxuLhRYsisFiaJwvp1QF+I3KjD5FOxut14q/GzovUe6orHLesW2C7d754kRm53h5gqrz6sFl6sxc4BVtE/g==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/helper-split-export-declaration@7.24.5':
-    resolution: {integrity: sha512-5CHncttXohrHk8GWOFCcCl4oRD9fKosWlIRgWm4ql9VYioKm52Mk2xsmoohvm7f3JoiLSM5ZgJuRaf5QZZYd3Q==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/helper-split-export-declaration@7.24.7':
     resolution: {integrity: sha512-oy5V7pD+UvfkEATUKvIjvIAH/xCzfsFVw7ygW2SI6NClZzquT+mwdTfgfdbUiceh6iQO0CHtCPsyze/MZ2YbAA==}
     engines: {node: '>=6.9.0'}
@@ -321,10 +313,6 @@ packages:
 
   '@babel/helper-string-parser@7.23.4':
     resolution: {integrity: sha512-803gmbQdqwdf4olxrX4AJyFBV/RTr3rSmOj0rKwesmzlfhYNDEs+/iOcznzpNWlJlIlTJC2QfPFcHB6DlzdVLQ==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/helper-string-parser@7.24.1':
-    resolution: {integrity: sha512-2ofRCjnnA9y+wk8b9IAREroeUP02KHp431N2mhKniy2yKIDKpbrHv9eXwm8cBeWQYcJmzv5qKCu65P47eCF7CQ==}
     engines: {node: '>=6.9.0'}
 
   '@babel/helper-string-parser@7.24.7':
@@ -357,10 +345,6 @@ packages:
 
   '@babel/highlight@7.23.4':
     resolution: {integrity: sha512-acGdbYSfp2WheJoJm/EBBBLh/ID8KDc64ISZ9DYtBmC8/Q204PZJLHyzeB5qMzJ5trcOkybd78M4x2KWsUq++A==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/highlight@7.24.5':
-    resolution: {integrity: sha512-8lLmua6AVh/8SLJRRVD6V8p73Hir9w5mJrhE+IPpILG31KKlI9iz5zmBYKcWPS59qSfgP9RaSBQSHHE81WKuEw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/highlight@7.24.7':
@@ -624,10 +608,6 @@ packages:
     resolution: {integrity: sha512-+xrD2BWLpvHKNmX2QbpdpsBaWnRxahMwJjO+KZk2JOElj5nSmKezyS1B4u+QbHMTX69t4ukm6hh9lsYQ7GHCKA==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/template@7.24.0':
-    resolution: {integrity: sha512-Bkf2q8lMB0AFpX0NFEqSbx1OkTHf0f+0j82mkw+ZpzBnkk7e9Ql0891vlfgi+kHwOk8tQjiQHpqh4LaSa0fKEA==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/template@7.24.7':
     resolution: {integrity: sha512-jYqfPrU9JTF0PmPy1tLYHW4Mp4KlgxJD9l2nP9fD6yT/ICi554DmrWBAEYpIelzjHf1msDP3PxJIRt/nFNfBig==}
     engines: {node: '>=6.9.0'}
@@ -889,8 +869,8 @@ packages:
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
 
-  '@graphql-codegen/typescript@4.0.8':
-    resolution: {integrity: sha512-kYS3SjGNnC9vgFS8N3vaxzRFkdXX2umMi1SOpHjMFCPjMe8NR0uNdW4nP9T0YEq+DvWgj+XojjpFy2oyz9q12w==}
+  '@graphql-codegen/typescript@4.0.9':
+    resolution: {integrity: sha512-0O35DMR4d/ctuHL1Zo6mRUUzp0BoszKfeWsa6sCm/g70+S98+hEfTwZNDkQHylLxapiyjssF9uw/F+sXqejqLw==}
     peerDependencies:
       graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
 
@@ -899,8 +879,8 @@ packages:
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
 
-  '@graphql-codegen/visitor-plugin-common@5.3.0':
-    resolution: {integrity: sha512-+kUk7gRD/72Wfkjd7D96Lonh9k4lFw9d3O1+I07Jyja4QN9H42kdFEO0hM/b4Q9lLkI1yJ66Oym7lWz2Ikj3aw==}
+  '@graphql-codegen/visitor-plugin-common@5.3.1':
+    resolution: {integrity: sha512-MktoBdNZhSmugiDjmFl1z6rEUUaqyxtFJYWnDilE7onkPgyw//O0M+TuPBJPBWdyV6J2ond0Hdqtq+rkghgSIQ==}
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
 
@@ -4080,11 +4060,6 @@ snapshots:
       '@babel/highlight': 7.23.4
       chalk: 2.4.2
 
-  '@babel/code-frame@7.24.2':
-    dependencies:
-      '@babel/highlight': 7.24.5
-      picocolors: 1.0.1
-
   '@babel/code-frame@7.24.7':
     dependencies:
       '@babel/highlight': 7.24.7
@@ -4225,8 +4200,8 @@ snapshots:
 
   '@babel/helper-function-name@7.23.0':
     dependencies:
-      '@babel/template': 7.24.0
-      '@babel/types': 7.24.5
+      '@babel/template': 7.23.9
+      '@babel/types': 7.23.9
 
   '@babel/helper-function-name@7.24.7':
     dependencies:
@@ -4235,7 +4210,7 @@ snapshots:
 
   '@babel/helper-hoist-variables@7.22.5':
     dependencies:
-      '@babel/types': 7.24.5
+      '@babel/types': 7.23.9
 
   '@babel/helper-hoist-variables@7.24.7':
     dependencies:
@@ -4327,10 +4302,6 @@ snapshots:
     dependencies:
       '@babel/types': 7.23.9
 
-  '@babel/helper-split-export-declaration@7.24.5':
-    dependencies:
-      '@babel/types': 7.24.5
-
   '@babel/helper-split-export-declaration@7.24.7':
     dependencies:
       '@babel/types': 7.24.7
@@ -4338,8 +4309,6 @@ snapshots:
   '@babel/helper-string-parser@7.22.5': {}
 
   '@babel/helper-string-parser@7.23.4': {}
-
-  '@babel/helper-string-parser@7.24.1': {}
 
   '@babel/helper-string-parser@7.24.7': {}
 
@@ -4373,13 +4342,6 @@ snapshots:
       '@babel/helper-validator-identifier': 7.24.7
       chalk: 2.4.2
       js-tokens: 4.0.0
-
-  '@babel/highlight@7.24.5':
-    dependencies:
-      '@babel/helper-validator-identifier': 7.24.7
-      chalk: 2.4.2
-      js-tokens: 4.0.0
-      picocolors: 1.0.1
 
   '@babel/highlight@7.24.7':
     dependencies:
@@ -4426,22 +4388,10 @@ snapshots:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
 
-  '@babel/plugin-syntax-async-generators@7.8.4(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
-
   '@babel/plugin-syntax-bigint@7.8.3(@babel/core@7.22.5)':
     dependencies:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
-
-  '@babel/plugin-syntax-bigint@7.8.3(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
 
   '@babel/plugin-syntax-class-properties@7.12.13(@babel/core@7.22.5)':
     dependencies:
@@ -4458,9 +4408,9 @@ snapshots:
       '@babel/core': 7.24.7
       '@babel/helper-plugin-utils': 7.24.7
 
-  '@babel/plugin-syntax-import-assertions@7.20.0(@babel/core@7.24.7)':
+  '@babel/plugin-syntax-import-assertions@7.20.0(@babel/core@7.22.5)':
     dependencies:
-      '@babel/core': 7.24.7
+      '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
 
   '@babel/plugin-syntax-import-meta@7.10.4(@babel/core@7.22.5)':
@@ -4468,22 +4418,10 @@ snapshots:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
 
-  '@babel/plugin-syntax-import-meta@7.10.4(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
-
   '@babel/plugin-syntax-json-strings@7.8.3(@babel/core@7.22.5)':
     dependencies:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
-
-  '@babel/plugin-syntax-json-strings@7.8.3(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
 
   '@babel/plugin-syntax-jsx@7.22.5(@babel/core@7.22.5)':
     dependencies:
@@ -4500,33 +4438,15 @@ snapshots:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
 
-  '@babel/plugin-syntax-logical-assignment-operators@7.10.4(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
-
   '@babel/plugin-syntax-nullish-coalescing-operator@7.8.3(@babel/core@7.22.5)':
     dependencies:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
 
-  '@babel/plugin-syntax-nullish-coalescing-operator@7.8.3(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
-
   '@babel/plugin-syntax-numeric-separator@7.10.4(@babel/core@7.22.5)':
     dependencies:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
-
-  '@babel/plugin-syntax-numeric-separator@7.10.4(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
 
   '@babel/plugin-syntax-object-rest-spread@7.8.3(@babel/core@7.22.5)':
     dependencies:
@@ -4543,33 +4463,15 @@ snapshots:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
 
-  '@babel/plugin-syntax-optional-catch-binding@7.8.3(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
-
   '@babel/plugin-syntax-optional-chaining@7.8.3(@babel/core@7.22.5)':
     dependencies:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
 
-  '@babel/plugin-syntax-optional-chaining@7.8.3(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
-
   '@babel/plugin-syntax-top-level-await@7.14.5(@babel/core@7.22.5)':
     dependencies:
       '@babel/core': 7.22.5
       '@babel/helper-plugin-utils': 7.22.5
-
-  '@babel/plugin-syntax-top-level-await@7.14.5(@babel/core@7.24.7)':
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/helper-plugin-utils': 7.22.5
-    optional: true
 
   '@babel/plugin-syntax-typescript@7.16.7(@babel/core@7.22.5)':
     dependencies:
@@ -4724,12 +4626,6 @@ snapshots:
       '@babel/parser': 7.23.9
       '@babel/types': 7.23.9
 
-  '@babel/template@7.24.0':
-    dependencies:
-      '@babel/code-frame': 7.24.2
-      '@babel/parser': 7.24.5
-      '@babel/types': 7.24.5
-
   '@babel/template@7.24.7':
     dependencies:
       '@babel/code-frame': 7.24.7
@@ -4753,13 +4649,13 @@ snapshots:
 
   '@babel/traverse@7.24.5':
     dependencies:
-      '@babel/code-frame': 7.24.2
+      '@babel/code-frame': 7.24.7
       '@babel/generator': 7.24.5
-      '@babel/helper-environment-visitor': 7.22.20
-      '@babel/helper-function-name': 7.23.0
-      '@babel/helper-hoist-variables': 7.22.5
-      '@babel/helper-split-export-declaration': 7.24.5
-      '@babel/parser': 7.24.5
+      '@babel/helper-environment-visitor': 7.24.7
+      '@babel/helper-function-name': 7.24.7
+      '@babel/helper-hoist-variables': 7.24.7
+      '@babel/helper-split-export-declaration': 7.24.7
+      '@babel/parser': 7.24.7
       '@babel/types': 7.24.5
       debug: 4.3.5
       globals: 11.12.0
@@ -4795,7 +4691,7 @@ snapshots:
 
   '@babel/types@7.24.5':
     dependencies:
-      '@babel/helper-string-parser': 7.24.1
+      '@babel/helper-string-parser': 7.24.7
       '@babel/helper-validator-identifier': 7.24.7
       to-fast-properties: 2.0.0
 
@@ -4935,7 +4831,7 @@ snapshots:
       graphql: 16.9.0
       tslib: 2.6.1
 
-  '@graphql-codegen/cli@5.0.2(@babel/core@7.24.7)(@types/node@20.14.9)(graphql@16.9.0)':
+  '@graphql-codegen/cli@5.0.2(@babel/core@7.22.5)(@types/node@20.14.9)(graphql@16.9.0)':
     dependencies:
       '@babel/generator': 7.22.5
       '@babel/template': 7.22.5
@@ -4944,9 +4840,9 @@ snapshots:
       '@graphql-codegen/core': 4.0.2(graphql@16.9.0)
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
       '@graphql-tools/apollo-engine-loader': 8.0.0(graphql@16.9.0)
-      '@graphql-tools/code-file-loader': 8.0.0(@babel/core@7.24.7)(graphql@16.9.0)
-      '@graphql-tools/git-loader': 8.0.0(@babel/core@7.24.7)(graphql@16.9.0)
-      '@graphql-tools/github-loader': 8.0.0(@babel/core@7.24.7)(@types/node@20.14.9)(graphql@16.9.0)
+      '@graphql-tools/code-file-loader': 8.0.0(@babel/core@7.22.5)(graphql@16.9.0)
+      '@graphql-tools/git-loader': 8.0.0(@babel/core@7.22.5)(graphql@16.9.0)
+      '@graphql-tools/github-loader': 8.0.0(@babel/core@7.22.5)(@types/node@20.14.9)(graphql@16.9.0)
       '@graphql-tools/graphql-file-loader': 8.0.0(graphql@16.9.0)
       '@graphql-tools/json-file-loader': 8.0.0(graphql@16.9.0)
       '@graphql-tools/load': 8.0.0(graphql@16.9.0)
@@ -4991,7 +4887,7 @@ snapshots:
       '@graphql-codegen/gql-tag-operations': 4.0.4(graphql@16.9.0)
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
       '@graphql-codegen/typed-document-node': 5.0.4(graphql@16.9.0)
-      '@graphql-codegen/typescript': 4.0.8(graphql@16.9.0)
+      '@graphql-codegen/typescript': 4.0.9(graphql@16.9.0)
       '@graphql-codegen/typescript-operations': 4.1.2(graphql@16.9.0)
       '@graphql-codegen/visitor-plugin-common': 4.1.2(graphql@16.9.0)
       '@graphql-tools/documents': 1.0.0(graphql@16.9.0)
@@ -5055,7 +4951,7 @@ snapshots:
   '@graphql-codegen/typescript-operations@4.1.2(graphql@16.9.0)':
     dependencies:
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
-      '@graphql-codegen/typescript': 4.0.8(graphql@16.9.0)
+      '@graphql-codegen/typescript': 4.0.9(graphql@16.9.0)
       '@graphql-codegen/visitor-plugin-common': 4.1.2(graphql@16.9.0)
       auto-bind: 4.0.0
       graphql: 16.9.0
@@ -5064,11 +4960,11 @@ snapshots:
       - encoding
       - supports-color
 
-  '@graphql-codegen/typescript@4.0.8(graphql@16.9.0)':
+  '@graphql-codegen/typescript@4.0.9(graphql@16.9.0)':
     dependencies:
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
       '@graphql-codegen/schema-ast': 4.1.0(graphql@16.9.0)
-      '@graphql-codegen/visitor-plugin-common': 5.3.0(graphql@16.9.0)
+      '@graphql-codegen/visitor-plugin-common': 5.3.1(graphql@16.9.0)
       auto-bind: 4.0.0
       graphql: 16.9.0
       tslib: 2.6.3
@@ -5093,7 +4989,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@graphql-codegen/visitor-plugin-common@5.3.0(graphql@16.9.0)':
+  '@graphql-codegen/visitor-plugin-common@5.3.1(graphql@16.9.0)':
     dependencies:
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
       '@graphql-tools/optimize': 2.0.0(graphql@16.9.0)
@@ -5128,9 +5024,9 @@ snapshots:
       tslib: 2.6.1
       value-or-promise: 1.0.12
 
-  '@graphql-tools/code-file-loader@8.0.0(@babel/core@7.24.7)(graphql@16.9.0)':
+  '@graphql-tools/code-file-loader@8.0.0(@babel/core@7.22.5)(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/graphql-tag-pluck': 8.0.0(@babel/core@7.24.7)(graphql@16.9.0)
+      '@graphql-tools/graphql-tag-pluck': 8.0.0(@babel/core@7.22.5)(graphql@16.9.0)
       '@graphql-tools/utils': 10.2.3(graphql@16.9.0)
       globby: 11.1.0
       graphql: 16.9.0
@@ -5206,9 +5102,9 @@ snapshots:
       tslib: 2.6.1
       value-or-promise: 1.0.12
 
-  '@graphql-tools/git-loader@8.0.0(@babel/core@7.24.7)(graphql@16.9.0)':
+  '@graphql-tools/git-loader@8.0.0(@babel/core@7.22.5)(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/graphql-tag-pluck': 8.0.0(@babel/core@7.24.7)(graphql@16.9.0)
+      '@graphql-tools/graphql-tag-pluck': 8.0.0(@babel/core@7.22.5)(graphql@16.9.0)
       '@graphql-tools/utils': 10.2.3(graphql@16.9.0)
       graphql: 16.9.0
       is-glob: 4.0.3
@@ -5219,11 +5115,11 @@ snapshots:
       - '@babel/core'
       - supports-color
 
-  '@graphql-tools/github-loader@8.0.0(@babel/core@7.24.7)(@types/node@20.14.9)(graphql@16.9.0)':
+  '@graphql-tools/github-loader@8.0.0(@babel/core@7.22.5)(@types/node@20.14.9)(graphql@16.9.0)':
     dependencies:
       '@ardatan/sync-fetch': 0.0.1
       '@graphql-tools/executor-http': 1.0.0(@types/node@20.14.9)(graphql@16.9.0)
-      '@graphql-tools/graphql-tag-pluck': 8.0.0(@babel/core@7.24.7)(graphql@16.9.0)
+      '@graphql-tools/graphql-tag-pluck': 8.0.0(@babel/core@7.22.5)(graphql@16.9.0)
       '@graphql-tools/utils': 10.2.3(graphql@16.9.0)
       '@whatwg-node/fetch': 0.9.0
       graphql: 16.9.0
@@ -5244,11 +5140,11 @@ snapshots:
       tslib: 2.6.1
       unixify: 1.0.0
 
-  '@graphql-tools/graphql-tag-pluck@8.0.0(@babel/core@7.24.7)(graphql@16.9.0)':
+  '@graphql-tools/graphql-tag-pluck@8.0.0(@babel/core@7.22.5)(graphql@16.9.0)':
     dependencies:
-      '@babel/parser': 7.24.5
-      '@babel/plugin-syntax-import-assertions': 7.20.0(@babel/core@7.24.7)
-      '@babel/traverse': 7.24.5
+      '@babel/parser': 7.24.7
+      '@babel/plugin-syntax-import-assertions': 7.20.0(@babel/core@7.22.5)
+      '@babel/traverse': 7.24.7
       '@babel/types': 7.22.5
       '@graphql-tools/utils': 10.2.3(graphql@16.9.0)
       graphql: 16.9.0
@@ -6087,20 +5983,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  babel-jest@29.7.0(@babel/core@7.24.7):
-    dependencies:
-      '@babel/core': 7.24.7
-      '@jest/transform': 29.7.0
-      '@types/babel__core': 7.1.18
-      babel-plugin-istanbul: 6.1.1
-      babel-preset-jest: 29.6.3(@babel/core@7.24.7)
-      chalk: 4.1.2
-      graceful-fs: 4.2.11
-      slash: 3.0.0
-    transitivePeerDependencies:
-      - supports-color
-    optional: true
-
   babel-plugin-istanbul@6.1.1:
     dependencies:
       '@babel/helper-plugin-utils': 7.22.5
@@ -6135,23 +6017,6 @@ snapshots:
       '@babel/plugin-syntax-optional-catch-binding': 7.8.3(@babel/core@7.22.5)
       '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.22.5)
       '@babel/plugin-syntax-top-level-await': 7.14.5(@babel/core@7.22.5)
-
-  babel-preset-current-node-syntax@1.0.1(@babel/core@7.24.7):
-    dependencies:
-      '@babel/core': 7.24.7
-      '@babel/plugin-syntax-async-generators': 7.8.4(@babel/core@7.24.7)
-      '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.24.7)
-      '@babel/plugin-syntax-class-properties': 7.12.13(@babel/core@7.24.7)
-      '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@7.24.7)
-      '@babel/plugin-syntax-json-strings': 7.8.3(@babel/core@7.24.7)
-      '@babel/plugin-syntax-logical-assignment-operators': 7.10.4(@babel/core@7.24.7)
-      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@7.24.7)
-      '@babel/plugin-syntax-numeric-separator': 7.10.4(@babel/core@7.24.7)
-      '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@7.24.7)
-      '@babel/plugin-syntax-optional-catch-binding': 7.8.3(@babel/core@7.24.7)
-      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.24.7)
-      '@babel/plugin-syntax-top-level-await': 7.14.5(@babel/core@7.24.7)
-    optional: true
 
   babel-preset-fbjs@3.4.0(@babel/core@7.24.7):
     dependencies:
@@ -6191,13 +6056,6 @@ snapshots:
       '@babel/core': 7.22.5
       babel-plugin-jest-hoist: 29.6.3
       babel-preset-current-node-syntax: 1.0.1(@babel/core@7.22.5)
-
-  babel-preset-jest@29.6.3(@babel/core@7.24.7):
-    dependencies:
-      '@babel/core': 7.24.7
-      babel-plugin-jest-hoist: 29.6.3
-      babel-preset-current-node-syntax: 1.0.1(@babel/core@7.24.7)
-    optional: true
 
   balanced-match@1.0.2: {}
 
@@ -6261,7 +6119,7 @@ snapshots:
   camel-case@4.1.2:
     dependencies:
       pascal-case: 3.1.2
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   camelcase@5.3.1: {}
 
@@ -6272,7 +6130,7 @@ snapshots:
   capital-case@1.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
       upper-case-first: 2.0.2
 
   chai@4.4.1:
@@ -6322,7 +6180,7 @@ snapshots:
       path-case: 3.0.4
       sentence-case: 3.0.4
       snake-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   char-regex@1.0.2: {}
 
@@ -6412,7 +6270,7 @@ snapshots:
   constant-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
       upper-case: 2.0.2
 
   convert-source-map@1.9.0: {}
@@ -6514,7 +6372,7 @@ snapshots:
   dot-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   dotenv@16.0.1: {}
 
@@ -7119,7 +6977,7 @@ snapshots:
   header-case@2.0.4:
     dependencies:
       capital-case: 1.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   hosted-git-info@2.8.9: {}
 
@@ -7241,7 +7099,7 @@ snapshots:
 
   is-lower-case@2.0.2:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   is-number@7.0.0: {}
 
@@ -7263,7 +7121,7 @@ snapshots:
 
   is-upper-case@2.0.2:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   is-windows@1.0.2: {}
 
@@ -7750,11 +7608,11 @@ snapshots:
 
   lower-case-first@2.0.2:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   lower-case@2.0.2:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   lru-cache@5.1.1:
     dependencies:
@@ -7856,7 +7714,7 @@ snapshots:
   no-case@3.0.4:
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   node-fetch@2.6.11:
     dependencies:
@@ -7983,7 +7841,7 @@ snapshots:
   param-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   parent-module@1.0.1:
     dependencies:
@@ -8021,12 +7879,12 @@ snapshots:
   pascal-case@3.1.2:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   path-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   path-exists@4.0.0: {}
 
@@ -8267,7 +8125,7 @@ snapshots:
   sentence-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
       upper-case-first: 2.0.2
 
   set-blocking@2.0.0: {}
@@ -8311,7 +8169,7 @@ snapshots:
   snake-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   source-map-js@1.2.0: {}
 
@@ -8343,7 +8201,7 @@ snapshots:
 
   sponge-case@1.0.1:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   sprintf-js@1.0.3: {}
 
@@ -8412,7 +8270,7 @@ snapshots:
 
   swap-case@2.0.2:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   synckit@0.6.2:
     dependencies:
@@ -8445,7 +8303,7 @@ snapshots:
 
   title-case@3.0.3:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   tmp@0.0.33:
     dependencies:
@@ -8473,7 +8331,7 @@ snapshots:
 
   ts-dedent@2.2.0: {}
 
-  ts-jest@29.1.5(@babel/core@7.24.7)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.24.7))(jest@29.7.0(@types/node@20.14.9))(typescript@5.5.3):
+  ts-jest@29.1.5(@babel/core@7.22.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.22.5))(jest@29.7.0(@types/node@20.14.9))(typescript@5.5.3):
     dependencies:
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
@@ -8486,10 +8344,10 @@ snapshots:
       typescript: 5.5.3
       yargs-parser: 21.1.1
     optionalDependencies:
-      '@babel/core': 7.24.7
+      '@babel/core': 7.22.5
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-      babel-jest: 29.7.0(@babel/core@7.24.7)
+      babel-jest: 29.7.0(@babel/core@7.22.5)
 
   ts-log@2.2.4: {}
 
@@ -8543,11 +8401,11 @@ snapshots:
 
   upper-case-first@2.0.2:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   upper-case@2.0.2:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.6.3
 
   uri-js@4.4.1:
     dependencies:
