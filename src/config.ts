@@ -230,6 +230,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
   /**
    * @description Uses the full path of the enum type as the default value instead of the stringified value.
    * @default { enumValues: "change-case-all#pascalCase" }
+   * @link https://the-guild.dev/graphql/codegen/docs/config-reference/naming-convention
    *
    * Note: This option has not been tested with `namingConvention.transformUnderscore` and `namingConvention.typeNames` options,
    * and may not work as expected.
