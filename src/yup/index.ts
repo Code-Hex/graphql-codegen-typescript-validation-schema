@@ -281,8 +281,9 @@ function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitio
           defaultValue?.kind === Kind.INT
           || defaultValue?.kind === Kind.FLOAT
           || defaultValue?.kind === Kind.BOOLEAN
-        )
+        ) {
           fieldSchema = `${fieldSchema}.default(${defaultValue.value})`;
+        }
 
         if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM) {
           if (config.useEnumTypeAsDefaultValue && defaultValue?.kind !== Kind.STRING) {
