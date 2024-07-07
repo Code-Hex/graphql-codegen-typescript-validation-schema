@@ -1,4 +1,4 @@
-import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+import { DeclarationBlock, convertNameParts, indent } from '@graphql-codegen/visitor-plugin-common';
 import type {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
@@ -15,6 +15,7 @@ import {
   Kind,
 } from 'graphql';
 
+import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
 import type { ValidationSchemaPluginConfig } from '../config';
 import { buildApi, formatDirectiveConfig } from '../directive';
 import { BaseSchemaVisitor } from '../schema_visitor';
@@ -295,8 +296,19 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
       if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN)
         appliedDirectivesGen = `${appliedDirectivesGen}.default(${defaultValue.value})`;
 
-      if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM)
-        appliedDirectivesGen = `${appliedDirectivesGen}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;
+      if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM) {
+        if (config.useEnumTypeAsDefaultValue && defaultValue?.kind !== Kind.STRING) {
+          let value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn('change-case-all#pascalCase'));
+
+          if (config.namingConvention?.enumValues)
+            value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues));
+
+          appliedDirectivesGen = `${appliedDirectivesGen}.default(${type.name.value}.${value})`;
+        }
+        else {
+          appliedDirectivesGen = `${appliedDirectivesGen}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;
+        }
+      }
     }
 
     if (isNonNullType(parentType)) {
