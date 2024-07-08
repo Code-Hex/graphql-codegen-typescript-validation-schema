@@ -28,7 +28,7 @@ import {
   isListType,
   isNamedType,
   isNonNullType,
-} from './../graphql';
+} from '../graphql.js';
 
 export class YupSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {

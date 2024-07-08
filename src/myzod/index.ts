@@ -28,7 +28,7 @@ import {
   isListType,
   isNamedType,
   isNonNullType,
-} from './../graphql';
+} from '../graphql.js';
 
 const anySchema = `definedNonNullAnySchema`;
 

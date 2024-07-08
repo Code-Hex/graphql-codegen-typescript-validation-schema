@@ -23,7 +23,7 @@ import {
   isListType,
   isNamedType,
   isNonNullType,
-} from './../graphql';
+} from '../graphql.js';
 
 export class ValibotSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
