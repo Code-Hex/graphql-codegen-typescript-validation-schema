@@ -5,7 +5,7 @@
     "rootDir": "src",
     "types": ["node"],
     "declaration": false,
-    "outDir": "dist/main"
+    "outDir": "dist/cjs"
   },
   "exclude": [
     "example",

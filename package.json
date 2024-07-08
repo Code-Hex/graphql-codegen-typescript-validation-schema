@@ -1,5 +1,6 @@
 {
   "name": "graphql-codegen-typescript-validation-schema",
+  "type": "module",
   "version": "0.15.0",
   "packageManager": "pnpm@9.4.0",
   "description": "GraphQL Code Generator plugin to generate form validation schema from your GraphQL schema",
@@ -28,14 +29,27 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/module/index.js",
-      "require": "./dist/main/index.js"
-    }
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "default": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/esm/index.js"
+      }
+    },
+    "./package.json": "./package.json"
   },
-  "main": "dist/main/index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "typings": "dist/types/index.d.ts",
-  "module": "dist/module/index.js",
+  "typescript": {
+    "definition": "dist/types/index.d.ts"
+  },
   "files": [
     "!dist/**/*.tsbuildinfo",
     "LICENSE",
@@ -50,12 +64,13 @@
     "type-check:valibot": "tsc --strict --skipLibCheck --noEmit example/valibot/schemas.ts",
     "test": "vitest run",
     "build": "run-p build:*",
-    "build:main": "tsc -p tsconfig.main.json",
-    "build:module": "tsc -p tsconfig.module.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > dist/esm/package.json",
     "build:types": "tsc -p tsconfig.types.json",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
     "generate": "run-p build:* && graphql-codegen",
+    "generate:esm": "run-p build:* && graphql-codegen-esm",
     "prepublish": "run-p build:*"
   },
   "peerDependencies": {
