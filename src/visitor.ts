@@ -10,7 +10,7 @@ import {
   specifiedScalarTypes,
 } from 'graphql';
 
-import type { ValidationSchemaPluginConfig } from './config';
+import type { ValidationSchemaPluginConfig } from './config.js';
 
 export class Visitor extends TsVisitor {
   constructor(

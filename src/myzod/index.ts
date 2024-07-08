@@ -16,10 +16,10 @@ import {
 } from 'graphql';
 
 import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
-import type { ValidationSchemaPluginConfig } from '../config';
-import { buildApi, formatDirectiveConfig } from '../directive';
-import { BaseSchemaVisitor } from '../schema_visitor';
-import type { Visitor } from '../visitor';
+import type { ValidationSchemaPluginConfig } from '../config.js';
+import { buildApi, formatDirectiveConfig } from '../directive.js';
+import { BaseSchemaVisitor } from '../schema_visitor.js';
+import type { Visitor } from '../visitor.js';
 import {
   InterfaceTypeDefinitionBuilder,
   ObjectTypeDefinitionBuilder,

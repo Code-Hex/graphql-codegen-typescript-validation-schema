@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
     "types": ["node"],
     "declaration": false,
-    "outDir": "dist/module"
+    "outDir": "dist/esm"
   },
   "exclude": [
     "node_modules/**",

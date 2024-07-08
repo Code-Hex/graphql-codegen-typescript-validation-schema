@@ -12,10 +12,10 @@ import type {
   UnionTypeDefinitionNode,
 } from 'graphql';
 
-import type { ValidationSchemaPluginConfig } from '../config';
-import { BaseSchemaVisitor } from '../schema_visitor';
-import type { Visitor } from '../visitor';
-import { buildApiForValibot, formatDirectiveConfig } from '../directive';
+import type { ValidationSchemaPluginConfig } from '../config.js';
+import { BaseSchemaVisitor } from '../schema_visitor.js';
+import type { Visitor } from '../visitor.js';
+import { buildApiForValibot, formatDirectiveConfig } from '../directive.js';
 import {
   InterfaceTypeDefinitionBuilder,
   ObjectTypeDefinitionBuilder,

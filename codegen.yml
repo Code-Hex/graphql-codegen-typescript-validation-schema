@@ -9,7 +9,7 @@ generates:
         ID: string
   example/yup/schemas.ts:
     plugins:
-      - ./dist/main/index.js:
+      - ./dist/cjs/index.js:
           schema: yup
           importFrom: ../types
           withObjectType: true
@@ -45,7 +45,7 @@ generates:
             ID: string
   example/zod/schemas.ts:
     plugins:
-      - ./dist/main/index.js:
+      - ./dist/cjs/index.js:
           schema: zod
           importFrom: ../types
           withObjectType: true
@@ -68,7 +68,7 @@ generates:
             ID: string
   example/myzod/schemas.ts:
     plugins:
-      - ./dist/main/index.js:
+      - ./dist/cjs/index.js:
           schema: myzod
           importFrom: ../types
           withObjectType: true
@@ -83,7 +83,7 @@ generates:
             ID: string
   example/valibot/schemas.ts:
     plugins:
-      - ./dist/main/index.js:
+      - ./dist/cjs/index.js:
           schema: valibot
           importFrom: ../types
           withObjectType: true

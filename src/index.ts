@@ -3,13 +3,13 @@ import { transformSchemaAST } from '@graphql-codegen/schema-ast';
 import type { GraphQLSchema } from 'graphql';
 import { buildSchema, printSchema, visit } from 'graphql';
 
-import type { ValidationSchemaPluginConfig } from './config';
-import { isGeneratedByIntrospection, topologicalSortAST } from './graphql';
-import { MyZodSchemaVisitor } from './myzod/index';
-import type { SchemaVisitor } from './types';
-import { YupSchemaVisitor } from './yup/index';
-import { ZodSchemaVisitor } from './zod/index';
-import { ValibotSchemaVisitor } from './valibot';
+import type { ValidationSchemaPluginConfig } from './config.js';
+import { isGeneratedByIntrospection, topologicalSortAST } from './graphql.js';
+import { MyZodSchemaVisitor } from './myzod/index.js';
+import type { SchemaVisitor } from './types.js';
+import { YupSchemaVisitor } from './yup/index.js';
+import { ZodSchemaVisitor } from './zod/index.js';
+import { ValibotSchemaVisitor } from './valibot/index.js';
 
 export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,
@@ -59,3 +59,5 @@ function _transformSchemaAST(schema: GraphQLSchema, config: ValidationSchemaPlug
     ast,
   };
 }
+
+export type { ValidationSchemaPluginConfig }
