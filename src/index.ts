@@ -59,3 +59,5 @@ function _transformSchemaAST(schema: GraphQLSchema, config: ValidationSchemaPlug
     ast,
   };
 }
+
+export type { ValidationSchemaPluginConfig }
