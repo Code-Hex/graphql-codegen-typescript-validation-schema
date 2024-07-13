@@ -54,7 +54,7 @@
     "!dist/**/*.tsbuildinfo",
     "LICENSE",
     "README.md",
-    "dist/**/*.{js,ts}"
+    "dist/**/*.{js,ts,json}"
   ],
   "scripts": {
     "type-check": "tsc --noEmit",
