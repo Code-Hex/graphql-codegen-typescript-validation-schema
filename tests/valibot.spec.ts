@@ -322,8 +322,82 @@ describe('valibot', () => {
       "
     `);
   });
-  it.todo('with notAllowEmptyString')
-  it.todo('with notAllowEmptyString issue #386')
+  it('with notAllowEmptyString', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PrimitiveInput {
+        a: ID!
+        b: String!
+        c: Boolean!
+        d: Int!
+        e: Float!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        notAllowEmptyString: true,
+        scalars: {
+          ID: 'string',
+        },
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function PrimitiveInputSchema(): v.GenericSchema<PrimitiveInput> {
+        return v.object({
+          a: v.pipe(v.string(), v.minLength(1)),
+          b: v.pipe(v.string(), v.minLength(1)),
+          c: v.boolean(),
+          d: v.number(),
+          e: v.number()
+        })
+      }
+      "
+    `)
+  })
+  it('with notAllowEmptyString issue #386', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input InputOne {
+        field: InputNested!
+      }
+
+      input InputNested {
+        field: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        notAllowEmptyString: true,
+        scalars: {
+          ID: 'string',
+        },
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function InputOneSchema(): v.GenericSchema<InputOne> {
+        return v.object({
+          field: v.lazy(() => InputNestedSchema())
+        })
+      }
+
+      export function InputNestedSchema(): v.GenericSchema<InputNested> {
+        return v.object({
+          field: v.pipe(v.string(), v.minLength(1))
+        })
+      }
+      "
+    `)
+  })
   it('with scalarSchemas', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input ScalarsInput {
