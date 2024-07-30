@@ -129,7 +129,28 @@ describe('valibot', () => {
       "
     `);
   })
-  it.todo('nested input object')
+  it('nested input object', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input NestedInput {
+        child: NestedInput
+        childrens: [NestedInput]
+      }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
+
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function NestedInputSchema(): v.GenericSchema<NestedInput> {
+        return v.object({
+          child: v.lazy(() => v.nullish(NestedInputSchema())),
+          childrens: v.nullish(v.array(v.lazy(() => v.nullable(NestedInputSchema()))))
+        })
+      }
+      "
+    `)
+  })
   it('enum', async () => {
     const schema = buildSchema(/* GraphQL */ `
       enum PageType {
