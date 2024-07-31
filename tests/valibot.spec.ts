@@ -466,7 +466,39 @@ describe('valibot', () => {
       "
     `)
   })
-  it.todo('with typesSuffix')
+  it('with typesSuffix', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        typesSuffix: 'I',
+        importFrom: './types',
+      },
+      {},
+    );
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as v from 'valibot'",
+        "import { SayI } from './types'",
+      ]
+    `)
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function SayISchema(): v.GenericSchema<SayI> {
+        return v.object({
+          phrase: v.string()
+        })
+      }
+      "
+    `)
+  })
   it.todo('with default input values')
   describe('issues #19', () => {
     it('string field', async () => {
