@@ -433,7 +433,39 @@ describe('valibot', () => {
       "
     `)
   });
-  it.todo('with typesPrefix')
+  it('with typesPrefix', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        typesPrefix: 'I',
+        importFrom: './types',
+      },
+      {},
+    );
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as v from 'valibot'",
+        "import { ISay } from './types'",
+      ]
+    `)
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function ISaySchema(): v.GenericSchema<ISay> {
+        return v.object({
+          phrase: v.string()
+        })
+      }
+      "
+    `)
+  })
   it.todo('with typesSuffix')
   it.todo('with default input values')
   describe('issues #19', () => {
