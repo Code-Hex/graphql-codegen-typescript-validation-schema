@@ -19,7 +19,7 @@ importers:
         version: 5.3.1(graphql@16.9.0)
       '@graphql-tools/utils':
         specifier: ^10.0.0
-        version: 10.3.3(graphql@16.9.0)
+        version: 10.3.4(graphql@16.9.0)
       graphlib:
         specifier: ^2.1.8
         version: 2.1.8
@@ -1029,8 +1029,8 @@ packages:
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
-  '@graphql-tools/utils@10.3.3':
-    resolution: {integrity: sha512-p0zCctE+kXsXb5FCJmA3DoucQmB5eSkrtyBAaEcjbnz8OVbriSJx2WNEyzttiHv2qanBe/AK/YiyHD/5Nsj76Q==}
+  '@graphql-tools/utils@10.3.4':
+    resolution: {integrity: sha512-5xUXVsp1Yh1ttYHYDLJscoyv2LcW1BjpbcooIAkGUzINftD/qRBw9zvVmALx+oQWr/9MSIYghHHZzbYHsVO0/A==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
@@ -3240,6 +3240,10 @@ packages:
     resolution: {integrity: sha512-YF2kKIUzAofPMpfH6hOi2cGnv/HrUlfucspc7pDyvv7kGdqXrfj8SCl/t8owkEgKEuu8ZcRjSOxFxVLqwChZ2Q==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postcss@8.4.41:
+    resolution: {integrity: sha512-TesUflQ0WKZqAvg52PWL6kHgLKP6xB6heTOdoYM0Wt2UHyxNa4K25EZZMgKns3BH1RLVbZCREPpLY0rhnNoHVQ==}
+    engines: {node: ^10 || ^12 || >=14}
+
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -4936,7 +4940,7 @@ snapshots:
       '@graphql-tools/load': 8.0.0(graphql@16.9.0)
       '@graphql-tools/prisma-loader': 8.0.0(@types/node@20.14.14)(graphql@16.9.0)
       '@graphql-tools/url-loader': 8.0.0(@types/node@20.14.14)(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@whatwg-node/fetch': 0.8.2(@types/node@20.14.14)
       chalk: 4.1.2
       cosmiconfig: 8.1.3
@@ -4979,7 +4983,7 @@ snapshots:
       '@graphql-codegen/typescript-operations': 4.1.2(graphql@16.9.0)
       '@graphql-codegen/visitor-plugin-common': 4.1.2(graphql@16.9.0)
       '@graphql-tools/documents': 1.0.0(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.9.0)
       graphql: 16.9.0
       tslib: 2.6.1
@@ -4991,7 +4995,7 @@ snapshots:
     dependencies:
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
       '@graphql-tools/schema': 10.0.0(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       tslib: 2.6.1
 
@@ -4999,7 +5003,7 @@ snapshots:
     dependencies:
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
       '@graphql-codegen/visitor-plugin-common': 4.1.2(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       auto-bind: 4.0.0
       graphql: 16.9.0
       tslib: 2.6.1
@@ -5009,7 +5013,7 @@ snapshots:
 
   '@graphql-codegen/plugin-helpers@5.0.4(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       change-case-all: 1.0.15
       common-tags: 1.8.2
       graphql: 16.9.0
@@ -5020,7 +5024,7 @@ snapshots:
   '@graphql-codegen/schema-ast@4.1.0(graphql@16.9.0)':
     dependencies:
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       tslib: 2.6.3
 
@@ -5065,7 +5069,7 @@ snapshots:
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
       '@graphql-tools/optimize': 2.0.0(graphql@16.9.0)
       '@graphql-tools/relay-operation-optimizer': 7.0.1(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       auto-bind: 4.0.0
       change-case-all: 1.0.15
       dependency-graph: 0.11.0
@@ -5082,7 +5086,7 @@ snapshots:
       '@graphql-codegen/plugin-helpers': 5.0.4(graphql@16.9.0)
       '@graphql-tools/optimize': 2.0.0(graphql@16.9.0)
       '@graphql-tools/relay-operation-optimizer': 7.0.1(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       auto-bind: 4.0.0
       change-case-all: 1.0.15
       dependency-graph: 0.11.0
@@ -5097,7 +5101,7 @@ snapshots:
   '@graphql-tools/apollo-engine-loader@8.0.0(graphql@16.9.0)':
     dependencies:
       '@ardatan/sync-fetch': 0.0.1
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@whatwg-node/fetch': 0.9.0
       graphql: 16.9.0
       tslib: 2.6.1
@@ -5106,7 +5110,7 @@ snapshots:
 
   '@graphql-tools/batch-execute@9.0.0(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       dataloader: 2.2.2
       graphql: 16.9.0
       tslib: 2.6.1
@@ -5115,7 +5119,7 @@ snapshots:
   '@graphql-tools/code-file-loader@8.0.0(@babel/core@7.24.7)(graphql@16.9.0)':
     dependencies:
       '@graphql-tools/graphql-tag-pluck': 8.0.0(@babel/core@7.24.7)(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       globby: 11.1.0
       graphql: 16.9.0
       tslib: 2.6.1
@@ -5129,7 +5133,7 @@ snapshots:
       '@graphql-tools/batch-execute': 9.0.0(graphql@16.9.0)
       '@graphql-tools/executor': 1.1.0(graphql@16.9.0)
       '@graphql-tools/schema': 10.0.0(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       dataloader: 2.2.2
       graphql: 16.9.0
       tslib: 2.6.1
@@ -5143,7 +5147,7 @@ snapshots:
 
   '@graphql-tools/executor-graphql-ws@1.0.0(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@repeaterjs/repeater': 3.0.4
       '@types/ws': 8.5.5
       graphql: 16.9.0
@@ -5157,7 +5161,7 @@ snapshots:
 
   '@graphql-tools/executor-http@1.0.0(@types/node@20.14.14)(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@repeaterjs/repeater': 3.0.4
       '@whatwg-node/fetch': 0.9.0
       dset: 3.1.3
@@ -5171,7 +5175,7 @@ snapshots:
 
   '@graphql-tools/executor-legacy-ws@1.0.0(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@types/ws': 8.5.5
       graphql: 16.9.0
       isomorphic-ws: 5.0.0(ws@8.13.0)
@@ -5183,7 +5187,7 @@ snapshots:
 
   '@graphql-tools/executor@1.1.0(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.9.0)
       '@repeaterjs/repeater': 3.0.4
       graphql: 16.9.0
@@ -5193,7 +5197,7 @@ snapshots:
   '@graphql-tools/git-loader@8.0.0(@babel/core@7.24.7)(graphql@16.9.0)':
     dependencies:
       '@graphql-tools/graphql-tag-pluck': 8.0.0(@babel/core@7.24.7)(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       is-glob: 4.0.3
       micromatch: 4.0.5
@@ -5208,7 +5212,7 @@ snapshots:
       '@ardatan/sync-fetch': 0.0.1
       '@graphql-tools/executor-http': 1.0.0(@types/node@20.14.14)(graphql@16.9.0)
       '@graphql-tools/graphql-tag-pluck': 8.0.0(@babel/core@7.24.7)(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@whatwg-node/fetch': 0.9.0
       graphql: 16.9.0
       tslib: 2.6.1
@@ -5222,7 +5226,7 @@ snapshots:
   '@graphql-tools/graphql-file-loader@8.0.0(graphql@16.9.0)':
     dependencies:
       '@graphql-tools/import': 7.0.0(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       globby: 11.1.0
       graphql: 16.9.0
       tslib: 2.6.1
@@ -5234,7 +5238,7 @@ snapshots:
       '@babel/plugin-syntax-import-assertions': 7.20.0(@babel/core@7.24.7)
       '@babel/traverse': 7.24.7
       '@babel/types': 7.22.5
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       tslib: 2.6.1
     transitivePeerDependencies:
@@ -5243,14 +5247,14 @@ snapshots:
 
   '@graphql-tools/import@7.0.0(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       resolve-from: 5.0.0
       tslib: 2.6.1
 
   '@graphql-tools/json-file-loader@8.0.0(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       globby: 11.1.0
       graphql: 16.9.0
       tslib: 2.6.1
@@ -5259,14 +5263,14 @@ snapshots:
   '@graphql-tools/load@8.0.0(graphql@16.9.0)':
     dependencies:
       '@graphql-tools/schema': 10.0.0(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       p-limit: 3.1.0
       tslib: 2.6.1
 
   '@graphql-tools/merge@9.0.0(graphql@16.9.0)':
     dependencies:
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       tslib: 2.6.1
 
@@ -5278,7 +5282,7 @@ snapshots:
   '@graphql-tools/prisma-loader@8.0.0(@types/node@20.14.14)(graphql@16.9.0)':
     dependencies:
       '@graphql-tools/url-loader': 8.0.0(@types/node@20.14.14)(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@types/js-yaml': 4.0.5
       '@types/json-stable-stringify': 1.0.33
       '@whatwg-node/fetch': 0.9.0
@@ -5306,7 +5310,7 @@ snapshots:
   '@graphql-tools/relay-operation-optimizer@7.0.1(graphql@16.9.0)':
     dependencies:
       '@ardatan/relay-compiler': 12.0.0(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       tslib: 2.6.3
     transitivePeerDependencies:
@@ -5316,7 +5320,7 @@ snapshots:
   '@graphql-tools/schema@10.0.0(graphql@16.9.0)':
     dependencies:
       '@graphql-tools/merge': 9.0.0(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       tslib: 2.6.1
       value-or-promise: 1.0.12
@@ -5328,7 +5332,7 @@ snapshots:
       '@graphql-tools/executor-graphql-ws': 1.0.0(graphql@16.9.0)
       '@graphql-tools/executor-http': 1.0.0(@types/node@20.14.14)(graphql@16.9.0)
       '@graphql-tools/executor-legacy-ws': 1.0.0(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       '@graphql-tools/wrap': 10.0.0(graphql@16.9.0)
       '@types/ws': 8.5.5
       '@whatwg-node/fetch': 0.9.0
@@ -5343,7 +5347,7 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@graphql-tools/utils@10.3.3(graphql@16.9.0)':
+  '@graphql-tools/utils@10.3.4(graphql@16.9.0)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.9.0)
       cross-inspect: 1.0.1
@@ -5355,7 +5359,7 @@ snapshots:
     dependencies:
       '@graphql-tools/delegate': 10.0.0(graphql@16.9.0)
       '@graphql-tools/schema': 10.0.0(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       graphql: 16.9.0
       tslib: 2.6.1
       value-or-promise: 1.0.12
@@ -5958,7 +5962,7 @@ snapshots:
       '@vue/shared': 3.4.22
       estree-walker: 2.0.2
       magic-string: 0.30.11
-      postcss: 8.4.40
+      postcss: 8.4.41
       source-map-js: 1.2.0
 
   '@vue/compiler-ssr@3.4.22':
@@ -7078,7 +7082,7 @@ snapshots:
       '@graphql-tools/load': 8.0.0(graphql@16.9.0)
       '@graphql-tools/merge': 9.0.0(graphql@16.9.0)
       '@graphql-tools/url-loader': 8.0.0(@types/node@20.14.14)(graphql@16.9.0)
-      '@graphql-tools/utils': 10.3.3(graphql@16.9.0)
+      '@graphql-tools/utils': 10.3.4(graphql@16.9.0)
       cosmiconfig: 8.1.3
       graphql: 16.9.0
       jiti: 1.18.2
@@ -8073,6 +8077,12 @@ snapshots:
       util-deprecate: 1.0.2
 
   postcss@8.4.40:
+    dependencies:
+      nanoid: 3.3.7
+      picocolors: 1.0.1
+      source-map-js: 1.2.0
+
+  postcss@8.4.41:
     dependencies:
       nanoid: 3.3.7
       picocolors: 1.0.1
