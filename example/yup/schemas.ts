@@ -120,9 +120,9 @@ export function PageInputSchema(): yup.ObjectSchema<PageInput> {
     layout: LayoutInputSchema().nonNullable().defined(),
     pageType: PageTypeSchema.nonNullable().defined(),
     postIDs: yup.array(yup.string().nonNullable().defined()).nullable(),
-    show: yup.boolean().meta({ label: "表示設定" }).nonNullable().defined(),
+    show: yup.boolean().label("表示設定").nonNullable().defined(),
     tags: yup.array(yup.string().nullable().defined()).nullable(),
-    title: yup.string().meta({ label: "タイトル" }).nonNullable().defined(),
+    title: yup.string().label("タイトル").nonNullable().defined(),
     width: yup.number().nonNullable().defined()
   }).strict()
 }
@@ -131,10 +131,10 @@ export function UserSchema(): yup.ObjectSchema<User> {
   return yup.object({
     __typename: yup.string<'User'>(),
     createdAt: yup.mixed().nullable(),
-    email: yup.string().meta({ label: "Eメールアドレス" }).nullable(),
+    email: yup.string().label("Eメールアドレス").nullable(),
     id: yup.string().nullable(),
     kind: UserKindSchema().nullable(),
-    name: yup.string().meta({ label: "ユーザ名" }).nullable(),
+    name: yup.string().label("ユーザ名").nullable(),
     password: yup.string().nullable(),
     updatedAt: yup.mixed().nullable()
   }).strict()
