@@ -81,7 +81,7 @@ export class Visitor extends TsVisitor {
             useTypesPrefix: false,
             useTypesSuffix: false,
           })
-           }Args`;
+          }Args`;
 
         return callback(name, field);
       })

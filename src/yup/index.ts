@@ -44,18 +44,18 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
       return `\n${this.enumDeclarations.join('\n')}`;
     return (
       `\n${
-      this.enumDeclarations.join('\n')
+        this.enumDeclarations.join('\n')
       }\n${
-      new DeclarationBlock({})
-        .asKind('function')
-        .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
-        .withBlock(
-          [
-            indent('return yup.mixed<T>().test({'),
-            indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
-            indent('}).defined()'),
-          ].join('\n'),
-        ).string}`
+        new DeclarationBlock({})
+          .asKind('function')
+          .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
+          .withBlock(
+            [
+              indent('return yup.mixed<T>().test({'),
+              indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
+              indent('}).defined()'),
+            ].join('\n'),
+          ).string}`
     );
   }
 

@@ -44,11 +44,11 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
   initialEmit(): string {
     return (
       `\n${
-      [
-        new DeclarationBlock({}).export().asKind('const').withName(`${anySchema}`).withContent(`myzod.object({})`)
-          .string,
-        ...this.enumDeclarations,
-      ].join('\n')}`
+        [
+          new DeclarationBlock({}).export().asKind('const').withName(`${anySchema}`).withContent(`myzod.object({})`)
+            .string,
+          ...this.enumDeclarations,
+        ].join('\n')}`
     );
   }
 
@@ -168,7 +168,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
               .asKind('type')
               .withName(`${enumname}Schema`)
               .withContent(
-                  `myzod.literals(${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')})`,
+                `myzod.literals(${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')})`,
               ).string
             : new DeclarationBlock({})
               .export()

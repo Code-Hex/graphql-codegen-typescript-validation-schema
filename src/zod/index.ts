@@ -44,27 +44,27 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
   initialEmit(): string {
     return (
       `\n${
-      [
-        new DeclarationBlock({})
-          .asKind('type')
-          .withName('Properties<T>')
-          .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;', '}>'].join('\n')).string,
-        // Unfortunately, zod doesn’t provide non-null defined any schema.
-        // This is a temporary hack until it is fixed.
-        // see: https://github.com/colinhacks/zod/issues/884
-        new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
-        new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`isDefinedNonNullAny`)
-          .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`).string,
-        new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`${anySchema}`)
-          .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
-        ...this.enumDeclarations,
-      ].join('\n')}`
+        [
+          new DeclarationBlock({})
+            .asKind('type')
+            .withName('Properties<T>')
+            .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;', '}>'].join('\n')).string,
+          // Unfortunately, zod doesn’t provide non-null defined any schema.
+          // This is a temporary hack until it is fixed.
+          // see: https://github.com/colinhacks/zod/issues/884
+          new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
+          new DeclarationBlock({})
+            .export()
+            .asKind('const')
+            .withName(`isDefinedNonNullAny`)
+            .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`).string,
+          new DeclarationBlock({})
+            .export()
+            .asKind('const')
+            .withName(`${anySchema}`)
+            .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
+          ...this.enumDeclarations,
+        ].join('\n')}`
     );
   }
 
