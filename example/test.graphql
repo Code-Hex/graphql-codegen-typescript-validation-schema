@@ -21,7 +21,13 @@ interface Node {
 
 type User implements Node {
   id: ID
+  """
+  ユーザ名
+  """
   name: String
+  """
+  Eメールアドレス
+  """
   email: String
   password: String
   kind: UserKind
@@ -31,7 +37,14 @@ type User implements Node {
 
 input PageInput {
   id: ID!
+  """
+  タイトル
+  """
   title: String!
+  """
+  表示設定
+  true: 表示する
+  """
   show: Boolean!
   width: Int!
   height: Float!

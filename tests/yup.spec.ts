@@ -11,7 +11,12 @@ describe('yup', () => {
       {
         textSchema: /* GraphQL */ `
           input PrimitiveInput {
+            """
+            A和名
+            Aコメント
+            """
             a: ID!
+            "B和名"
             b: String!
             c: Boolean!
             d: Int!
@@ -20,11 +25,11 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
-          'a: yup.string()',
-          'b: yup.string()',
-          'c: yup.boolean()',
-          'd: yup.number()',
-          'e: yup.number()',
+          'a: yup.string().meta({ label: "A和名" }).nonNullable().defined(),',
+          'b: yup.string().meta({ label: "B和名" }).nonNullable().defined(),',
+          'c: yup.boolean().nonNullable().defined()',
+          'd: yup.number().nonNullable().defined()',
+          'e: yup.number().nonNullable().defined()',
         ],
         scalars: {
           ID: 'string',
@@ -37,7 +42,12 @@ describe('yup', () => {
       {
         textSchema: /* GraphQL */ `
           input PrimitiveInput {
+            """
+            A和名
+            Aコメント
+            """
             a: ID
+            "B和名"
             b: String
             c: Boolean
             d: Int
@@ -48,8 +58,8 @@ describe('yup', () => {
         wantContains: [
           'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
           // alphabet order
-          'a: yup.string().nullable(),',
-          'b: yup.string().nullable(),',
+          'a: yup.string().meta({ label: "A和名" }).nullable(),',
+          'b: yup.string().meta({ label: "B和名" }).nullable(),',
           'c: yup.boolean().nullable(),',
           'd: yup.number().nullable(),',
           'e: yup.number().nullable(),',
@@ -65,6 +75,10 @@ describe('yup', () => {
       {
         textSchema: /* GraphQL */ `
           input ArrayInput {
+            """
+            A和名
+            Aコメント
+            """
             a: [String]
             b: [String!]
             c: [String!]!
@@ -75,7 +89,7 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function ArrayInputSchema(): yup.ObjectSchema<ArrayInput>',
-          'a: yup.array(yup.string().nullable().defined()).nullable(),',
+          'a: yup.array(yup.string().meta({ label: "A和名" }).nullable().defined()).meta({ label: "A和名" }).nullable(),',
           'b: yup.array(yup.string().nonNullable().defined()).nullable(),',
           'c: yup.array(yup.string().nonNullable().defined()).nonNullable().defined(),',
           'd: yup.array(yup.array(yup.string().nullable().defined()).nullable().defined()).nullable(),',
@@ -97,6 +111,10 @@ describe('yup', () => {
             c: CInput!
           }
           input CInput {
+            """
+            A和名
+            Aコメント
+            """
             a: AInput!
           }
         `,
@@ -106,7 +124,7 @@ describe('yup', () => {
           'export function BInputSchema(): yup.ObjectSchema<BInput>',
           'c: CInputSchema().nonNullable().defined()',
           'export function CInputSchema(): yup.ObjectSchema<CInput>',
-          'a: AInputSchema().nonNullable().defined()',
+          'a: AInputSchema().meta({ label: "A和名" }).nonNullable().defined()',
         ],
         scalars: undefined,
         lazyTypes: ['BInput'],
@@ -117,14 +135,20 @@ describe('yup', () => {
       {
         textSchema: /* GraphQL */ `
           input NestedInput {
+            """
+            child和名
+            """
             child: NestedInput
+            """
+            children和名
+            """
             childrens: [NestedInput]
           }
         `,
         wantContains: [
           'export function NestedInputSchema(): yup.ObjectSchema<NestedInput>',
-          'child: yup.lazy(() => NestedInputSchema().nullable()),',
-          'childrens: yup.lazy(() => yup.array(NestedInputSchema().nullable().defined()).nullable())',
+          'child: yup.lazy(() => NestedInputSchema().meta({ label: "child和名" }).nullable()),',
+          'childrens: yup.lazy(() => yup.array(NestedInputSchema().meta({ label: "children和名" }).nullable().defined()).meta({ label: "children和名" }).nullable())',
         ],
         scalars: undefined,
         lazyTypes: ['NestedInput'],
@@ -139,13 +163,16 @@ describe('yup', () => {
             BASIC_AUTH
           }
           input PageInput {
+            """
+            pageType和名
+            """
             pageType: PageType!
           }
         `,
         wantContains: [
           'export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.Public, PageType.BasicAuth]);',
           'export function PageInputSchema(): yup.ObjectSchema<PageInput>',
-          'pageType: PageTypeSchema.nonNullable()',
+          'pageType: PageTypeSchema.meta({ label: "pageType和名" }).nonNullable()',
         ],
         scalars: undefined,
         lazyTypes: undefined,

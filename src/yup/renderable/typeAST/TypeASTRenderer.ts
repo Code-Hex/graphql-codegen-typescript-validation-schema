@@ -21,15 +21,19 @@ export class TypeASTRenderer {
     const rendered = child.render(this, fieldMetadata);
     const renderedRule = fieldMetadata.getData().ruleForArray.render(this.ruleASTRenderer);
 
-    return `yup.array(${rendered}.defined())${renderedRule}`;
+    return `yup.array(${rendered}.defined())${this.renderMeta(fieldMetadata)}${renderedRule}`;
   }
 
   public renderNonScalarNamedType(namedType: TypeASTNonScalarNamedTypeNode, fieldMetadata: FieldMetadata): string {
-    return this.doRenderNonScalarNamedType(namedType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
+    return `${this.doRenderNonScalarNamedType(namedType)}${this.renderMeta(fieldMetadata)}${fieldMetadata
+      .getData()
+      .rule.render(this.ruleASTRenderer)}`;
   }
 
   public renderScalar(scalarType: TypeASTScalarNode, fieldMetadata: FieldMetadata): string {
-    return this.doRenderScalar(scalarType) + fieldMetadata.getData().rule.render(this.ruleASTRenderer);
+    return `${this.doRenderScalar(scalarType)}${this.renderMeta(fieldMetadata)}${fieldMetadata
+      .getData()
+      .rule.render(this.ruleASTRenderer)}`;
   }
 
   private doRenderScalar(scalarType: TypeASTScalarNode): string {
@@ -62,6 +66,11 @@ export class TypeASTRenderer {
       default:
         return assertsNeverKind(kind);
     }
+  }
+
+  private renderMeta(fieldMetadata: FieldMetadata): string {
+    const label = fieldMetadata.getData().label;
+    return label ? `.meta({ label: ${JSON.stringify(label)} })` : '';
   }
 
   public renderNullability(nullability: TypeASTNullability, fieldMetadata: FieldMetadata): string {

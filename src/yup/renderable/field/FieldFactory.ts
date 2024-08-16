@@ -19,6 +19,11 @@ export class FieldFactory {
 
     const metadata = new FieldMetadata({
       name: graphQLFieldNode.name.value,
+      label: graphQLFieldNode.description
+        ? graphQLFieldNode.description.block
+          ? graphQLFieldNode.description.value.split('\n')[0]
+          : graphQLFieldNode.description.value
+        : null,
       isOptional: !isNonNullType(graphQLFieldNode.type),
       rule: this.ruleASTFactory.createFromDirectiveOrNull(rulesDirective ?? null),
       ruleForArray: this.ruleASTFactory.createFromDirectiveOrNull(rulesForArrayDirective ?? null),

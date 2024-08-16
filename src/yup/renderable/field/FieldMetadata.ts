@@ -4,6 +4,7 @@ export class FieldMetadata {
   constructor(
     private readonly data: {
       name: string;
+      label: string | null;
       isOptional: boolean;
       rule: RuleASTNode;
       ruleForArray: RuleASTNode;

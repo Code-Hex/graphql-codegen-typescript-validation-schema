@@ -115,8 +115,13 @@ export type PageInput = {
   layout: LayoutInput;
   pageType: PageType;
   postIDs?: InputMaybe<Array<Scalars['ID']['input']>>;
+  /**
+   * 表示設定
+   * true: 表示する
+   */
   show: Scalars['Boolean']['input'];
   tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  /** タイトル */
   title: Scalars['String']['input'];
   width: Scalars['Int']['input'];
 };
@@ -131,9 +136,11 @@ export enum PageType {
 export type User = Node & {
   __typename?: 'User';
   createdAt?: Maybe<Scalars['Date']['output']>;
+  /** Eメールアドレス */
   email?: Maybe<Scalars['String']['output']>;
   id?: Maybe<Scalars['ID']['output']>;
   kind?: Maybe<UserKind>;
+  /** ユーザ名 */
   name?: Maybe<Scalars['String']['output']>;
   password?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['Date']['output']>;
