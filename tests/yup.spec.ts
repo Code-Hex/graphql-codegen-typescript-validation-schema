@@ -25,8 +25,8 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
-          'a: yup.string().meta({ label: "A和名" }).nonNullable().defined(),',
-          'b: yup.string().meta({ label: "B和名" }).nonNullable().defined(),',
+          'a: yup.string().label("A和名").nonNullable().defined(),',
+          'b: yup.string().label("B和名").nonNullable().defined(),',
           'c: yup.boolean().nonNullable().defined()',
           'd: yup.number().nonNullable().defined()',
           'e: yup.number().nonNullable().defined()',
@@ -58,8 +58,8 @@ describe('yup', () => {
         wantContains: [
           'export function PrimitiveInputSchema(): yup.ObjectSchema<PrimitiveInput>',
           // alphabet order
-          'a: yup.string().meta({ label: "A和名" }).nullable(),',
-          'b: yup.string().meta({ label: "B和名" }).nullable(),',
+          'a: yup.string().label("A和名").nullable(),',
+          'b: yup.string().label("B和名").nullable(),',
           'c: yup.boolean().nullable(),',
           'd: yup.number().nullable(),',
           'e: yup.number().nullable(),',
@@ -89,7 +89,7 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function ArrayInputSchema(): yup.ObjectSchema<ArrayInput>',
-          'a: yup.array(yup.string().meta({ label: "A和名" }).nullable().defined()).meta({ label: "A和名" }).nullable(),',
+          'a: yup.array(yup.string().label("A和名").nullable().defined()).label("A和名").nullable(),',
           'b: yup.array(yup.string().nonNullable().defined()).nullable(),',
           'c: yup.array(yup.string().nonNullable().defined()).nonNullable().defined(),',
           'd: yup.array(yup.array(yup.string().nullable().defined()).nullable().defined()).nullable(),',
@@ -124,7 +124,7 @@ describe('yup', () => {
           'export function BInputSchema(): yup.ObjectSchema<BInput>',
           'c: CInputSchema().nonNullable().defined()',
           'export function CInputSchema(): yup.ObjectSchema<CInput>',
-          'a: AInputSchema().meta({ label: "A和名" }).nonNullable().defined()',
+          'a: AInputSchema().label("A和名").nonNullable().defined()',
         ],
         scalars: undefined,
         lazyTypes: ['BInput'],
@@ -147,8 +147,8 @@ describe('yup', () => {
         `,
         wantContains: [
           'export function NestedInputSchema(): yup.ObjectSchema<NestedInput>',
-          'child: yup.lazy(() => NestedInputSchema().meta({ label: "child和名" }).nullable()),',
-          'childrens: yup.lazy(() => yup.array(NestedInputSchema().meta({ label: "children和名" }).nullable().defined()).meta({ label: "children和名" }).nullable())',
+          'child: yup.lazy(() => NestedInputSchema().label("child和名").nullable()),',
+          'childrens: yup.lazy(() => yup.array(NestedInputSchema().label("children和名").nullable().defined()).label("children和名").nullable())',
         ],
         scalars: undefined,
         lazyTypes: ['NestedInput'],
@@ -172,7 +172,7 @@ describe('yup', () => {
         wantContains: [
           'export const PageTypeSchema = yup.string<PageType>().oneOf([PageType.Public, PageType.BasicAuth]);',
           'export function PageInputSchema(): yup.ObjectSchema<PageInput>',
-          'pageType: PageTypeSchema.meta({ label: "pageType和名" }).nonNullable()',
+          'pageType: PageTypeSchema.label("pageType和名").nonNullable()',
         ],
         scalars: undefined,
         lazyTypes: undefined,

@@ -70,7 +70,7 @@ export class TypeASTRenderer {
 
   private renderMeta(fieldMetadata: FieldMetadata): string {
     const label = fieldMetadata.getData().label;
-    return label ? `.meta({ label: ${JSON.stringify(label)} })` : '';
+    return label ? `.label(${JSON.stringify(label)})` : '';
   }
 
   public renderNullability(nullability: TypeASTNullability, fieldMetadata: FieldMetadata): string {
