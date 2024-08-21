@@ -18,7 +18,7 @@ import { convertNameParts, DeclarationBlock, indent } from '@graphql-codegen/vis
 import {
   Kind,
 } from 'graphql';
-import { buildApi, formatDirectiveConfig } from '../directive.js';
+import { buildApi } from '../directive.js';
 import {
   escapeGraphQLCharacters,
   InterfaceTypeDefinitionBuilder,
@@ -316,8 +316,7 @@ function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitio
 function generateFieldYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
   let gen = generateFieldTypeYupSchema(config, visitor, field.type);
   if (config.directives && field.directives) {
-    const formatted = formatDirectiveConfig(config.directives);
-    gen += buildApi(formatted, field.directives);
+    gen += buildApi(config.directives, field.directives);
   }
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 }

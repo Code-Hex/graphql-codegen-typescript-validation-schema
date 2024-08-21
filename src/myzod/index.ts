@@ -18,7 +18,7 @@ import { convertNameParts, DeclarationBlock, indent } from '@graphql-codegen/vis
 import {
   Kind,
 } from 'graphql';
-import { buildApi, formatDirectiveConfig } from '../directive.js';
+import { buildApi } from '../directive.js';
 import {
   escapeGraphQLCharacters,
   InterfaceTypeDefinitionBuilder,
@@ -320,8 +320,7 @@ function generateFieldTypeMyZodSchema(config: ValidationSchemaPluginConfig, visi
 
 function applyDirectives(config: ValidationSchemaPluginConfig, field: InputValueDefinitionNode | FieldDefinitionNode, gen: string): string {
   if (config.directives && field.directives) {
-    const formatted = formatDirectiveConfig(config.directives);
-    return gen + buildApi(formatted, field.directives);
+    return gen + buildApi(config.directives, field.directives);
   }
   return gen;
 }
