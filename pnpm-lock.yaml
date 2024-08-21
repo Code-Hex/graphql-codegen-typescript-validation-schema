@@ -29,7 +29,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^2.12.2
-        version: 2.26.1(@typescript-eslint/utils@8.2.0(eslint@9.9.0(jiti@1.18.2))(typescript@5.5.4))(@vue/compiler-sfc@3.4.22)(eslint@9.9.0(jiti@1.18.2))(typescript@5.5.4)(vitest@2.0.5(@types/node@20.16.1))
+        version: 2.27.0(@typescript-eslint/utils@8.2.0(eslint@9.9.0(jiti@1.18.2))(typescript@5.5.4))(@vue/compiler-sfc@3.4.22)(eslint@9.9.0(jiti@1.18.2))(typescript@5.5.4)(vitest@2.0.5(@types/node@20.16.1))
       '@graphql-codegen/cli':
         specifier: 5.0.2
         version: 5.0.2(@babel/core@7.24.7)(@types/node@20.16.1)(graphql@16.9.0)
@@ -89,8 +89,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@antfu/eslint-config@2.26.1':
-    resolution: {integrity: sha512-REAw17Vf4YkJi8Sog5W28mmO4VKxNYZBKlaJAtHHd9+6tTU2LSjNpKDdKDau1G6+dKKzajzhJGlXvfNIFeyNZw==}
+  '@antfu/eslint-config@2.27.0':
+    resolution: {integrity: sha512-HyUUKx9Q8jiRY8zVm6MxmIPcf9n46I41jwY3G+LXzsqgPr18dHdjAUJqbZVT9ZAI0UndV18Ye5I+H9AI3vX37w==}
     hasBin: true
     peerDependencies:
       '@eslint-react/eslint-plugin': ^1.5.8
@@ -3976,7 +3976,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@antfu/eslint-config@2.26.1(@typescript-eslint/utils@8.2.0(eslint@9.9.0(jiti@1.18.2))(typescript@5.5.4))(@vue/compiler-sfc@3.4.22)(eslint@9.9.0(jiti@1.18.2))(typescript@5.5.4)(vitest@2.0.5(@types/node@20.16.1))':
+  '@antfu/eslint-config@2.27.0(@typescript-eslint/utils@8.2.0(eslint@9.9.0(jiti@1.18.2))(typescript@5.5.4))(@vue/compiler-sfc@3.4.22)(eslint@9.9.0(jiti@1.18.2))(typescript@5.5.4)(vitest@2.0.5(@types/node@20.16.1))':
     dependencies:
       '@antfu/install-pkg': 0.4.0
       '@clack/prompts': 0.7.0
