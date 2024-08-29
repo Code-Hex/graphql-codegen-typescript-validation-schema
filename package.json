@@ -98,7 +98,7 @@
     "ts-dedent": "^2.2.0",
     "ts-jest": "29.2.5",
     "typescript": "5.5.4",
-    "valibot": "0.39.0",
+    "valibot": "0.40.0",
     "vitest": "^2.0.0",
     "yup": "1.4.0",
     "zod": "3.23.8"
