@@ -67,8 +67,8 @@ importers:
         specifier: 5.5.4
         version: 5.5.4
       valibot:
-        specifier: 0.40.0
-        version: 0.40.0(typescript@5.5.4)
+        specifier: 0.41.0
+        version: 0.41.0(typescript@5.5.4)
       vitest:
         specifier: ^2.0.0
         version: 2.0.5(@types/node@20.16.3)
@@ -3767,8 +3767,8 @@ packages:
     resolution: {integrity: sha512-74Y4LqY74kLE6IFyIjPtkSTWzUZmj8tdHT9Ii/26dvQ6K9Dl2NbEfj0XgU2sHCtKgt5VupqhlO/5aWuqS+IY1w==}
     engines: {node: '>=10.12.0'}
 
-  valibot@0.40.0:
-    resolution: {integrity: sha512-XHKnaVtwHqxPwnGOsLrwka9CEaL7yNeLNp707OKv/bmT29GnPVdl6PxBOZ6BW7hF66/6QT6iVbOlnW7qVPmoKw==}
+  valibot@0.41.0:
+    resolution: {integrity: sha512-igDBb8CTYr8YTQlOKgaN9nSS0Be7z+WRuaeYqGf3Cjz3aKmSnqEmYnkfVjzIuumGqfHpa3fLIvMEAfhrpqN8ng==}
     peerDependencies:
       typescript: '>=5'
     peerDependenciesMeta:
@@ -8529,7 +8529,7 @@ snapshots:
       '@types/istanbul-lib-coverage': 2.0.4
       convert-source-map: 1.9.0
 
-  valibot@0.40.0(typescript@5.5.4):
+  valibot@0.41.0(typescript@5.5.4):
     optionalDependencies:
       typescript: 5.5.4
 
