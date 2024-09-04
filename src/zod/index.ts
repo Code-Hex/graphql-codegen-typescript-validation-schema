@@ -48,7 +48,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           new DeclarationBlock({})
             .asKind('type')
             .withName('Properties<T>')
-            .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;', '}>'].join('\n')).string,
+            .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;', '}>'].join('\n'))
+            .string,
           // Unfortunately, zod doesn’t provide non-null defined any schema.
           // This is a temporary hack until it is fixed.
           // see: https://github.com/colinhacks/zod/issues/884
@@ -57,12 +58,14 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
             .export()
             .asKind('const')
             .withName(`isDefinedNonNullAny`)
-            .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`).string,
+            .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`)
+            .string,
           new DeclarationBlock({})
             .export()
             .asKind('const')
             .withName(`${anySchema}`)
-            .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`).string,
+            .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`)
+            .string,
           ...this.enumDeclarations,
         ].join('\n')}`
     );
@@ -100,7 +103,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('const')
                 .withName(`${name}Schema: z.ZodObject<Properties<${name}>>`)
-                .withContent([`z.object({`, shape, '})'].join('\n')).string + appendArguments
+                .withContent([`z.object({`, shape, '})'].join('\n'))
+                .string + appendArguments
             );
 
           case 'function':
@@ -110,7 +114,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('function')
                 .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
-                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string + appendArguments
+                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
+                .string + appendArguments
             );
         }
       }),
@@ -145,7 +150,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                     shape,
                     '})',
                   ].join('\n'),
-                ).string + appendArguments
+                )
+                .string + appendArguments
             );
 
           case 'function':
@@ -162,7 +168,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                     shape,
                     indent('})'),
                   ].join('\n'),
-                ).string + appendArguments
+                )
+                .string + appendArguments
             );
         }
       }),
@@ -189,7 +196,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`z.nativeEnum(${enumname})`).string,
+              .withContent(`z.nativeEnum(${enumname})`)
+              .string,
         );
       },
     };
@@ -202,37 +210,35 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           return;
         const visitor = this.createVisitor('output');
         const unionName = visitor.convertName(node.name.value);
-        const unionElements = node.types
-          .map((t) => {
-            const element = visitor.convertName(t.name.value);
-            const typ = visitor.getType(t.name.value);
-            if (typ?.astNode?.kind === 'EnumTypeDefinition')
-              return `${element}Schema`;
+        const unionElements = node.types.map((t) => {
+          const element = visitor.convertName(t.name.value);
+          const typ = visitor.getType(t.name.value);
+          if (typ?.astNode?.kind === 'EnumTypeDefinition')
+            return `${element}Schema`;
 
-            switch (this.config.validationSchemaExportType) {
-              case 'const':
-                return `${element}Schema`;
-              case 'function':
-              default:
-                return `${element}Schema()`;
-            }
-          })
-          .join(', ');
+          switch (this.config.validationSchemaExportType) {
+            case 'const':
+              return `${element}Schema`;
+            case 'function':
+            default:
+              return `${element}Schema()`;
+          }
+        }).join(', ');
         const unionElementsCount = node.types.length ?? 0;
 
         const union = unionElementsCount > 1 ? `z.union([${unionElements}])` : unionElements;
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
-            return new DeclarationBlock({}).export().asKind('const').withName(`${unionName}Schema`).withContent(union)
-              .string;
+            return new DeclarationBlock({}).export().asKind('const').withName(`${unionName}Schema`).withContent(union).string;
           case 'function':
           default:
             return new DeclarationBlock({})
               .export()
               .asKind('function')
               .withName(`${unionName}Schema()`)
-              .withBlock(indent(`return ${union}`)).string;
+              .withBlock(indent(`return ${union}`))
+              .string;
         }
       },
     };
@@ -251,7 +257,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('const')
           .withName(`${name}Schema: z.ZodObject<Properties<${name}>>`)
-          .withContent(['z.object({', shape, '})'].join('\n')).string;
+          .withContent(['z.object({', shape, '})'].join('\n'))
+          .string;
 
       case 'function':
       default:
@@ -259,7 +266,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): z.ZodObject<Properties<${name}>>`)
-          .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n')).string;
+          .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
+          .string;
     }
   }
 }

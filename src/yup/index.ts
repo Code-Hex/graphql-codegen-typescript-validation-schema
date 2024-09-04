@@ -55,7 +55,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
               indent('}).defined()'),
             ].join('\n'),
-          ).string}`
+          )
+          .string}`
     );
   }
 
@@ -82,12 +83,10 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields
-          ?.map((field) => {
-            const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
-            return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
-          })
-          .join(',\n');
+        const shape = node.fields?.map((field) => {
+          const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
+          return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
+        }).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -96,7 +95,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('const')
                 .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
-                .withContent([`yup.object({`, shape, '})'].join('\n')).string + appendArguments
+                .withContent([`yup.object({`, shape, '})'].join('\n'))
+                .string + appendArguments
             );
 
           case 'function':
@@ -106,7 +106,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('function')
                 .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
-                .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string + appendArguments
+                .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
+                .string + appendArguments
             );
         }
       }),
@@ -141,7 +142,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
                     shape,
                     '})',
                   ].join('\n'),
-                ).string + appendArguments
+                )
+                .string + appendArguments
             );
 
           case 'function':
@@ -158,7 +160,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
                     shape,
                     indent('})'),
                   ].join('\n'),
-                ).string + appendArguments
+                )
+                .string + appendArguments
             );
         }
       }),
@@ -207,22 +210,20 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         const unionName = visitor.convertName(node.name.value);
         this.importTypes.push(unionName);
 
-        const unionElements = node.types
-          ?.map((t) => {
-            const element = visitor.convertName(t.name.value);
-            const typ = visitor.getType(t.name.value);
-            if (typ?.astNode?.kind === 'EnumTypeDefinition')
-              return `${element}Schema`;
+        const unionElements = node.types?.map((t) => {
+          const element = visitor.convertName(t.name.value);
+          const typ = visitor.getType(t.name.value);
+          if (typ?.astNode?.kind === 'EnumTypeDefinition')
+            return `${element}Schema`;
 
-            switch (this.config.validationSchemaExportType) {
-              case 'const':
-                return `${element}Schema`;
-              case 'function':
-              default:
-                return `${element}Schema()`;
-            }
-          })
-          .join(', ');
+          switch (this.config.validationSchemaExportType) {
+            case 'const':
+              return `${element}Schema`;
+            case 'function':
+            default:
+              return `${element}Schema()`;
+          }
+        }).join(', ');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -230,14 +231,16 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('const')
               .withName(`${unionName}Schema: yup.MixedSchema<${unionName}>`)
-              .withContent(`union<${unionName}>(${unionElements})`).string;
+              .withContent(`union<${unionName}>(${unionElements})`)
+              .string;
           case 'function':
           default:
             return new DeclarationBlock({})
               .export()
               .asKind('function')
               .withName(`${unionName}Schema(): yup.MixedSchema<${unionName}>`)
-              .withBlock(indent(`return union<${unionName}>(${unionElements})`)).string;
+              .withBlock(indent(`return union<${unionName}>(${unionElements})`))
+              .string;
         }
       },
     };
@@ -256,7 +259,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('const')
           .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
-          .withContent(['yup.object({', shape, '})'].join('\n')).string;
+          .withContent(['yup.object({', shape, '})'].join('\n'))
+          .string;
 
       case 'function':
       default:
@@ -264,7 +268,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
-          .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n')).string;
+          .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
+          .string;
     }
   }
 }

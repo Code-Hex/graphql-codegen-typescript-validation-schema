@@ -74,7 +74,8 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('function')
                 .withName(`${name}Schema(): v.GenericSchema<${name}>`)
-                .withBlock([indent(`return v.object({`), shape, indent('})')].join('\n')).string + appendArguments
+                .withBlock([indent(`return v.object({`), shape, indent('})')].join('\n'))
+                .string + appendArguments
             );
         }
       }),
@@ -109,7 +110,8 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
                     shape,
                     indent('})'),
                   ].join('\n'),
-                ).string + appendArguments
+                )
+                .string + appendArguments
             );
         }
       }),
@@ -136,7 +138,8 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`v.enum_(${enumname})`).string,
+              .withContent(`v.enum_(${enumname})`)
+              .string,
         );
       },
     };
@@ -149,19 +152,17 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
           return;
         const visitor = this.createVisitor('output');
         const unionName = visitor.convertName(node.name.value);
-        const unionElements = node.types
-          .map((t) => {
-            const element = visitor.convertName(t.name.value);
-            const typ = visitor.getType(t.name.value);
-            if (typ?.astNode?.kind === 'EnumTypeDefinition')
-              return `${element}Schema`;
+        const unionElements = node.types.map((t) => {
+          const element = visitor.convertName(t.name.value);
+          const typ = visitor.getType(t.name.value);
+          if (typ?.astNode?.kind === 'EnumTypeDefinition')
+            return `${element}Schema`;
 
-            switch (this.config.validationSchemaExportType) {
-              default:
-                return `${element}Schema()`;
-            }
-          })
-          .join(', ');
+          switch (this.config.validationSchemaExportType) {
+            default:
+              return `${element}Schema()`;
+          }
+        }).join(', ');
         const unionElementsCount = node.types.length ?? 0;
 
         const union = unionElementsCount > 1 ? `v.union([${unionElements}])` : unionElements;
@@ -172,7 +173,8 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('function')
               .withName(`${unionName}Schema()`)
-              .withBlock(indent(`return ${union}`)).string;
+              .withBlock(indent(`return ${union}`))
+              .string;
         }
       },
     };
@@ -191,7 +193,8 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): v.GenericSchema<${name}>`)
-          .withBlock([indent(`return v.object({`), shape, indent('})')].join('\n')).string;
+          .withBlock([indent(`return v.object({`), shape, indent('})')].join('\n'))
+          .string;
     }
   }
 }

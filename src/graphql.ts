@@ -181,9 +181,7 @@ export function topsort(g: Graph): string[] {
 }
 
 export function isGeneratedByIntrospection(schema: GraphQLSchema): boolean {
-  return Object.entries(schema.getTypeMap())
-    .filter(([name, type]) => !name.startsWith('__') && !isSpecifiedScalarType(type))
-    .every(([, type]) => type.astNode === undefined)
+  return Object.entries(schema.getTypeMap()).filter(([name, type]) => !name.startsWith('__') && !isSpecifiedScalarType(type)).every(([, type]) => type.astNode === undefined)
 }
 
 // https://spec.graphql.org/October2021/#EscapedCharacter

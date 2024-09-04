@@ -150,7 +150,8 @@ export function buildApiForValibot(config: FormattedDirectiveConfig, directives:
       const argsConfig = config[directiveName];
       const apis = _buildApiFromDirectiveArguments(argsConfig, directive.arguments ?? []);
       return apis.map(api => `v${api}`);
-    }).flat()
+    })
+    .flat()
 }
 
 function buildApiSchema(validationSchema: string[] | undefined, argValue: ConstValueNode): string {

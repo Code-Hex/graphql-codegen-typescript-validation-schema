@@ -45,8 +45,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
     return (
       `\n${
         [
-          new DeclarationBlock({}).export().asKind('const').withName(`${anySchema}`).withContent(`myzod.object({})`)
-            .string,
+          new DeclarationBlock({}).export().asKind('const').withName(`${anySchema}`).withContent(`myzod.object({})`).string,
           ...this.enumDeclarations,
         ].join('\n')}`
     );
@@ -84,7 +83,8 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('const')
                 .withName(`${name}Schema: myzod.Type<${name}>`)
-                .withContent([`myzod.object({`, shape, '})'].join('\n')).string + appendArguments
+                .withContent([`myzod.object({`, shape, '})'].join('\n'))
+                .string + appendArguments
             );
 
           case 'function':
@@ -94,7 +94,8 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('function')
                 .withName(`${name}Schema(): myzod.Type<${name}>`)
-                .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string + appendArguments
+                .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n'))
+                .string + appendArguments
             );
         }
       }),
@@ -129,7 +130,8 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
                     shape,
                     '})',
                   ].join('\n'),
-                ).string + appendArguments
+                )
+                .string + appendArguments
             );
 
           case 'function':
@@ -146,7 +148,8 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
                     shape,
                     indent('})'),
                   ].join('\n'),
-                ).string + appendArguments
+                )
+                .string + appendArguments
             );
         }
       }),
@@ -169,12 +172,14 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
               .withName(`${enumname}Schema`)
               .withContent(
                 `myzod.literals(${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')})`,
-              ).string
+              )
+              .string
             : new DeclarationBlock({})
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`myzod.enum(${enumname})`).string,
+              .withContent(`myzod.enum(${enumname})`)
+              .string,
         );
       },
     };
@@ -189,37 +194,35 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         const visitor = this.createVisitor('output');
 
         const unionName = visitor.convertName(node.name.value);
-        const unionElements = node.types
-          ?.map((t) => {
-            const element = visitor.convertName(t.name.value);
-            const typ = visitor.getType(t.name.value);
-            if (typ?.astNode?.kind === 'EnumTypeDefinition')
-              return `${element}Schema`;
+        const unionElements = node.types?.map((t) => {
+          const element = visitor.convertName(t.name.value);
+          const typ = visitor.getType(t.name.value);
+          if (typ?.astNode?.kind === 'EnumTypeDefinition')
+            return `${element}Schema`;
 
-            switch (this.config.validationSchemaExportType) {
-              case 'const':
-                return `${element}Schema`;
-              case 'function':
-              default:
-                return `${element}Schema()`;
-            }
-          })
-          .join(', ');
+          switch (this.config.validationSchemaExportType) {
+            case 'const':
+              return `${element}Schema`;
+            case 'function':
+            default:
+              return `${element}Schema()`;
+          }
+        }).join(', ');
         const unionElementsCount = node.types?.length ?? 0;
 
         const union = unionElementsCount > 1 ? `myzod.union([${unionElements}])` : unionElements;
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
-            return new DeclarationBlock({}).export().asKind('const').withName(`${unionName}Schema`).withContent(union)
-              .string;
+            return new DeclarationBlock({}).export().asKind('const').withName(`${unionName}Schema`).withContent(union).string;
           case 'function':
           default:
             return new DeclarationBlock({})
               .export()
               .asKind('function')
               .withName(`${unionName}Schema()`)
-              .withBlock(indent(`return ${union}`)).string;
+              .withBlock(indent(`return ${union}`))
+              .string;
         }
       },
     };
@@ -238,7 +241,8 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('const')
           .withName(`${name}Schema: myzod.Type<${name}>`)
-          .withContent(['myzod.object({', shape, '})'].join('\n')).string;
+          .withContent(['myzod.object({', shape, '})'].join('\n'))
+          .string;
 
       case 'function':
       default:
@@ -246,7 +250,8 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): myzod.Type<${name}>`)
-          .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n')).string;
+          .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n'))
+          .string;
     }
   }
 }
