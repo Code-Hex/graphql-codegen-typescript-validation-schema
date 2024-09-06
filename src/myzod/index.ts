@@ -1,4 +1,9 @@
-import { DeclarationBlock, convertNameParts, indent } from '@graphql-codegen/visitor-plugin-common';
+import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
+import { convertNameParts, DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+import {
+  Kind,
+} from 'graphql';
+
 import type {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
@@ -11,24 +16,19 @@ import type {
   TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
-import {
-  Kind,
-} from 'graphql';
-
-import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
-import type { ValidationSchemaPluginConfig } from '../config.js';
 import { buildApi, formatDirectiveConfig } from '../directive.js';
-import { BaseSchemaVisitor } from '../schema_visitor.js';
-import type { Visitor } from '../visitor.js';
 import {
-  InterfaceTypeDefinitionBuilder,
-  ObjectTypeDefinitionBuilder,
   escapeGraphQLCharacters,
+  InterfaceTypeDefinitionBuilder,
   isInput,
   isListType,
   isNamedType,
   isNonNullType,
+  ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
+import { BaseSchemaVisitor } from '../schema_visitor.js';
+import type { ValidationSchemaPluginConfig } from '../config.js';
+import type { Visitor } from '../visitor.js';
 
 const anySchema = `definedNonNullAnySchema`;
 

@@ -1,18 +1,18 @@
 import { Graph } from 'graphlib';
-import type {
-  ObjectTypeDefinitionNode,
-} from 'graphql';
 import {
-  Kind,
   buildClientSchema,
   buildSchema,
   introspectionFromSchema,
+  Kind,
   parse,
   print,
 } from 'graphql';
 import dedent from 'ts-dedent';
+import type {
+  ObjectTypeDefinitionNode,
+} from 'graphql';
 
-import { ObjectTypeDefinitionBuilder, escapeGraphQLCharacters, isGeneratedByIntrospection, topologicalSortAST, topsort } from '../src/graphql';
+import { escapeGraphQLCharacters, isGeneratedByIntrospection, ObjectTypeDefinitionBuilder, topologicalSortAST, topsort } from '../src/graphql';
 
 describe('graphql', () => {
   describe('objectTypeDefinitionBuilder', () => {

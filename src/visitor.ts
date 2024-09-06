@@ -1,13 +1,13 @@
 import { TsVisitor } from '@graphql-codegen/typescript';
+import {
+  specifiedScalarTypes,
+} from 'graphql';
 import type {
   FieldDefinitionNode,
   GraphQLSchema,
   InterfaceTypeDefinitionNode,
   NameNode,
   ObjectTypeDefinitionNode,
-} from 'graphql';
-import {
-  specifiedScalarTypes,
 } from 'graphql';
 
 import type { ValidationSchemaPluginConfig } from './config.js';

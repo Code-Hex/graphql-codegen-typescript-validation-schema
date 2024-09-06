@@ -6,9 +6,9 @@ import type {
   ObjectTypeDefinitionNode,
 } from 'graphql';
 
+import { Visitor } from './visitor.js';
 import type { ValidationSchemaPluginConfig } from './config.js';
 import type { SchemaVisitor } from './types.js';
-import { Visitor } from './visitor.js';
 
 export abstract class BaseSchemaVisitor implements SchemaVisitor {
   protected importTypes: string[] = [];

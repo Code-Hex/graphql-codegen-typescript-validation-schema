@@ -12,18 +12,18 @@ import type {
   UnionTypeDefinitionNode,
 } from 'graphql';
 
-import type { ValidationSchemaPluginConfig } from '../config.js';
-import { BaseSchemaVisitor } from '../schema_visitor.js';
-import type { Visitor } from '../visitor.js';
 import { buildApiForValibot, formatDirectiveConfig } from '../directive.js';
 import {
   InterfaceTypeDefinitionBuilder,
-  ObjectTypeDefinitionBuilder,
   isInput,
   isListType,
   isNamedType,
   isNonNullType,
+  ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
+import { BaseSchemaVisitor } from '../schema_visitor.js';
+import type { ValidationSchemaPluginConfig } from '../config.js';
+import type { Visitor } from '../visitor.js';
 
 export class ValibotSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {

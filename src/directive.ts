@@ -1,8 +1,8 @@
-import type { ConstArgumentNode, ConstDirectiveNode, ConstValueNode } from 'graphql';
 import { Kind, valueFromASTUntyped } from 'graphql';
+import type { ConstArgumentNode, ConstDirectiveNode, ConstValueNode } from 'graphql';
 
-import type { DirectiveConfig, DirectiveObjectArguments } from './config.js';
 import { isConvertableRegexp } from './regexp.js';
+import type { DirectiveConfig, DirectiveObjectArguments } from './config.js';
 
 export interface FormattedDirectiveConfig {
   [directive: string]: FormattedDirectiveArguments

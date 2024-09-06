@@ -1,4 +1,8 @@
 import { Graph } from 'graphlib';
+import {
+  isSpecifiedScalarType,
+  visit,
+} from 'graphql';
 import type {
   ASTNode,
   DefinitionNode,
@@ -6,15 +10,11 @@ import type {
   GraphQLSchema,
   InterfaceTypeDefinitionNode,
   ListTypeNode,
-  NameNode,
   NamedTypeNode,
+  NameNode,
   NonNullTypeNode,
   ObjectTypeDefinitionNode,
   TypeNode,
-} from 'graphql';
-import {
-  isSpecifiedScalarType,
-  visit,
 } from 'graphql';
 
 export const isListType = (typ?: TypeNode): typ is ListTypeNode => typ?.kind === 'ListType';
