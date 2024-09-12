@@ -1,4 +1,3 @@
-import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import type {
   EnumTypeDefinitionNode,
   FieldDefinitionNode,
@@ -11,7 +10,10 @@ import type {
   TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
+import type { ValidationSchemaPluginConfig } from '../config.js';
 
+import type { Visitor } from '../visitor.js';
+import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { buildApiForValibot, formatDirectiveConfig } from '../directive.js';
 import {
   InterfaceTypeDefinitionBuilder,
@@ -22,8 +24,6 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
-import type { ValidationSchemaPluginConfig } from '../config.js';
-import type { Visitor } from '../visitor.js';
 
 export class ValibotSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
