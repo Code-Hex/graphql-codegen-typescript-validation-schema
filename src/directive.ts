@@ -1,7 +1,7 @@
 import type { ConstArgumentNode, ConstDirectiveNode, ConstValueNode } from 'graphql';
+import { Kind, valueFromASTUntyped } from 'graphql';
 import type { DirectiveConfig, DirectiveObjectArguments, SingleDirectiveConfig } from './config.js';
 
-import { Kind, valueFromASTUntyped } from 'graphql';
 import { isConvertableRegexp } from './regexp.js';
 
 // This function generates `.required("message").min(100).email()`

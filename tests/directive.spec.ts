@@ -5,8 +5,8 @@ import type {
   NameNode,
 } from 'graphql';
 
-import type { DirectiveConfig, DirectiveObjectArguments, SingleDirectiveConfig } from '../src/config';
 import { Kind, parseConstValue } from 'graphql';
+import type { DirectiveConfig, DirectiveObjectArguments, SingleDirectiveConfig } from '../src/config';
 import {
   buildApi,
   buildApiForValibot,
