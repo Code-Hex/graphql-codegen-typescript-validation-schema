@@ -1470,4 +1470,81 @@ describe('yup', () => {
     expect(result.content).toContain('ratio: yup.number().defined().nullable().default(0.5).optional()');
     expect(result.content).toContain('isMember: yup.boolean().defined().nullable().default(true).optional()');
   });
+
+  it('with default input values as enum types with underscores', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType! = BASIC_AUTH
+        greeting: String = "Hello"
+        score: Int = 100
+        ratio: Float = 0.5
+        isMember: Boolean = true
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'yup',
+        importFrom: './types',
+        useEnumTypeAsDefaultValue: true,
+      },
+      {},
+    );
+
+    expect(result.content).toContain(
+      'export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined()',
+    );
+    expect(result.content).toContain('export function PageInputSchema(): yup.ObjectSchema<PageInput>');
+
+    expect(result.content).toContain('pageType: PageTypeSchema.nonNullable().default(PageType.Basic_Auth)');
+    expect(result.content).toContain('greeting: yup.string().defined().nullable().default("Hello").optional()');
+    expect(result.content).toContain('score: yup.number().defined().nullable().default(100).optional()');
+    expect(result.content).toContain('ratio: yup.number().defined().nullable().default(0.5).optional()');
+    expect(result.content).toContain('isMember: yup.boolean().defined().nullable().default(true).optional()');
+  });
+
+  it('with default input values as enum types with no underscores', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType! = BASIC_AUTH
+        greeting: String = "Hello"
+        score: Int = 100
+        ratio: Float = 0.5
+        isMember: Boolean = true
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'yup',
+        importFrom: './types',
+        useEnumTypeAsDefaultValue: true,
+        namingConvention: {
+          transformUnderscore: true,
+        }
+      },
+      {},
+    );
+
+    expect(result.content).toContain(
+      'export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined()',
+    );
+    expect(result.content).toContain('export function PageInputSchema(): yup.ObjectSchema<PageInput>');
+
+    expect(result.content).toContain('pageType: PageTypeSchema.nonNullable().default(PageType.BasicAuth)');
+    expect(result.content).toContain('greeting: yup.string().defined().nullable().default("Hello").optional()');
+    expect(result.content).toContain('score: yup.number().defined().nullable().default(100).optional()');
+    expect(result.content).toContain('ratio: yup.number().defined().nullable().default(0.5).optional()');
+    expect(result.content).toContain('isMember: yup.boolean().defined().nullable().default(true).optional()');
+  });
 });
