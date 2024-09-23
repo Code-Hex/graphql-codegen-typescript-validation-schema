@@ -1502,8 +1502,8 @@ describe('myzod', () => {
         importFrom: './types',
         useEnumTypeAsDefaultValue: true,
         namingConvention: {
-          transformUnderscore: true
-        }
+          transformUnderscore: true,
+        },
       },
       {},
     );

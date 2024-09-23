@@ -625,7 +625,7 @@ describe('zod', () => {
         useEnumTypeAsDefaultValue: true,
         namingConvention: {
           transformUnderscore: true,
-        }
+        },
       },
       {
       },

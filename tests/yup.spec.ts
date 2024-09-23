@@ -1531,7 +1531,7 @@ describe('yup', () => {
         useEnumTypeAsDefaultValue: true,
         namingConvention: {
           transformUnderscore: true,
-        }
+        },
       },
       {},
     );
