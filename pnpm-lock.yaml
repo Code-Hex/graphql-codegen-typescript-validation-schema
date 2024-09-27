@@ -29,7 +29,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^3.0.0
-        version: 3.7.2(@typescript-eslint/utils@8.7.0(eslint@9.11.1(jiti@1.18.2))(typescript@5.6.2))(@vue/compiler-sfc@3.4.22)(eslint@9.11.1(jiti@1.18.2))(typescript@5.6.2)(vitest@2.1.1(@types/node@20.16.9))
+        version: 3.7.3(@typescript-eslint/utils@8.7.0(eslint@9.11.1(jiti@1.18.2))(typescript@5.6.2))(@vue/compiler-sfc@3.4.22)(eslint@9.11.1(jiti@1.18.2))(typescript@5.6.2)(vitest@2.1.1(@types/node@20.16.9))
       '@graphql-codegen/cli':
         specifier: 5.0.2
         version: 5.0.2(@babel/core@7.24.7)(@types/node@20.16.9)(graphql@16.9.0)
@@ -89,8 +89,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@antfu/eslint-config@3.7.2':
-    resolution: {integrity: sha512-kXyOGlXDqjhG3CzO9udn2oz82s7+XF9wQW1buyvji5i9O3yaJCHvUjRCwqd5RFiU1qCSmUAY7ku3AOCEyVunFg==}
+  '@antfu/eslint-config@3.7.3':
+    resolution: {integrity: sha512-vzhKtzQT+f/xBV8T5U8SFy3D7uAqL2CEcjsJVqtA7F8tdKvGuC/96uWeEKMHk5lRfijgj+xRvb+c4qQn60YlIA==}
     hasBin: true
     peerDependencies:
       '@eslint-react/eslint-plugin': ^1.5.8
@@ -1695,8 +1695,8 @@ packages:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
 
-  caniuse-lite@1.0.30001663:
-    resolution: {integrity: sha512-o9C3X27GLKbLeTYZ6HBOLU1tsAcBZsLis28wrVzddShCS16RujjHp9GDHKZqrB3meE0YjhawvMFsGb/igqiPzA==}
+  caniuse-lite@1.0.30001664:
+    resolution: {integrity: sha512-AmE7k4dXiNKQipgn7a2xg558IRqPN3jMQY/rOsbxDhrd0tyChwbITBfiwtnqz8bi2M5mIWbxAYBvk7W7QBUS2g==}
 
   capital-case@1.0.4:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
@@ -1957,8 +1957,8 @@ packages:
     engines: {node: '>=0.10.0'}
     hasBin: true
 
-  electron-to-chromium@1.5.28:
-    resolution: {integrity: sha512-VufdJl+rzaKZoYVUijN13QcXVF5dWPZANeFTLNy+OSpHdDL5ynXTF35+60RSBbaQYB1ae723lQXHCrf4pyLsMw==}
+  electron-to-chromium@1.5.29:
+    resolution: {integrity: sha512-PF8n2AlIhCKXQ+gTpiJi0VhcHDb69kYX4MtCiivctc2QD3XuNZ/XIOlbGzt7WAjjEev0TtaH6Cu3arZExm5DOw==}
 
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -2033,8 +2033,8 @@ packages:
     peerDependencies:
       eslint: '*'
 
-  eslint-plugin-command@0.2.5:
-    resolution: {integrity: sha512-mbCaSHD37MT8nVJnJUz2oeDfhz0wdOjfrqQVWkSpXuj3uU8m7/FK/niV2bL922af3M1js5x7Xcu3PwqWsrahfA==}
+  eslint-plugin-command@0.2.6:
+    resolution: {integrity: sha512-T0bHZ1oblW1xUHUVoBKZJR2osSNNGkfZuK4iqboNwuNS/M7tdp3pmURaJtTi/XDzitxaQ02lvOdFH0mUd5QLvQ==}
     peerDependencies:
       eslint: '*'
 
@@ -2050,8 +2050,8 @@ packages:
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
 
-  eslint-plugin-jsdoc@50.2.5:
-    resolution: {integrity: sha512-o3pVL19dSO3et+env3uV2WjrMX8oEqZjBF8lZBpLl9/CgqaRAIx5UaSPfrbHKB/JlHldWOFFGrUeZWmpWUds6g==}
+  eslint-plugin-jsdoc@50.3.0:
+    resolution: {integrity: sha512-P7qDB/RckdKETpBM4CtjHRQ5qXByPmFhRi86sN3E+J+tySchq+RSOGGhI2hDIefmmKFuTi/1ACjqsnDJDDDfzg==}
     engines: {node: '>=18'}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
@@ -4037,7 +4037,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@antfu/eslint-config@3.7.2(@typescript-eslint/utils@8.7.0(eslint@9.11.1(jiti@1.18.2))(typescript@5.6.2))(@vue/compiler-sfc@3.4.22)(eslint@9.11.1(jiti@1.18.2))(typescript@5.6.2)(vitest@2.1.1(@types/node@20.16.9))':
+  '@antfu/eslint-config@3.7.3(@typescript-eslint/utils@8.7.0(eslint@9.11.1(jiti@1.18.2))(typescript@5.6.2))(@vue/compiler-sfc@3.4.22)(eslint@9.11.1(jiti@1.18.2))(typescript@5.6.2)(vitest@2.1.1(@types/node@20.16.9))':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@clack/prompts': 0.7.0
@@ -4052,9 +4052,9 @@ snapshots:
       eslint-flat-config-utils: 0.4.0
       eslint-merge-processors: 0.1.0(eslint@9.11.1(jiti@1.18.2))
       eslint-plugin-antfu: 2.7.0(eslint@9.11.1(jiti@1.18.2))
-      eslint-plugin-command: 0.2.5(eslint@9.11.1(jiti@1.18.2))
+      eslint-plugin-command: 0.2.6(eslint@9.11.1(jiti@1.18.2))
       eslint-plugin-import-x: 4.3.0(eslint@9.11.1(jiti@1.18.2))(typescript@5.6.2)
-      eslint-plugin-jsdoc: 50.2.5(eslint@9.11.1(jiti@1.18.2))
+      eslint-plugin-jsdoc: 50.3.0(eslint@9.11.1(jiti@1.18.2))
       eslint-plugin-jsonc: 2.16.0(eslint@9.11.1(jiti@1.18.2))
       eslint-plugin-n: 17.10.3(eslint@9.11.1(jiti@1.18.2))
       eslint-plugin-no-only-tests: 3.3.0
@@ -6239,8 +6239,8 @@ snapshots:
 
   browserslist@4.24.0:
     dependencies:
-      caniuse-lite: 1.0.30001663
-      electron-to-chromium: 1.5.28
+      caniuse-lite: 1.0.30001664
+      electron-to-chromium: 1.5.29
       node-releases: 2.0.18
       update-browserslist-db: 1.1.0(browserslist@4.24.0)
 
@@ -6278,7 +6278,7 @@ snapshots:
 
   camelcase@6.3.0: {}
 
-  caniuse-lite@1.0.30001663: {}
+  caniuse-lite@1.0.30001664: {}
 
   capital-case@1.0.4:
     dependencies:
@@ -6533,7 +6533,7 @@ snapshots:
     dependencies:
       jake: 10.9.1
 
-  electron-to-chromium@1.5.28: {}
+  electron-to-chromium@1.5.29: {}
 
   emittery@0.13.1: {}
 
@@ -6620,7 +6620,7 @@ snapshots:
       '@antfu/utils': 0.7.10
       eslint: 9.11.1(jiti@1.18.2)
 
-  eslint-plugin-command@0.2.5(eslint@9.11.1(jiti@1.18.2)):
+  eslint-plugin-command@0.2.6(eslint@9.11.1(jiti@1.18.2)):
     dependencies:
       '@es-joy/jsdoccomment': 0.48.0
       eslint: 9.11.1(jiti@1.18.2)
@@ -6649,7 +6649,7 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-jsdoc@50.2.5(eslint@9.11.1(jiti@1.18.2)):
+  eslint-plugin-jsdoc@50.3.0(eslint@9.11.1(jiti@1.18.2)):
     dependencies:
       '@es-joy/jsdoccomment': 0.48.0
       are-docs-informative: 0.0.2
