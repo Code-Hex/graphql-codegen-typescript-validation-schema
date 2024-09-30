@@ -52,8 +52,8 @@ importers:
         specifier: 29.7.0
         version: 29.7.0(@types/node@20.16.10)
       myzod:
-        specifier: 1.11.0
-        version: 1.11.0
+        specifier: 1.12.0
+        version: 1.12.0
       npm-run-all2:
         specifier: 6.2.3
         version: 6.2.3
@@ -3065,8 +3065,8 @@ packages:
   mute-stream@0.0.8:
     resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
 
-  myzod@1.11.0:
-    resolution: {integrity: sha512-akVgytALu0CSCcN2ACFKycJBaunm8rFAJujuzYHMx/PiQr2fjr11IjQLuYT7U1wh72pRKMjJ9ykpZjq5oN/45A==}
+  myzod@1.12.0:
+    resolution: {integrity: sha512-ZI7y/npvDdS1YyNOmybevrhw3D/DOkd1w7RM5AyGDEumJYjL0k6LzrW2Nf2fINH2HUaZTAHwyu2LzxnDJJ03Cw==}
 
   nanoid@3.3.7:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
@@ -8097,7 +8097,7 @@ snapshots:
 
   mute-stream@0.0.8: {}
 
-  myzod@1.11.0: {}
+  myzod@1.12.0: {}
 
   nanoid@3.3.7: {}
 
