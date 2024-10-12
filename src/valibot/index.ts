@@ -294,6 +294,11 @@ function valibot4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, 
     case 'boolean':
       return `v.boolean()`;
   }
+
+  if (config.defaultScalarTypeSchema) {
+    return config.defaultScalarTypeSchema;
+  }
+
   console.warn('unhandled scalar name:', scalarName);
   return 'v.any()';
 }

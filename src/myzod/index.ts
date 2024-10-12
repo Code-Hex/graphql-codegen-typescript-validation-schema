@@ -374,6 +374,11 @@ function myzod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, sc
     case 'boolean':
       return `myzod.boolean()`;
   }
+
+  if (config.defaultScalarTypeSchema) {
+    return config.defaultScalarTypeSchema;
+  }
+
   console.warn('unhandled name:', scalarName);
   return anySchema;
 }

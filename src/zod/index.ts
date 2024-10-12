@@ -390,6 +390,11 @@ function zod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scal
     case 'boolean':
       return `z.boolean()`;
   }
+
+  if (config.defaultScalarTypeSchema) {
+    return config.defaultScalarTypeSchema;
+  }
+
   console.warn('unhandled scalar name:', scalarName);
   return anySchema;
 }
