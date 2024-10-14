@@ -144,6 +144,46 @@ describe('yup', () => {
     `)
   });
 
+  it('ref input object w/ schemaNamespacedImportName', async () => {
+    const textSchema = /* GraphQL */ `
+      input AInput {
+        b: BInput!
+      }
+      input BInput {
+        c: CInput!
+      }
+      input CInput {
+        a: AInput!
+      }
+    `;
+
+    const schema = buildSchema(textSchema);
+    const result = await plugin(schema, [], { importFrom: './types', schemaNamespacedImportName: 't' }, {});
+
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function AInputSchema(): yup.ObjectSchema<t.AInput> {
+        return yup.object({
+          b: yup.lazy(() => BInputSchema().nonNullable())
+        })
+      }
+
+      export function BInputSchema(): yup.ObjectSchema<t.BInput> {
+        return yup.object({
+          c: yup.lazy(() => CInputSchema().nonNullable())
+        })
+      }
+
+      export function CInputSchema(): yup.ObjectSchema<t.CInput> {
+        return yup.object({
+          a: yup.lazy(() => AInputSchema().nonNullable())
+        })
+      }
+      "
+    `)
+  });
+
   it('nested input object', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input NestedInput {
@@ -195,6 +235,39 @@ describe('yup', () => {
       export const PageTypeSchema = yup.string<PageType>().oneOf(Object.values(PageType)).defined();
 
       export function PageInputSchema(): yup.ObjectSchema<PageInput> {
+        return yup.object({
+          pageType: PageTypeSchema.nonNullable()
+        })
+      }
+      "
+    `)
+  });
+
+  it('enum w/ schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        scalars: undefined,
+        importFrom: './',
+        schemaNamespacedImportName: 't',
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = yup.string<t.PageType>().oneOf(Object.values(t.PageType)).defined();
+
+      export function PageInputSchema(): yup.ObjectSchema<t.PageInput> {
         return yup.object({
           pageType: PageTypeSchema.nonNullable()
         })
@@ -305,6 +378,39 @@ describe('yup', () => {
     `)
   });
 
+  it('with importFrom & schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
+      },
+      {},
+    );
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as yup from 'yup'",
+        "import * as t from './types'",
+      ]
+    `)
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function SaySchema(): yup.ObjectSchema<t.Say> {
+        return yup.object({
+          phrase: yup.string().defined().nonNullable()
+        })
+      }
+      "
+    `)
+  });
+
   it('with importFrom & useTypeImports', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input Say {
@@ -350,6 +456,30 @@ describe('yup', () => {
       [],
       {
         enumsAsTypes: true,
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = yup.string().oneOf(['PUBLIC', 'BASIC_AUTH']).defined();
+      "
+    `)
+  });
+
+  it('with enumsAsTypes + schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        enumsAsTypes: true,
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
       },
       {},
     );
@@ -735,6 +865,8 @@ describe('yup', () => {
         {
           schema: 'yup',
           withObjectType: true,
+          importFrom: './types',
+          schemaNamespacedImportName: 't',
         },
         {},
       );
@@ -748,22 +880,22 @@ describe('yup', () => {
           }).defined()
         }
 
-        export function SquareSchema(): yup.ObjectSchema<Square> {
+        export function SquareSchema(): yup.ObjectSchema<t.Square> {
           return yup.object({
             __typename: yup.string<'Square'>().optional(),
             size: yup.number().defined().nullable().optional()
           })
         }
 
-        export function CircleSchema(): yup.ObjectSchema<Circle> {
+        export function CircleSchema(): yup.ObjectSchema<t.Circle> {
           return yup.object({
             __typename: yup.string<'Circle'>().optional(),
             radius: yup.number().defined().nullable().optional()
           })
         }
 
-        export function ShapeSchema(): yup.MixedSchema<Shape> {
-          return union<Shape>(CircleSchema(), SquareSchema())
+        export function ShapeSchema(): yup.MixedSchema<t.Shape> {
+          return union<t.Shape>(CircleSchema(), SquareSchema())
         }
         "
       `)
