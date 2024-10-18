@@ -464,6 +464,41 @@ describe('zod', () => {
     `)
   });
 
+  it('with defaultScalarTypeSchema', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input ScalarsInput {
+        date: Date!
+        email: Email
+        str: String!
+      }
+      scalar Date
+      scalar Email
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        scalarSchemas: {
+          Email: 'z.string().email()',
+        },
+        defaultScalarTypeSchema: 'z.string()',
+      },
+      {},
+    );
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function ScalarsInputSchema(): z.ZodObject<Properties<ScalarsInput>> {
+        return z.object({
+          date: z.string(),
+          email: z.string().email().nullish(),
+          str: z.string()
+        })
+      }
+      "
+    `)
+  });
+
   it('with typesPrefix', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input Say {
