@@ -156,6 +156,43 @@ describe('myzod', () => {
     `)
   });
 
+  it('ref input object w/ schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+          input AInput {
+            b: BInput!
+          }
+          input BInput {
+            c: CInput!
+          }
+          input CInput {
+            a: AInput!
+          }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'myzod', scalars, importFrom: './types', schemaNamespacedImportName: 't' }, {});
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function AInputSchema(): myzod.Type<t.AInput> {
+        return myzod.object({
+          b: myzod.lazy(() => BInputSchema())
+        })
+      }
+
+      export function BInputSchema(): myzod.Type<t.BInput> {
+        return myzod.object({
+          c: myzod.lazy(() => CInputSchema())
+        })
+      }
+
+      export function CInputSchema(): myzod.Type<t.CInput> {
+        return myzod.object({
+          a: myzod.lazy(() => AInputSchema())
+        })
+      }
+      "
+    `)
+  })
+
   it('nested input object', async () => {
     const schema = buildSchema(`
       input NestedInput {
@@ -203,6 +240,31 @@ describe('myzod', () => {
       "
     `)
   });
+
+  it('enum w/ schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+          enum PageType {
+            PUBLIC
+            BASIC_AUTH
+          }
+          input PageInput {
+            pageType: PageType!
+          }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'myzod', scalars, importFrom: './', schemaNamespacedImportName: 't' }, {});
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = myzod.enum(t.PageType);
+
+      export function PageInputSchema(): myzod.Type<t.PageInput> {
+        return myzod.object({
+          pageType: PageTypeSchema
+        })
+      }
+      "
+    `)
+  })
 
   it('camelcase', async () => {
     const schema = buildSchema(`
@@ -301,6 +363,39 @@ describe('myzod', () => {
     `)
   });
 
+  it('with importFrom & schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
+      },
+      {},
+    );
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as myzod from 'myzod'",
+        "import * as t from './types'",
+      ]
+    `)
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function SaySchema(): myzod.Type<t.Say> {
+        return myzod.object({
+          phrase: myzod.string()
+        })
+      }
+      "
+    `)
+  });
+
   it('with importFrom & useTypeImports', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input Say {
@@ -347,6 +442,31 @@ describe('myzod', () => {
       {
         schema: 'myzod',
         enumsAsTypes: true,
+      },
+      {},
+    );
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export type PageTypeSchema = myzod.literals('PUBLIC', 'BASIC_AUTH');
+      "
+    `)
+  });
+
+  it('with enumsAsTypes + schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        enumsAsTypes: true,
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
       },
       {},
     );
@@ -813,6 +933,52 @@ describe('myzod', () => {
         }
 
         export function CircleSchema(): myzod.Type<Circle> {
+          return myzod.object({
+            __typename: myzod.literal('Circle').optional(),
+            radius: myzod.number().optional().nullable()
+          })
+        }
+
+        export function ShapeSchema() {
+          return myzod.union([CircleSchema(), SquareSchema()])
+        }
+        "
+      `)
+    });
+
+    it('generate union types + schemaNamespacedImportName', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'myzod',
+          withObjectType: true,
+          importFrom: './types',
+          schemaNamespacedImportName: 't',
+        },
+        {},
+      );
+
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function SquareSchema(): myzod.Type<t.Square> {
+          return myzod.object({
+            __typename: myzod.literal('Square').optional(),
+            size: myzod.number().optional().nullable()
+          })
+        }
+
+        export function CircleSchema(): myzod.Type<t.Circle> {
           return myzod.object({
             __typename: myzod.literal('Circle').optional(),
             radius: myzod.number().optional().nullable()

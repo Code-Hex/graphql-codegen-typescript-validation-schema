@@ -155,6 +155,43 @@ describe('zod', () => {
     `)
   })
 
+  it('ref input object w/ schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+          input AInput {
+            b: BInput!
+          }
+          input BInput {
+            c: CInput!
+          }
+          input CInput {
+            a: AInput!
+          }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'zod', scalars, importFrom: './types', schemaNamespacedImportName: 't' }, {});
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function AInputSchema(): z.ZodObject<Properties<t.AInput>> {
+        return z.object({
+          b: z.lazy(() => BInputSchema())
+        })
+      }
+
+      export function BInputSchema(): z.ZodObject<Properties<t.BInput>> {
+        return z.object({
+          c: z.lazy(() => CInputSchema())
+        })
+      }
+
+      export function CInputSchema(): z.ZodObject<Properties<t.CInput>> {
+        return z.object({
+          a: z.lazy(() => AInputSchema())
+        })
+      }
+      "
+    `)
+  })
+
   it('nested input object', async () => {
     const schema = buildSchema(/* GraphQL */ `
           input NestedInput {
@@ -193,6 +230,31 @@ describe('zod', () => {
       export const PageTypeSchema = z.nativeEnum(PageType);
 
       export function PageInputSchema(): z.ZodObject<Properties<PageInput>> {
+        return z.object({
+          pageType: PageTypeSchema
+        })
+      }
+      "
+    `)
+  })
+
+  it('enum w/ schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+          enum PageType {
+            PUBLIC
+            BASIC_AUTH
+          }
+          input PageInput {
+            pageType: PageType!
+          }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'zod', scalars, importFrom: './', schemaNamespacedImportName: 't' }, {});
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = z.nativeEnum(t.PageType);
+
+      export function PageInputSchema(): z.ZodObject<Properties<t.PageInput>> {
         return z.object({
           pageType: PageTypeSchema
         })
@@ -330,6 +392,39 @@ describe('zod', () => {
     `)
   });
 
+  it('with importFrom & schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
+      },
+      {},
+    );
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import { z } from 'zod'",
+        "import * as t from './types'",
+      ]
+    `);
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function SaySchema(): z.ZodObject<Properties<t.Say>> {
+        return z.object({
+          phrase: z.string()
+        })
+      }
+      "
+    `)
+  });
+
   it('with enumsAsTypes', async () => {
     const schema = buildSchema(/* GraphQL */ `
       enum PageType {
@@ -343,6 +438,31 @@ describe('zod', () => {
       {
         schema: 'zod',
         enumsAsTypes: true,
+      },
+      {},
+    );
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = z.enum(['PUBLIC', 'BASIC_AUTH']);
+      "
+    `)
+  });
+
+  it('with enumsAsTypes + schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+        enumsAsTypes: true,
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
       },
       {},
     );
@@ -964,6 +1084,52 @@ describe('zod', () => {
         }
 
         export function CircleSchema(): z.ZodObject<Properties<Circle>> {
+          return z.object({
+            __typename: z.literal('Circle').optional(),
+            radius: z.number().nullish()
+          })
+        }
+
+        export function ShapeSchema() {
+          return z.union([CircleSchema(), SquareSchema()])
+        }
+        "
+      `)
+    });
+
+    it('generate union types + schemaNamespacedImportName', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Square {
+          size: Int
+        }
+        type Circle {
+          radius: Int
+        }
+        union Shape = Circle | Square
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withObjectType: true,
+          importFrom: './types',
+          schemaNamespacedImportName: 't',
+        },
+        {},
+      );
+
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function SquareSchema(): z.ZodObject<Properties<t.Square>> {
+          return z.object({
+            __typename: z.literal('Square').optional(),
+            size: z.number().nullish()
+          })
+        }
+
+        export function CircleSchema(): z.ZodObject<Properties<t.Circle>> {
           return z.object({
             __typename: z.literal('Circle').optional(),
             radius: z.number().nullish()

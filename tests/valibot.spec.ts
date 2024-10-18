@@ -129,6 +129,43 @@ describe('valibot', () => {
       "
     `);
   })
+  it('ref input object w/ schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input AInput {
+        b: BInput!
+      }
+      input BInput {
+        c: CInput!
+      }
+      input CInput {
+        a: AInput!
+      }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars, importFrom: './types', schemaNamespacedImportName: 't' }, {});
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function AInputSchema(): v.GenericSchema<t.AInput> {
+        return v.object({
+          b: v.lazy(() => BInputSchema())
+        })
+      }
+
+      export function BInputSchema(): v.GenericSchema<t.BInput> {
+        return v.object({
+          c: v.lazy(() => CInputSchema())
+        })
+      }
+
+      export function CInputSchema(): v.GenericSchema<t.CInput> {
+        return v.object({
+          a: v.lazy(() => AInputSchema())
+        })
+      }
+      "
+    `);
+  })
   it.todo('nested input object')
   it('enum', async () => {
     const schema = buildSchema(/* GraphQL */ `
@@ -147,6 +184,30 @@ describe('valibot', () => {
       export const PageTypeSchema = v.enum_(PageType);
 
       export function PageInputSchema(): v.GenericSchema<PageInput> {
+        return v.object({
+          pageType: PageTypeSchema
+        })
+      }
+      "
+    `);
+  })
+  it('enum w/ schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType!
+      }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars, importFrom: './types', schemaNamespacedImportName: 't' }, {});
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = v.enum_(t.PageType);
+
+      export function PageInputSchema(): v.GenericSchema<t.PageInput> {
         return v.object({
           pageType: PageTypeSchema
         })
@@ -246,6 +307,39 @@ describe('valibot', () => {
       "
     `);
   });
+  it('with importFrom & schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
+      },
+      {},
+    );
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as v from 'valibot'",
+        "import * as t from './types'",
+      ]
+    `);
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function SaySchema(): v.GenericSchema<t.Say> {
+        return v.object({
+          phrase: v.string()
+        })
+      }
+      "
+    `);
+  });
   it('with importFrom & useTypeImports', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input Say {
@@ -292,6 +386,30 @@ describe('valibot', () => {
       {
         schema: 'valibot',
         enumsAsTypes: true,
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+      export const PageTypeSchema = v.picklist([\'PUBLIC\', \'BASIC_AUTH\']);
+      "
+    `);
+  });
+  it('with enumsAsTypes & schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        enumsAsTypes: true,
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
       },
       {},
     );
@@ -610,6 +728,52 @@ describe('valibot', () => {
       `)
     });
   })
+  it('generate union types & schemaNamespacedImportName', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      type Square {
+        size: Int
+      }
+      type Circle {
+        radius: Int
+      }
+      union Shape = Circle | Square
+    `);
+
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        withObjectType: true,
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
+      },
+      {},
+    );
+
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function SquareSchema(): v.GenericSchema<t.Square> {
+        return v.object({
+          __typename: v.optional(v.literal('Square')),
+          size: v.nullish(v.number())
+        })
+      }
+
+      export function CircleSchema(): v.GenericSchema<t.Circle> {
+        return v.object({
+          __typename: v.optional(v.literal('Circle')),
+          radius: v.nullish(v.number())
+        })
+      }
+
+      export function ShapeSchema() {
+        return v.union([CircleSchema(), SquareSchema()])
+      }
+      "
+    `)
+  });
   it('generate union types with single element', async () => {
     const schema = buildSchema(/* GraphQL */ `
       type Square {
