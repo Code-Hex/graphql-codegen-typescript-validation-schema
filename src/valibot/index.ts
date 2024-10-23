@@ -58,6 +58,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
       leave: InterfaceTypeDefinitionBuilder(this.config.withObjectType, (node: InterfaceTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
+        const typeName = visitor.prefixTypeNamespace(name);
         this.importTypes.push(name);
 
         // Building schema for field arguments.
@@ -73,7 +74,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('function')
-                .withName(`${name}Schema(): v.GenericSchema<${name}>`)
+                .withName(`${name}Schema(): v.GenericSchema<${typeName}>`)
                 .withBlock([indent(`return v.object({`), shape, indent('})')].join('\n'))
                 .string + appendArguments
             );
@@ -87,6 +88,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
       leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
+        const typeName = visitor.prefixTypeNamespace(name);
         this.importTypes.push(name);
 
         // Building schema for field arguments.
@@ -102,7 +104,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('function')
-                .withName(`${name}Schema(): v.GenericSchema<${name}>`)
+                .withName(`${name}Schema(): v.GenericSchema<${typeName}>`)
                 .withBlock(
                   [
                     indent(`return v.object({`),
@@ -123,6 +125,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
       leave: (node: EnumTypeDefinitionNode) => {
         const visitor = this.createVisitor('both');
         const enumname = visitor.convertName(node.name.value);
+        const enumTypeName = visitor.prefixTypeNamespace(enumname);
         this.importTypes.push(enumname);
 
         // hoist enum declarations
@@ -138,7 +141,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`v.enum_(${enumname})`)
+              .withContent(`v.enum_(${enumTypeName})`)
               .string,
         );
       },
@@ -185,6 +188,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
     visitor: Visitor,
     name: string,
   ) {
+    const typeName = visitor.prefixTypeNamespace(name);
     const shape = fields.map(field => generateFieldValibotSchema(this.config, visitor, field, 2)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
@@ -192,7 +196,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
         return new DeclarationBlock({})
           .export()
           .asKind('function')
-          .withName(`${name}Schema(): v.GenericSchema<${name}>`)
+          .withName(`${name}Schema(): v.GenericSchema<${typeName}>`)
           .withBlock([indent(`return v.object({`), shape, indent('})')].join('\n'))
           .string;
     }

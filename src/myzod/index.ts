@@ -67,6 +67,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
       leave: InterfaceTypeDefinitionBuilder(this.config.withObjectType, (node: InterfaceTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
+        const typeName = visitor.prefixTypeNamespace(name);
         this.importTypes.push(name);
 
         // Building schema for field arguments.
@@ -82,7 +83,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('const')
-                .withName(`${name}Schema: myzod.Type<${name}>`)
+                .withName(`${name}Schema: myzod.Type<${typeName}>`)
                 .withContent([`myzod.object({`, shape, '})'].join('\n'))
                 .string + appendArguments
             );
@@ -93,7 +94,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('function')
-                .withName(`${name}Schema(): myzod.Type<${name}>`)
+                .withName(`${name}Schema(): myzod.Type<${typeName}>`)
                 .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n'))
                 .string + appendArguments
             );
@@ -107,6 +108,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
       leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
+        const typeName = visitor.prefixTypeNamespace(name);
         this.importTypes.push(name);
 
         // Building schema for field arguments.
@@ -122,7 +124,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('const')
-                .withName(`${name}Schema: myzod.Type<${name}>`)
+                .withName(`${name}Schema: myzod.Type<${typeName}>`)
                 .withContent(
                   [
                     `myzod.object({`,
@@ -140,7 +142,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('function')
-                .withName(`${name}Schema(): myzod.Type<${name}>`)
+                .withName(`${name}Schema(): myzod.Type<${typeName}>`)
                 .withBlock(
                   [
                     indent(`return myzod.object({`),
@@ -161,6 +163,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
       leave: (node: EnumTypeDefinitionNode) => {
         const visitor = this.createVisitor('both');
         const enumname = visitor.convertName(node.name.value);
+        const enumTypeName = visitor.prefixTypeNamespace(enumname);
         this.importTypes.push(enumname);
         // z.enum are basically myzod.literals
         // hoist enum declarations
@@ -178,7 +181,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`myzod.enum(${enumname})`)
+              .withContent(`myzod.enum(${enumTypeName})`)
               .string,
         );
       },
@@ -233,6 +236,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
     visitor: Visitor,
     name: string,
   ) {
+    const typeName = visitor.prefixTypeNamespace(name);
     const shape = fields.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
@@ -240,7 +244,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         return new DeclarationBlock({})
           .export()
           .asKind('const')
-          .withName(`${name}Schema: myzod.Type<${name}>`)
+          .withName(`${name}Schema: myzod.Type<${typeName}>`)
           .withContent(['myzod.object({', shape, '})'].join('\n'))
           .string;
 
@@ -249,7 +253,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         return new DeclarationBlock({})
           .export()
           .asKind('function')
-          .withName(`${name}Schema(): myzod.Type<${name}>`)
+          .withName(`${name}Schema(): myzod.Type<${typeName}>`)
           .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n'))
           .string;
     }
