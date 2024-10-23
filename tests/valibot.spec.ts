@@ -338,6 +338,43 @@ describe('valibot', () => {
       "
     `)
   });
+
+  it('with defaultScalarTypeSchema', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input ScalarsInput {
+        date: Date!
+        email: Email
+        str: String!
+      }
+      scalar Date
+      scalar Email
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        scalarSchemas: {
+          Email: 'v.string([v.email()])',
+        },
+        defaultScalarTypeSchema: 'v.string()',
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function ScalarsInputSchema(): v.GenericSchema<ScalarsInput> {
+        return v.object({
+          date: v.string(),
+          email: v.nullish(v.string([v.email()])),
+          str: v.string()
+        })
+      }
+      "
+    `)
+  });
+
   it.todo('with typesPrefix')
   it.todo('with typesSuffix')
   it.todo('with default input values')

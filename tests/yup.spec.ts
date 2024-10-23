@@ -472,6 +472,41 @@ describe('yup', () => {
     `)
   });
 
+  it('with defaultScalarTypeSchema', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input ScalarsInput {
+        date: Date!
+        email: Email
+        str: String!
+      }
+      scalar Date
+      scalar Email
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        scalarSchemas: {
+          Email: 'yup.string().email()',
+        },
+        defaultScalarTypeSchema: 'yup.string()',
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function ScalarsInputSchema(): yup.ObjectSchema<ScalarsInput> {
+        return yup.object({
+          date: yup.string().nonNullable(),
+          email: yup.string().email().defined().nullable().optional(),
+          str: yup.string().defined().nonNullable()
+        })
+      }
+      "
+    `)
+  });
+
   it('with typesPrefix', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input Say {
