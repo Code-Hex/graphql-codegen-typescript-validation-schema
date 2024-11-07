@@ -224,8 +224,13 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
 
     const actions = actionsFromDirectives(config, field);
 
-    if (isNonNullType(parentType))
-      return pipeSchemaAndActions(gen, actions); ;
+    if (isNonNullType(parentType)) {
+      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
+        actions.push('v.minLength(1)');
+      }
+
+      return pipeSchemaAndActions(gen, actions);
+    }
 
     return `v.nullish(${pipeSchemaAndActions(gen, actions)})`;
   }
