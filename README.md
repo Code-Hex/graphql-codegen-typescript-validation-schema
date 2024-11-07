@@ -203,7 +203,7 @@ type: `ValidationSchemaExportType` default: `'function'`
 
 Specify validation schema export type.
 
-### `useEnumTypeAsDefault`
+### `useEnumTypeAsDefaultValue`
 
 type: `boolean` default: `false`
 

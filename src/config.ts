@@ -223,7 +223,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *       - typescript
    *       - graphql-codegen-validation-schema
    *     config:
-   *       useEnumTypeAsDefault: true
+   *       useEnumTypeAsDefaultValue: true
    * ```
    */
   useEnumTypeAsDefaultValue?: boolean
