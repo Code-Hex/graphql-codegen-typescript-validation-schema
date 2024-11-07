@@ -70,7 +70,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    *     config:
    *       schema: yup
    *       importFrom: ./path/to/types
-   *       namespacedImportName: types
+   *       schemaNamespacedImportName: types
    * ```
    */
   schemaNamespacedImportName?: string
