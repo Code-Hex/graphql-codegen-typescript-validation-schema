@@ -187,6 +187,24 @@ config:
     Email: z.string().email()
 ```
 
+### `defaultScalarTypeSchema`
+
+type: `string`
+
+#### yup schema
+```yml
+config:
+  schema: yup
+  defaultScalarSchema: yup.unknown()
+```
+
+#### zod schema
+```yml
+config:
+  schema: zod
+  defaultScalarSchema: z.unknown()
+```
+
 ### `withObjectType`
 
 type: `boolean` default: `false`
