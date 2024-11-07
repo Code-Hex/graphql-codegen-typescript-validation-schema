@@ -10,9 +10,9 @@ import type {
   TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
+
 import type { ValidationSchemaPluginConfig } from '../config.js';
 import type { Visitor } from '../visitor.js';
-
 import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
 import { convertNameParts, DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import {
@@ -310,10 +310,10 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
 
       if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM) {
         if (config.useEnumTypeAsDefaultValue && defaultValue?.kind !== Kind.STRING) {
-          let value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn('change-case-all#pascalCase'));
+          let value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn('change-case-all#pascalCase'), config.namingConvention?.transformUnderscore);
 
           if (config.namingConvention?.enumValues)
-            value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues));
+            value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues), config.namingConvention?.transformUnderscore);
 
           appliedDirectivesGen = `${appliedDirectivesGen}.default(${type.name.value}.${value})`;
         }

@@ -166,7 +166,28 @@ describe('valibot', () => {
       "
     `);
   })
-  it.todo('nested input object')
+  it('nested input object', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input NestedInput {
+        child: NestedInput
+        childrens: [NestedInput]
+      }
+    `);
+    const scalars = undefined
+    const result = await plugin(schema, [], { schema: 'valibot', scalars }, {});
+
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function NestedInputSchema(): v.GenericSchema<NestedInput> {
+        return v.object({
+          child: v.lazy(() => v.nullish(NestedInputSchema())),
+          childrens: v.nullish(v.array(v.lazy(() => v.nullable(NestedInputSchema()))))
+        })
+      }
+      "
+    `)
+  })
   it('enum', async () => {
     const schema = buildSchema(/* GraphQL */ `
       enum PageType {
@@ -419,8 +440,82 @@ describe('valibot', () => {
       "
     `);
   });
-  it.todo('with notAllowEmptyString')
-  it.todo('with notAllowEmptyString issue #386')
+  it('with notAllowEmptyString', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PrimitiveInput {
+        a: ID!
+        b: String!
+        c: Boolean!
+        d: Int!
+        e: Float!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        notAllowEmptyString: true,
+        scalars: {
+          ID: 'string',
+        },
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function PrimitiveInputSchema(): v.GenericSchema<PrimitiveInput> {
+        return v.object({
+          a: v.pipe(v.string(), v.minLength(1)),
+          b: v.pipe(v.string(), v.minLength(1)),
+          c: v.boolean(),
+          d: v.number(),
+          e: v.number()
+        })
+      }
+      "
+    `)
+  })
+  it('with notAllowEmptyString issue #386', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input InputOne {
+        field: InputNested!
+      }
+
+      input InputNested {
+        field: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        notAllowEmptyString: true,
+        scalars: {
+          ID: 'string',
+        },
+      },
+      {},
+    );
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function InputOneSchema(): v.GenericSchema<InputOne> {
+        return v.object({
+          field: v.lazy(() => InputNestedSchema())
+        })
+      }
+
+      export function InputNestedSchema(): v.GenericSchema<InputNested> {
+        return v.object({
+          field: v.pipe(v.string(), v.minLength(1))
+        })
+      }
+      "
+    `)
+  })
   it('with scalarSchemas', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input ScalarsInput {
@@ -456,8 +551,72 @@ describe('valibot', () => {
       "
     `)
   });
-  it.todo('with typesPrefix')
-  it.todo('with typesSuffix')
+  it('with typesPrefix', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        typesPrefix: 'I',
+        importFrom: './types',
+      },
+      {},
+    );
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as v from 'valibot'",
+        "import { ISay } from './types'",
+      ]
+    `)
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function ISaySchema(): v.GenericSchema<ISay> {
+        return v.object({
+          phrase: v.string()
+        })
+      }
+      "
+    `)
+  })
+  it('with typesSuffix', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input Say {
+        phrase: String!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        typesSuffix: 'I',
+        importFrom: './types',
+      },
+      {},
+    );
+    expect(result.prepend).toMatchInlineSnapshot(`
+      [
+        "import * as v from 'valibot'",
+        "import { SayI } from './types'",
+      ]
+    `)
+    expect(result.content).toMatchInlineSnapshot(`
+      "
+
+      export function SayISchema(): v.GenericSchema<SayI> {
+        return v.object({
+          phrase: v.string()
+        })
+      }
+      "
+    `)
+  })
   it.todo('with default input values')
   describe('issues #19', () => {
     it('string field', async () => {
