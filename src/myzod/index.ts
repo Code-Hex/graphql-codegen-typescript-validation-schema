@@ -11,22 +11,22 @@ import type {
   UnionTypeDefinitionNode,
 } from 'graphql';
 
+import type { ValidationSchemaPluginConfig } from '../config.js';
+import type { Visitor } from '../visitor.js';
 import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
-import { DeclarationBlock, convertNameParts, indent } from '@graphql-codegen/visitor-plugin-common';
+import { convertNameParts, DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import {
   Kind,
 } from 'graphql';
-import type { Visitor } from '../visitor.js';
-import type { ValidationSchemaPluginConfig } from '../config.js';
 import { buildApi, formatDirectiveConfig } from '../directive.js';
 import {
-  InterfaceTypeDefinitionBuilder,
-  ObjectTypeDefinitionBuilder,
   escapeGraphQLCharacters,
+  InterfaceTypeDefinitionBuilder,
   isInput,
   isListType,
   isNamedType,
   isNonNullType,
+  ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
 
