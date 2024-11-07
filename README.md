@@ -203,7 +203,7 @@ type: `ValidationSchemaExportType` default: `'function'`
 
 Specify validation schema export type.
 
-### `useEnumTypeAsDefault`
+### `useEnumTypeAsDefaultValue`
 
 type: `boolean` default: `false`
 
@@ -214,8 +214,6 @@ Uses the full path of the enum type as the default value instead of the stringif
 type: `NamingConventionMap` default: `{ enumValues: "change-case-all#pascalCase" }`
 
 Uses the full path of the enum type as the default value instead of the stringified value.
-
-Note: This option has not been tested with `namingConvention.transformUnderscore` and `namingConvention.typeNames` options and may not work as expected.
 
 Related: https://the-guild.dev/graphql/codegen/docs/config-reference/naming-convention#namingconvention
 

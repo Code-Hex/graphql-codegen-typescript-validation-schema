@@ -1479,4 +1479,77 @@ describe('myzod', () => {
     expect(result.content).toContain('ratio: myzod.number().default(0.5).optional().nullable()');
     expect(result.content).toContain('isMember: myzod.boolean().default(true).optional().nullable()');
   });
+
+  it('with default input values as enum types with underscores', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType! = BASIC_AUTH
+        greeting: String = "Hello"
+        score: Int = 100
+        ratio: Float = 0.5
+        isMember: Boolean = true
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        importFrom: './types',
+        useEnumTypeAsDefaultValue: true,
+      },
+      {},
+    );
+
+    expect(result.content).toContain('export const PageTypeSchema = myzod.enum(PageType)');
+    expect(result.content).toContain('export function PageInputSchema(): myzod.Type<PageInput>');
+
+    expect(result.content).toContain('pageType: PageTypeSchema.default(PageType.Basic_Auth)');
+    expect(result.content).toContain('greeting: myzod.string().default("Hello").optional().nullable()');
+    expect(result.content).toContain('score: myzod.number().default(100).optional().nullable()');
+    expect(result.content).toContain('ratio: myzod.number().default(0.5).optional().nullable()');
+    expect(result.content).toContain('isMember: myzod.boolean().default(true).optional().nullable()');
+  });
+
+  it('with default input values as enum types with no underscores', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+        BASIC_AUTH
+      }
+      input PageInput {
+        pageType: PageType! = BASIC_AUTH
+        greeting: String = "Hello"
+        score: Int = 100
+        ratio: Float = 0.5
+        isMember: Boolean = true
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        importFrom: './types',
+        useEnumTypeAsDefaultValue: true,
+        namingConvention: {
+          transformUnderscore: true,
+        },
+      },
+      {},
+    );
+
+    expect(result.content).toContain('export const PageTypeSchema = myzod.enum(PageType)');
+    expect(result.content).toContain('export function PageInputSchema(): myzod.Type<PageInput>');
+
+    expect(result.content).toContain('pageType: PageTypeSchema.default(PageType.BasicAuth)');
+    expect(result.content).toContain('greeting: myzod.string().default("Hello").optional().nullable()');
+    expect(result.content).toContain('score: myzod.number().default(100).optional().nullable()');
+    expect(result.content).toContain('ratio: myzod.number().default(0.5).optional().nullable()');
+    expect(result.content).toContain('isMember: myzod.boolean().default(true).optional().nullable()');
+  });
 });

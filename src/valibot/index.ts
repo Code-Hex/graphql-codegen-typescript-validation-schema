@@ -11,8 +11,8 @@ import type {
   UnionTypeDefinitionNode,
 } from 'graphql';
 import type { ValidationSchemaPluginConfig } from '../config.js';
-
 import type { Visitor } from '../visitor.js';
+
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { buildApiForValibot, formatDirectiveConfig } from '../directive.js';
 import {
@@ -224,8 +224,13 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
 
     const actions = actionsFromDirectives(config, field);
 
-    if (isNonNullType(parentType))
-      return pipeSchemaAndActions(gen, actions); ;
+    if (isNonNullType(parentType)) {
+      if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
+        actions.push('v.minLength(1)');
+      }
+
+      return pipeSchemaAndActions(gen, actions);
+    }
 
     return `v.nullish(${pipeSchemaAndActions(gen, actions)})`;
   }

@@ -6,8 +6,8 @@ import type {
   ObjectTypeDefinitionNode,
 } from 'graphql';
 import type { ValidationSchemaPluginConfig } from './config.js';
-import { TsVisitor } from '@graphql-codegen/typescript';
 
+import { TsVisitor } from '@graphql-codegen/typescript';
 import {
   specifiedScalarTypes,
 } from 'graphql';

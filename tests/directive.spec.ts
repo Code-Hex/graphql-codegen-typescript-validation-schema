@@ -1,11 +1,11 @@
 import type { ConstArgumentNode, ConstDirectiveNode, ConstValueNode, NameNode } from 'graphql';
 import type { DirectiveConfig, DirectiveObjectArguments } from '../src/config';
-
 import type {
   FormattedDirectiveArguments,
   FormattedDirectiveConfig,
   FormattedDirectiveObjectArguments,
 } from '../src/directive';
+
 import { Kind, parseConstValue } from 'graphql';
 import {
   buildApi,
