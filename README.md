@@ -191,6 +191,8 @@ config:
 
 type: `string`
 
+Fallback scalar type for undefined scalar types in the schema not found in `scalarSchemas`.
+
 #### yup schema
 ```yml
 config:
