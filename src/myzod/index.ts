@@ -10,23 +10,23 @@ import type {
   TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
-import type { ValidationSchemaPluginConfig } from '../config.js';
-import type { Visitor } from '../visitor.js';
 
 import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
-import { convertNameParts, DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+import { DeclarationBlock, convertNameParts, indent } from '@graphql-codegen/visitor-plugin-common';
 import {
   Kind,
 } from 'graphql';
+import type { Visitor } from '../visitor.js';
+import type { ValidationSchemaPluginConfig } from '../config.js';
 import { buildApi, formatDirectiveConfig } from '../directive.js';
 import {
-  escapeGraphQLCharacters,
   InterfaceTypeDefinitionBuilder,
+  ObjectTypeDefinitionBuilder,
+  escapeGraphQLCharacters,
   isInput,
   isListType,
   isNamedType,
   isNonNullType,
-  ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
 
@@ -290,10 +290,10 @@ function generateFieldTypeMyZodSchema(config: ValidationSchemaPluginConfig, visi
 
       if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM) {
         if (config.useEnumTypeAsDefaultValue && defaultValue?.kind !== Kind.STRING) {
-          let value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn('change-case-all#pascalCase'));
+          let value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn('change-case-all#pascalCase'), config?.namingConvention?.transformUnderscore);
 
           if (config.namingConvention?.enumValues)
-            value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues));
+            value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues), config?.namingConvention?.transformUnderscore);
 
           appliedDirectivesGen = `${appliedDirectivesGen}.default(${visitor.convertName(type.name.value)}.${value})`;
         }
