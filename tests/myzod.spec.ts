@@ -587,6 +587,41 @@ describe('myzod', () => {
       "
     `)
   });
+
+  it('with defaultScalarTypeSchema', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input ScalarsInput {
+        date: Date!
+        email: Email
+        str: String!
+      }
+      scalar Date
+      scalar Email
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        scalarSchemas: {
+          Email: 'myzod.string()', // generate the basic type. User can later extend it using `withPredicate(fn: (val: string) => boolean), errMsg?: string }`
+        },
+        defaultScalarTypeSchema: 'myzod.string()',
+      },
+      {},
+    );
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function ScalarsInputSchema(): myzod.Type<ScalarsInput> {
+        return myzod.object({
+          date: myzod.string(),
+          email: myzod.string().optional().nullable(),
+          str: myzod.string()
+        })
+      }
+      "
+    `)
+  });
   it('with typesPrefix', async () => {
     const schema = buildSchema(/* GraphQL */ `
       input Say {

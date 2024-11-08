@@ -215,6 +215,26 @@ config:
     Email: z.string().email()
 ```
 
+### `defaultScalarTypeSchema`
+
+type: `string`
+
+Fallback scalar type for undefined scalar types in the schema not found in `scalarSchemas`.
+
+#### yup schema
+```yml
+config:
+  schema: yup
+  defaultScalarSchema: yup.unknown()
+```
+
+#### zod schema
+```yml
+config:
+  schema: zod
+  defaultScalarSchema: z.unknown()
+```
+
 ### `withObjectType`
 
 type: `boolean` default: `false`

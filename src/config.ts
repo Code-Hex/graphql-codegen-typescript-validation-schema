@@ -197,6 +197,24 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   scalarSchemas?: ScalarSchemas
   /**
+   * @description Fallback scalar type for undefined scalar types in the schema not found in `scalarSchemas`.
+   *
+   * @exampleMarkdown
+   * ```yml
+   * config:
+   *   schema: yup
+   *   defaultScalarSchema: yup.unknown()
+   * ```
+   *
+   * @exampleMarkdown
+   * ```yml
+   * config:
+   *   schema: zod
+   *   defaultScalarSchema: z.unknown()
+   * ```
+   */
+  defaultScalarTypeSchema?: string
+  /**
    * @description Generates validation schema with GraphQL type objects.
    * but excludes "Query", "Mutation", "Subscription" objects.
    *

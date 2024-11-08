@@ -401,6 +401,11 @@ function yup4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scal
     case 'boolean':
       return `yup.boolean().defined()`;
   }
+
+  if (config.defaultScalarTypeSchema) {
+    return config.defaultScalarTypeSchema
+  }
+
   console.warn('unhandled name:', scalarName);
   return `yup.mixed()`;
 }
