@@ -1,6 +1,4 @@
-import type { BaseVisitorConvertOptions, ConvertOptions } from '@graphql-codegen/visitor-plugin-common';
 import type {
-  ASTNode,
   FieldDefinitionNode,
   GraphQLSchema,
   InterfaceTypeDefinitionNode,
