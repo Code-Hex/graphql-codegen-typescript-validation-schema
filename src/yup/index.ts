@@ -76,6 +76,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
       leave: InterfaceTypeDefinitionBuilder(this.config.withObjectType, (node: InterfaceTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
+        const typeName = visitor.prefixTypeNamespace(name);
         this.importTypes.push(name);
 
         // Building schema for field arguments.
@@ -94,7 +95,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('const')
-                .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
+                .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
                 .withContent([`yup.object({`, shape, '})'].join('\n'))
                 .string + appendArguments
             );
@@ -105,7 +106,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('function')
-                .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
+                .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
                 .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
                 .string + appendArguments
             );
@@ -119,6 +120,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
       leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
+        const typeName = visitor.prefixTypeNamespace(name);
         this.importTypes.push(name);
 
         // Building schema for field arguments.
@@ -134,7 +136,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('const')
-                .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
+                .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
                 .withContent(
                   [
                     `yup.object({`,
@@ -152,7 +154,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('function')
-                .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
+                .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
                 .withBlock(
                   [
                     indent(`return yup.object({`),
@@ -173,6 +175,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
       leave: (node: EnumTypeDefinitionNode) => {
         const visitor = this.createVisitor('both');
         const enumname = visitor.convertName(node.name.value);
+        const enumTypeName = visitor.prefixTypeNamespace(enumname);
         this.importTypes.push(enumname);
 
         // hoise enum declarations
@@ -193,7 +196,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               .export()
               .asKind('const')
               .withName(`${enumname}Schema`)
-              .withContent(`yup.string<${enumname}>().oneOf(Object.values(${enumname})).defined()`).string,
+              .withContent(`yup.string<${enumTypeName}>().oneOf(Object.values(${enumTypeName})).defined()`).string,
           );
         }
       },
@@ -208,6 +211,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         const visitor = this.createVisitor('output');
 
         const unionName = visitor.convertName(node.name.value);
+        const unionTypeName = visitor.prefixTypeNamespace(unionName);
         this.importTypes.push(unionName);
 
         const unionElements = node.types?.map((t) => {
@@ -230,16 +234,16 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
             return new DeclarationBlock({})
               .export()
               .asKind('const')
-              .withName(`${unionName}Schema: yup.MixedSchema<${unionName}>`)
-              .withContent(`union<${unionName}>(${unionElements})`)
+              .withName(`${unionName}Schema: yup.MixedSchema<${unionTypeName}>`)
+              .withContent(`union<${unionTypeName}>(${unionElements})`)
               .string;
           case 'function':
           default:
             return new DeclarationBlock({})
               .export()
               .asKind('function')
-              .withName(`${unionName}Schema(): yup.MixedSchema<${unionName}>`)
-              .withBlock(indent(`return union<${unionName}>(${unionElements})`))
+              .withName(`${unionName}Schema(): yup.MixedSchema<${unionTypeName}>`)
+              .withBlock(indent(`return union<${unionTypeName}>(${unionElements})`))
               .string;
         }
       },
@@ -251,6 +255,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
     visitor: Visitor,
     name: string,
   ) {
+    const typeName = visitor.prefixTypeNamespace(name);
     const shape = shapeFields(fields, this.config, visitor);
 
     switch (this.config.validationSchemaExportType) {
@@ -258,7 +263,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         return new DeclarationBlock({})
           .export()
           .asKind('const')
-          .withName(`${name}Schema: yup.ObjectSchema<${name}>`)
+          .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
           .withContent(['yup.object({', shape, '})'].join('\n'))
           .string;
 
@@ -267,7 +272,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         return new DeclarationBlock({})
           .export()
           .asKind('function')
-          .withName(`${name}Schema(): yup.ObjectSchema<${name}>`)
+          .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
           .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
           .string;
     }

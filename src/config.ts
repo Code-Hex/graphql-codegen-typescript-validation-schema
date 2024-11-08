@@ -55,6 +55,26 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   importFrom?: string
   /**
+   * @description If defined, will use named imports from the specified module (defined in `importFrom`)
+   * rather than individual imports for each type.
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/types.ts:
+   *     plugins:
+   *       - typescript
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: yup
+   *       importFrom: ./path/to/types
+   *       schemaNamespacedImportName: types
+   * ```
+   */
+  schemaNamespacedImportName?: string
+  /**
    * @description Will use `import type {}` rather than `import {}` when importing generated typescript types.
    * This gives compatibility with TypeScript's "importsNotUsedAsValues": "error" option
    * Should used in conjunction with `importFrom` option.

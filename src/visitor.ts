@@ -1,4 +1,6 @@
+import type { BaseVisitorConvertOptions, ConvertOptions } from '@graphql-codegen/visitor-plugin-common';
 import type {
+  ASTNode,
   FieldDefinitionNode,
   GraphQLSchema,
   InterfaceTypeDefinitionNode,
@@ -19,6 +21,14 @@ export class Visitor extends TsVisitor {
     private pluginConfig: ValidationSchemaPluginConfig,
   ) {
     super(schema, pluginConfig);
+  }
+
+  public prefixTypeNamespace(type: string): string {
+    if (this.pluginConfig.importFrom && this.pluginConfig.schemaNamespacedImportName) {
+      return `${this.pluginConfig.schemaNamespacedImportName}.${type}`;
+    }
+
+    return type;
   }
 
   private isSpecifiedScalarName(scalarName: string) {

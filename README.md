@@ -87,6 +87,34 @@ import { GeneratedInput } from './graphql'
 /* generates validation schema here */
 ```
 
+### `schemaNamespacedImportName`
+
+type: `string`
+
+If defined, will use named imports from the specified module (defined in `importFrom`) rather than individual imports for each type.
+
+```yml
+generates:
+  path/to/types.ts:
+    plugins:
+      - typescript
+  path/to/schemas.ts:
+    plugins:
+      - graphql-codegen-validation-schema
+    config:
+      schema: yup
+      importFrom: ./path/to/types
+      schemaNamespacedImportName: types
+```
+
+Then the generator generates code with import statement like below.
+
+```ts
+import * as types from './graphql'
+
+/* generates validation schema here */
+```
+
 ### `useTypeImports`
 
 type: `boolean` default: `false`

@@ -23,11 +23,15 @@ export abstract class BaseSchemaVisitor implements SchemaVisitor {
 
   buildImports(): string[] {
     if (this.config.importFrom && this.importTypes.length > 0) {
+      const namedImportPrefix = this.config.useTypeImports ? 'type ' : '';
+
+      const importCore = this.config.schemaNamespacedImportName
+        ? `* as ${this.config.schemaNamespacedImportName}`
+        : `${namedImportPrefix}{ ${this.importTypes.join(', ')} }`;
+
       return [
         this.importValidationSchema(),
-        `import ${this.config.useTypeImports ? 'type ' : ''}{ ${this.importTypes.join(', ')} } from '${
-          this.config.importFrom
-        }'`,
+        `import ${importCore} from '${this.config.importFrom}'`,
       ];
     }
     return [this.importValidationSchema()];
