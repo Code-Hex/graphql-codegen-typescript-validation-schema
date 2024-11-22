@@ -97,7 +97,7 @@
     "npm-run-all2": "7.0.1",
     "ts-dedent": "^2.2.0",
     "ts-jest": "29.2.5",
-    "typescript": "5.6.3",
+    "typescript": "5.7.2",
     "valibot": "0.42.1",
     "vitest": "^2.0.0",
     "yup": "1.4.0",
