@@ -235,12 +235,12 @@ describe('topologicalSortAST', () => {
     const sortedSchema = getSortedSchema(schema);
 
     const expectedSortedSchema = dedent/* GraphQL */`
-      input A {
-        a: A
-      }
-
       input B {
         b: B
+      }
+
+      input A {
+        a: A
       }
     `;
 

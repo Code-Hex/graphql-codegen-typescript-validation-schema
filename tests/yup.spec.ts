@@ -1486,6 +1486,7 @@ describe('yup', () => {
       },
       {},
     );
+
     expect(result.content).toMatchInlineSnapshot(`
       "
 
@@ -1495,12 +1496,6 @@ describe('yup', () => {
         }).defined()
       }
 
-      export const UserCreateInputSchema: yup.ObjectSchema<UserCreateInput> = yup.object({
-          name: yup.string().defined().nonNullable(),
-          date: yup.date().defined().nonNullable(),
-          email: yup.string().email().defined().nonNullable()
-      });
-
       export const UserSchema: yup.ObjectSchema<User> = yup.object({
           __typename: yup.string<'User'>().optional(),
           id: yup.string().defined().nonNullable(),
@@ -1509,6 +1504,12 @@ describe('yup', () => {
           email: yup.string().email().defined().nullable().optional(),
           isMember: yup.boolean().defined().nullable().optional(),
           createdAt: yup.date().defined().nonNullable()
+      });
+
+      export const UserCreateInputSchema: yup.ObjectSchema<UserCreateInput> = yup.object({
+          name: yup.string().defined().nonNullable(),
+          date: yup.date().defined().nonNullable(),
+          email: yup.string().email().defined().nonNullable()
       });
       "
     `)

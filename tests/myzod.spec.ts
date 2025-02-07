@@ -1506,12 +1506,6 @@ describe('myzod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const UserCreateInputSchema: myzod.Type<UserCreateInput> = myzod.object({
-          name: myzod.string(),
-          date: myzod.date(),
-          email: myzod.string().email()
-      });
-
       export const UserSchema: myzod.Type<User> = myzod.object({
           __typename: myzod.literal('User').optional(),
           id: myzod.string(),
@@ -1520,6 +1514,12 @@ describe('myzod', () => {
           email: myzod.string().email().optional().nullable(),
           isMember: myzod.boolean().optional().nullable(),
           createdAt: myzod.date()
+      });
+
+      export const UserCreateInputSchema: myzod.Type<UserCreateInput> = myzod.object({
+          name: myzod.string(),
+          date: myzod.date(),
+          email: myzod.string().email()
       });
       "
     `)
