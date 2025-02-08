@@ -130,7 +130,7 @@ export function topologicalSortAST(schema: GraphQLSchema, ast: DocumentNode): Do
 
   // SCHEMA_DEFINITION does not have a name.
   // https://spec.graphql.org/October2021/#sec-Schema
-  const astDefinitions = ast.definitions.filter(def => def.kind !== 'SchemaDefinition');
+  const astDefinitions = ast.definitions.filter(def => def.kind !== Kind.SCHEMA_DEFINITION);
 
   astDefinitions.forEach((definition) => {
     if (hasNameField(definition) && definition.name)
