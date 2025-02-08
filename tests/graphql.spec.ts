@@ -197,6 +197,34 @@ describe('topologicalSortAST', () => {
     expect(sortedSchema).toBe(expectedSortedSchema);
   });
 
+  it('should place interface definitions before types that depend on them', () => {
+    const schema = /* GraphQL */ `
+      type A {
+        id: ID!
+        node: Node
+      }
+
+      interface Node {
+        id: ID!
+      }
+    `;
+
+    const sortedSchema = getSortedSchema(schema);
+
+    const expectedSortedSchema = dedent/* GraphQL */`
+      interface Node {
+        id: ID!
+      }
+
+      type A {
+        id: ID!
+        node: Node
+      }
+    `;
+
+    expect(sortedSchema).toBe(expectedSortedSchema);
+  });
+
   it('should correctly handle schema with circular dependencies', () => {
     const schema = /* GraphQL */ `
       input A {
