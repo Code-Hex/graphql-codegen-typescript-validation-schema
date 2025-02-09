@@ -14,12 +14,23 @@ import type {
 import { Graph } from 'graphlib';
 import {
   isSpecifiedScalarType,
+  Kind,
   visit,
 } from 'graphql';
 
-export const isListType = (typ?: TypeNode): typ is ListTypeNode => typ?.kind === 'ListType';
-export const isNonNullType = (typ?: TypeNode): typ is NonNullTypeNode => typ?.kind === 'NonNullType';
-export const isNamedType = (typ?: TypeNode): typ is NamedTypeNode => typ?.kind === 'NamedType';
+/**
+ * Recursively unwraps a GraphQL type until it reaches the NamedType.
+ *
+ * Since a GraphQL type is defined as either a NamedTypeNode, ListTypeNode, or NonNullTypeNode,
+ * this implementation safely recurses until the underlying NamedTypeNode is reached.
+ */
+function getNamedType(typeNode: TypeNode): NamedTypeNode {
+  return typeNode.kind === Kind.NAMED_TYPE ? typeNode : getNamedType(typeNode.type);
+}
+
+export const isListType = (typ?: TypeNode): typ is ListTypeNode => typ?.kind === Kind.LIST_TYPE;
+export const isNonNullType = (typ?: TypeNode): typ is NonNullTypeNode => typ?.kind === Kind.NON_NULL_TYPE;
+export const isNamedType = (typ?: TypeNode): typ is NamedTypeNode => typ?.kind === Kind.NAMED_TYPE;
 
 export const isInput = (kind: string) => kind.includes('Input');
 
@@ -48,44 +59,50 @@ export function InterfaceTypeDefinitionBuilder(useInterfaceTypes: boolean | unde
 export function topologicalSortAST(schema: GraphQLSchema, ast: DocumentNode): DocumentNode {
   const dependencyGraph = new Graph();
   const targetKinds = [
-    'ObjectTypeDefinition',
-    'InputObjectTypeDefinition',
-    'EnumTypeDefinition',
-    'UnionTypeDefinition',
-    'ScalarTypeDefinition',
+    Kind.OBJECT_TYPE_DEFINITION,
+    Kind.INPUT_OBJECT_TYPE_DEFINITION,
+    Kind.INTERFACE_TYPE_DEFINITION,
+    Kind.SCALAR_TYPE_DEFINITION,
+    Kind.ENUM_TYPE_DEFINITION,
+    Kind.UNION_TYPE_DEFINITION,
   ];
 
   visit<DocumentNode>(ast, {
     enter: (node) => {
       switch (node.kind) {
-        case 'ObjectTypeDefinition':
-        case 'InputObjectTypeDefinition': {
+        case Kind.OBJECT_TYPE_DEFINITION:
+        case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+        case Kind.INTERFACE_TYPE_DEFINITION: {
           const typeName = node.name.value;
           dependencyGraph.setNode(typeName);
 
           if (node.fields) {
             node.fields.forEach((field) => {
-              if (field.type.kind === 'NamedType') {
-                const dependency = field.type.name.value;
-                const typ = schema.getType(dependency);
-                if (typ?.astNode?.kind === undefined || !targetKinds.includes(typ.astNode.kind))
-                  return;
-
-                if (!dependencyGraph.hasNode(dependency))
-                  dependencyGraph.setNode(dependency);
-
-                dependencyGraph.setEdge(typeName, dependency);
+              // Unwrap the type
+              const namedTypeNode = getNamedType(field.type);
+              const dependency = namedTypeNode.name.value;
+              const namedType = schema.getType(dependency);
+              if (
+                namedType?.astNode?.kind === undefined
+                || !targetKinds.includes(namedType.astNode.kind)
+              ) {
+                return;
               }
+
+              if (!dependencyGraph.hasNode(dependency)) {
+                dependencyGraph.setNode(dependency);
+              }
+              dependencyGraph.setEdge(typeName, dependency);
             });
           }
           break;
         }
-        case 'ScalarTypeDefinition':
-        case 'EnumTypeDefinition': {
+        case Kind.SCALAR_TYPE_DEFINITION:
+        case Kind.ENUM_TYPE_DEFINITION: {
           dependencyGraph.setNode(node.name.value);
           break;
         }
-        case 'UnionTypeDefinition': {
+        case Kind.UNION_TYPE_DEFINITION: {
           const dependency = node.name.value;
           if (!dependencyGraph.hasNode(dependency))
             dependencyGraph.setNode(dependency);
@@ -111,16 +128,16 @@ export function topologicalSortAST(schema: GraphQLSchema, ast: DocumentNode): Do
   // Create a map of definitions for quick access, using the definition's name as the key.
   const definitionsMap: Map<string, DefinitionNode> = new Map();
 
-  // SCHEMA_DEFINITION does not have name.
+  // SCHEMA_DEFINITION does not have a name.
   // https://spec.graphql.org/October2021/#sec-Schema
-  const astDefinitions = ast.definitions.filter(def => def.kind !== 'SchemaDefinition');
+  const astDefinitions = ast.definitions.filter(def => def.kind !== Kind.SCHEMA_DEFINITION);
 
   astDefinitions.forEach((definition) => {
     if (hasNameField(definition) && definition.name)
       definitionsMap.set(definition.name.value, definition);
   });
 
-  // Two arrays to store sorted and not sorted definitions.
+  // Two arrays to store sorted and unsorted definitions.
   const sortedDefinitions: DefinitionNode[] = [];
   const notSortedDefinitions: DefinitionNode[] = [];
 
@@ -141,7 +158,7 @@ export function topologicalSortAST(schema: GraphQLSchema, ast: DocumentNode): Do
 
   if (newDefinitions.length !== astDefinitions.length) {
     throw new Error(
-      `unexpected definition length after sorted: want ${astDefinitions.length} but got ${newDefinitions.length}`,
+      `Unexpected definition length after sorting: want ${astDefinitions.length} but got ${newDefinitions.length}`,
     );
   }
 
@@ -155,33 +172,35 @@ function hasNameField(node: ASTNode): node is DefinitionNode & { name?: NameNode
   return 'name' in node;
 }
 
-// Re-implemented w/o CycleException version
-// https://github.com/dagrejs/graphlib/blob/8d27cb89029081c72eb89dde652602805bdd0a34/lib/alg/topsort.js
+/**
+ * [Re-implemented topsort function][topsort-ref] with cycle handling. This version iterates over
+ * all nodes in the graph to ensure every node is visited, even if the graph contains cycles.
+ *
+ * [topsort-ref]: https://github.com/dagrejs/graphlib/blob/8d27cb89029081c72eb89dde652602805bdd0a34/lib/alg/topsort.js
+ */
 export function topsort(g: Graph): string[] {
-  const visited: Record<string, boolean> = {};
-  const stack: Record<string, boolean> = {};
-  const results: any[] = [];
+  const visited = new Set<string>();
+  const results: Array<string> = [];
 
   function visit(node: string) {
-    if (!(node in visited)) {
-      stack[node] = true;
-      visited[node] = true;
-      const predecessors = g.predecessors(node);
-      if (Array.isArray(predecessors))
-        predecessors.forEach(node => visit(node));
-
-      delete stack[node];
-      results.push(node);
-    }
+    if (visited.has(node))
+      return;
+    visited.add(node);
+    // Recursively visit all predecessors of the node.
+    g.predecessors(node)?.forEach(visit);
+    results.push(node);
   }
 
-  g.sinks().forEach(node => visit(node));
+  // Visit every node in the graph (instead of only sinks)
+  g.nodes().forEach(visit);
 
   return results.reverse();
 }
 
 export function isGeneratedByIntrospection(schema: GraphQLSchema): boolean {
-  return Object.entries(schema.getTypeMap()).filter(([name, type]) => !name.startsWith('__') && !isSpecifiedScalarType(type)).every(([, type]) => type.astNode === undefined)
+  return Object.entries(schema.getTypeMap())
+    .filter(([name, type]) => !name.startsWith('__') && !isSpecifiedScalarType(type))
+    .every(([, type]) => type.astNode === undefined)
 }
 
 // https://spec.graphql.org/October2021/#EscapedCharacter

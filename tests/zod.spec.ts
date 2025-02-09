@@ -1732,14 +1732,9 @@ describe('zod', () => {
       },
       {},
     );
+
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const UserCreateInputSchema: z.ZodObject<Properties<UserCreateInput>> = z.object({
-          name: z.string(),
-          date: z.date(),
-          email: z.string().email()
-      });
-
       export const UserSchema: z.ZodObject<Properties<User>> = z.object({
           __typename: z.literal('User').optional(),
           id: z.string(),
@@ -1748,6 +1743,12 @@ describe('zod', () => {
           email: z.string().email().nullish(),
           isMember: z.boolean().nullish(),
           createdAt: z.date()
+      });
+
+      export const UserCreateInputSchema: z.ZodObject<Properties<UserCreateInput>> = z.object({
+          name: z.string(),
+          date: z.date(),
+          email: z.string().email()
       });
       "
     `)
