@@ -1,7 +1,7 @@
 {
   "name": "graphql-codegen-typescript-validation-schema",
   "type": "module",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "packageManager": "pnpm@10.3.0",
   "description": "GraphQL Code Generator plugin to generate form validation schema from your GraphQL schema",
   "respository": {
