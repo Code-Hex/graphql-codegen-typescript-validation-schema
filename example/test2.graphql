@@ -1,0 +1,50 @@
+input CyclingOptimizationInput @oneOf {
+  "Define optimization by weighing three criteria."
+  triangle: TriangleCyclingFactorsInput
+  "Use one of the predefined optimization types."
+  type: CyclingOptimizationType
+}
+
+enum CyclingOptimizationType {
+  "Emphasize flatness over safety or duration of the route. This option was previously called `FLAT`."
+  FLAT_STREETS
+  """
+  Completely ignore the elevation differences and prefer the streets, that are evaluated
+  to be the safest, even more than with the `SAFE_STREETS` option.
+  Safety can also include other concerns such as convenience and general cyclist preferences
+  by taking into account road surface etc. This option was previously called `GREENWAYS`.
+  """
+  SAFEST_STREETS
+  """
+  Emphasize cycling safety over flatness or duration of the route. Safety can also include other
+  concerns such as convenience and general cyclist preferences by taking into account
+  road surface etc. This option was previously called `SAFE`.
+  """
+  SAFE_STREETS
+  """
+  Search for routes with the shortest duration while ignoring the cycling safety
+  of the streets (the routes should still follow local regulations). Routes can include
+  steep streets, if they are the fastest alternatives. This option was previously called
+  `QUICK`.
+  """
+  SHORTEST_DURATION
+}
+
+input TriangleCyclingFactorsInput {
+  "Relative importance of flat terrain"
+  flatness: Float!
+  """
+  Relative importance of cycling safety, but this factor can also include other
+  concerns such as convenience and general cyclist preferences by taking into account
+  road surface etc.
+  """
+  safety: Float!
+  "Relative importance of duration"
+  time: Float!
+}
+
+"Preferences related to travel with a bicycle."
+input BicyclePreferencesInput {
+  "What criteria should be used when optimizing a cycling route."
+  optimization: CyclingOptimizationInput
+}

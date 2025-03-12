@@ -6,7 +6,20 @@ generates:
       - typescript
     config:
       scalars:
-        ID: string
+          ID: string
+          Ratio: number
+          Duration: string
+          GeoJson: number
+          Polyline: string
+          Grams: number
+          Long: number
+          CoordinateValue: number
+          Cost: number
+          LocalDate: string
+          Locale: string
+          OffsetDateTime: string
+          Reluctance: number
+          Speed: number
   example/yup/schemas.ts:
     plugins:
       - ./dist/cjs/index.js:
@@ -43,6 +56,19 @@ generates:
               exclusiveMax: max
           scalars:
             ID: string
+            Ratio: number
+            Duration: string
+            GeoJson: GeoJSON.FeatureCollection
+            Polyline: string
+            Grams: number
+            Long: number
+            CoordinateValue: number
+            Cost: number
+            LocalDate: string
+            Locale: string
+            OffsetDateTime: string
+            Reluctance: number
+            Speed: number
   example/zod/schemas.ts:
     plugins:
       - ./dist/cjs/index.js:
@@ -66,6 +92,19 @@ generates:
                 email: email
           scalars:
             ID: string
+            Ratio: number
+            Duration: string
+            GeoJson: GeoJSON.FeatureCollection
+            Polyline: string
+            Grams: number
+            Long: number
+            CoordinateValue: number
+            Cost: number
+            LocalDate: string
+            Locale: string
+            OffsetDateTime: string
+            Reluctance: number
+            Speed: number
   example/myzod/schemas.ts:
     plugins:
       - ./dist/cjs/index.js:
@@ -81,6 +120,19 @@ generates:
                 email: email
           scalars:
             ID: string
+            Ratio: number
+            Duration: string
+            GeoJson: GeoJSON.FeatureCollection
+            Polyline: string
+            Grams: number
+            Long: number
+            CoordinateValue: number
+            Cost: number
+            LocalDate: string
+            Locale: string
+            OffsetDateTime: string
+            Reluctance: number
+            Speed: number
   example/valibot/schemas.ts:
     plugins:
       - ./dist/cjs/index.js:
@@ -104,3 +156,16 @@ generates:
                 email: email
           scalars:
             ID: string
+            Ratio: number
+            Duration: string
+            GeoJson: GeoJSON.FeatureCollection
+            Polyline: string
+            Grams: number
+            Long: number
+            CoordinateValue: number
+            Cost: number
+            LocalDate: string
+            Locale: string
+            OffsetDateTime: string
+            Reluctance: number
+            Speed: number
