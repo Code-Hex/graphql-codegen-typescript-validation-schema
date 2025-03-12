@@ -20,7 +20,7 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
   const visitor = schemaVisitor(_schema, config);
 
   const result = visit(ast, visitor);
-  
+
   const generated = result.definitions.filter(def => typeof def === 'string');
 
   return {
