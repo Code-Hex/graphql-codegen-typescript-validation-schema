@@ -73,11 +73,7 @@ export function topologicalSortAST(schema: GraphQLSchema, ast: DocumentNode): Do
         case Kind.OBJECT_TYPE_DEFINITION:
         case Kind.INPUT_OBJECT_TYPE_DEFINITION:
         case Kind.INTERFACE_TYPE_DEFINITION: {
-          let typeName = node.name.value;
-          const directives = node.directives?.filter(directive => directive.name.value);
-          if (directives?.some(directive => directive.name.value === 'oneOf')) {
-            typeName = `${typeName}OneOf`;
-          }
+          const typeName = node.name.value;
           dependencyGraph.setNode(typeName);
 
           if (node.fields) {

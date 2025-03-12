@@ -288,7 +288,6 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
     const variants = fields.map((selectedField) => {
       const fieldName = selectedField.name.value;
       // Get the raw schema without nullish wrapper for discriminated union
-      console.warn('generateFieldZodSchema', selectedField);
       const fieldSchema = generateFieldTypeZodSchema(this.config, visitor, selectedField, selectedField.type, {
         kind: Kind.NON_NULL_TYPE,
         type: {
@@ -373,7 +372,6 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
         }
       }
     }
-    console.warn('parentType', parentType);
     if (isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
         return `${appliedDirectivesGen}.min(1)`;

@@ -19,10 +19,7 @@ export const plugin: PluginFunction<ValidationSchemaPluginConfig, Types.ComplexP
   const { schema: _schema, ast } = _transformSchemaAST(schema, config);
   const visitor = schemaVisitor(_schema, config);
 
-  // console.warn(JSON.stringify(visitor, null, 2));
   const result = visit(ast, visitor);
-  console.warn('result', result);
-  console.warn('*************************');
   const generated = result.definitions.filter(def => typeof def === 'string');
 
   return {

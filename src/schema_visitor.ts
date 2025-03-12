@@ -55,7 +55,6 @@ export abstract class BaseSchemaVisitor implements SchemaVisitor {
   ) {
     return visitor.buildArgumentsSchemaBlock(node, (typeName, field) => {
       this.importTypes.push(typeName);
-      console.warn('buildTypeDefinitionArguments', field.arguments);
       return this.buildInputFields(field.arguments ?? [], visitor, typeName);
     });
   }
