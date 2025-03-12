@@ -143,6 +143,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
 
         // Building schema for fields.
         const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+
         switch (this.config.validationSchemaExportType) {
           case 'const':
             return (
@@ -258,6 +259,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
     name: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
+
     const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
     switch (this.config.validationSchemaExportType) {
       case 'const':
@@ -372,6 +374,7 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
         }
       }
     }
+
     if (isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
         return `${appliedDirectivesGen}.min(1)`;
