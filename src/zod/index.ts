@@ -260,6 +260,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
     const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+
     switch (this.config.validationSchemaExportType) {
       case 'const':
         return new DeclarationBlock({})
