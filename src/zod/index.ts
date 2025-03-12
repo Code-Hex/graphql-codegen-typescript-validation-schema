@@ -296,11 +296,11 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           name: selectedField.name,
         }
       });
-      return `z.object({
-        __type: z.literal("${fieldName}"),
-        ${fieldName}: ${fieldSchema}
-      })`;
-    }).join(',\n  ');
+      return indent(`z.object({\n`, 2) +
+        indent(`  __type: z.literal("${fieldName}"),\n`, 2) +
+        indent(`  ${fieldName}: ${fieldSchema}\n`, 2) +
+        indent(`})`, 2);
+    }).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
       case 'const':
@@ -319,7 +319,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .withName(`${name}Schema(): z.ZodSchema<${name}>`)
           .withBlock([
             indent(`return z.discriminatedUnion("__type", [`),
-            indent(variants, 2),
+            variants,
             indent(`]);`),
           ].join('\n'))
           .string;

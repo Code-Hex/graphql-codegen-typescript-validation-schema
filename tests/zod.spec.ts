@@ -1797,4 +1797,54 @@ describe('zod', () => {
       "
     `)
   });
+
+  it('with @oneOf directive', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input UpdateUserInput @oneOf {
+        email: String
+        phoneNumber: String
+        profile: UpdateUserProfileInput
+      }
+
+      input UpdateUserProfileInput {
+        name: String
+        age: Int
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'zod',
+      },
+      {},
+    );
+    expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+      "
+      export function UpdateUserInputSchema(): z.ZodSchema<UpdateUserInput> {
+        return z.discriminatedUnion("__type", [
+          z.object({
+            __type: z.literal("email"),
+            email: z.string()
+          }),
+          z.object({
+            __type: z.literal("phoneNumber"),
+            phoneNumber: z.string()
+          }),
+          z.object({
+            __type: z.literal("profile"),
+            profile: UpdateUserProfileInputSchema()
+          })
+        ]);
+      }
+
+      export function UpdateUserProfileInputSchema(): z.ZodObject<Properties<UpdateUserProfileInput>> {
+        return z.object({
+          name: z.string().nullish(),
+          age: z.number().nullish()
+        })
+      }
+      "
+    `)
+  });
 });
