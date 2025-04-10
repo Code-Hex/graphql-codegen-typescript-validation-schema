@@ -301,8 +301,8 @@ function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitio
 
             if (config.namingConvention?.enumValues)
               value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues), config?.namingConvention?.transformUnderscore);
-
-            fieldSchema = `${fieldSchema}.default(${visitor.convertName(field.name.value)}.${value})`;
+            const enumName = field.type?.type?.name.value ?? field.name.value
+            fieldSchema = `${fieldSchema}.default(${visitor.convertName(enumName)}.${value})`;
           }
           else {
             fieldSchema = `${fieldSchema}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;
