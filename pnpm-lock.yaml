@@ -55,8 +55,8 @@ importers:
         specifier: 1.12.1
         version: 1.12.1
       npm-run-all2:
-        specifier: 8.0.0
-        version: 8.0.0
+        specifier: 8.0.1
+        version: 8.0.1
       ts-dedent:
         specifier: ^2.2.0
         version: 2.2.0
@@ -2921,9 +2921,9 @@ packages:
     resolution: {integrity: sha512-TZKxPvItzai9kN9H/TkmCtx/ZN/hvr3vUycjlfmH0ootY9yFBzNOpiXAdIn1Iteqsvk4lQn6B5PTrt+n6h8k/w==}
     engines: {node: ^18.17.0 || >=20.5.0}
 
-  npm-run-all2@8.0.0:
-    resolution: {integrity: sha512-HQ9Z8cQqDIKvTpZgxa7oPRqi07iEdau5E1V6vMkON05v5McgAEvLltVuWGmBE3fiObCTthkxlpJbCZJYGAVDjg==}
-    engines: {node: '>=20.5.0', npm: '>= 10'}
+  npm-run-all2@8.0.1:
+    resolution: {integrity: sha512-jkhE0AsELQeCtScrcJ/7mSIdk+ZsnWjvKk3KwE96HZ6+OFVB74XhxQtHT1W6kdUfn92fRnBb29Mz82j9bV2XEQ==}
+    engines: {node: ^20.5.0 || >=22.0.0, npm: '>= 10'}
     hasBin: true
 
   npm-run-path@4.0.1:
@@ -7389,12 +7389,12 @@ snapshots:
 
   npm-normalize-package-bin@4.0.0: {}
 
-  npm-run-all2@8.0.0:
+  npm-run-all2@8.0.1:
     dependencies:
       ansi-styles: 6.2.1
       cross-spawn: 7.0.6
       memorystream: 0.3.1
-      minimatch: 9.0.5
+      minimatch: 10.0.1
       pidtree: 0.6.0
       read-package-json-fast: 4.0.0
       shell-quote: 1.8.1
