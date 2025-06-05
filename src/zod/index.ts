@@ -125,7 +125,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
 
   get ObjectTypeDefinition() {
     return {
-      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType && !this.config.inputOnly, (node: ObjectTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
         const typeName = visitor.prefixTypeNamespace(name);
@@ -253,6 +253,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
     name: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
+   const discriminator =
+      this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}',\n)` : ''
     const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
@@ -261,7 +263,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('const')
           .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-          .withContent(['z.object({', shape, '})'].join('\n'))
+          .withContent(['z.object({', discriminator, shape, '})'].join('\n'))
           .string;
 
       case 'function':
@@ -270,7 +272,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-          .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
+          .withBlock([indent(`return z.object({`), discriminator, shape, indent('})')].join('\n'))
           .string;
     }
   }
