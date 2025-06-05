@@ -29,12 +29,15 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
+import { findCircularTypes } from '../utils.js';
 
 const anySchema = `definedNonNullAnySchema`;
 
 export class ZodSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
+    this.circularTypes = findCircularTypes(schema);
+    this.config.lazyStrategy ??= 'all';
   }
 
   importValidationSchema(): string {
@@ -95,7 +98,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -136,7 +139,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -255,7 +258,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
     const typeName = visitor.prefixTypeNamespace(name);
     const discriminator =
       this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}'),\n` : ''
-    const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+    const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
       case 'const':
