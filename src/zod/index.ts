@@ -386,6 +386,7 @@ function maybeLazy(
   circularTypes: Set<string>
 ): string {
   if (isNamedType(type)) {
+    // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
     const typeName = type.name.value;
 
     if (config.lazyStrategy === 'all' && isInput(typeName)) {
