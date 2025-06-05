@@ -2,7 +2,7 @@ import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 import type { NamingConventionMap } from '@graphql-codegen/visitor-plugin-common';
 
 export type ValidationSchema = 'yup' | 'zod' | 'zod/v4' | 'myzod' | 'valibot';
-export type LazyType = 'always' | 'circular'
+export type LazyType = 'all' | 'circular'
 export type ValidationSchemaExportType = 'function' | 'const';
 
 export interface DirectiveConfig {
@@ -37,8 +37,8 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   schema?: ValidationSchema
     /**
-     * @description specify generate schema
-     * @default yup
+     * @description Setting to determine when to set a property to lazy. 'Circular' will only use lazy for circular references. 'All' will set lazy for all properties referencing another schema.
+     * @default all
      *
      * @exampleMarkdown
      * ```yml
@@ -49,7 +49,7 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
      *       - graphql-codegen-validation-schema
      *     config:
      *       schema: yup
-     *       lazy: always
+     *       lazy: circular
      * ```
      */
   lazy?: LazyType;
