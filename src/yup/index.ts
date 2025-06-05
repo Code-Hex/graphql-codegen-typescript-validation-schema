@@ -117,7 +117,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
 
   get ObjectTypeDefinition() {
     return {
-      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType && !this.config.inputOnly, (node: ObjectTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
         const typeName = visitor.prefixTypeNamespace(name);
@@ -256,6 +256,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
     name: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
+    const discriminator =
+      this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}',\n)` : ''
     const shape = shapeFields(fields, this.config, visitor);
 
     switch (this.config.validationSchemaExportType) {
@@ -264,7 +266,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('const')
           .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
-          .withContent(['yup.object({', shape, '})'].join('\n'))
+          .withContent(['yup.object({', discriminator, shape, '})'].join('\n'))
           .string;
 
       case 'function':
@@ -273,7 +275,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
-          .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
+          .withBlock([indent(`return yup.object({`), discriminator, shape, indent('})')].join('\n'))
           .string;
     }
   }
