@@ -34,6 +34,7 @@ import { BaseSchemaVisitor } from '../schema_visitor.js';
 export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
+    this.generationStack = new Set()
   }
 
   importValidationSchema(): string {
