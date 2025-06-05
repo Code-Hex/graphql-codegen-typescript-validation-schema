@@ -30,8 +30,10 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
+import { findCircularTypes } from '../utils.js'
 
 export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
+  private circularTypes: Set<string>
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
     this.generationStack = new Set()
