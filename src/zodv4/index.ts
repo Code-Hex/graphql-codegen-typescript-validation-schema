@@ -266,13 +266,13 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
 }
 
 function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
-  const gen = generateFieldTypeZodSchema(config, visitor, field, field.type);
+ const gen = generateFieldTypeZodSchema(config, visitor, field, field.type, undefined, circularTypes);
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
 function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNoder, circularTypes: Set<string>): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type, circularTypes);
     if (!isNonNullType(parentType)) {
       const arrayGen = `z.array(${maybeLazy(type.type, gen)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
@@ -281,7 +281,7 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
     return `z.array(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type, circularTypes);
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
