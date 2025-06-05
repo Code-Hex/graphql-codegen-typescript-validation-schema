@@ -123,7 +123,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -242,7 +242,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
     const typeName = visitor.prefixTypeNamespace(name);
    const discriminator =
       this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}'),\n` : ''
-    const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+    const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
       case 'const':
@@ -265,12 +265,12 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
   }
 }
 
-function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
+function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
   const gen = generateFieldTypeZodSchema(config, visitor, field, field.type);
-  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
+  return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
-function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNoder, circularTypes: Set<string>): string {
   if (isListType(type)) {
     const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
     if (!isNonNullType(parentType)) {
