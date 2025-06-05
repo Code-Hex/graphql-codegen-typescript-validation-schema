@@ -257,7 +257,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
     const discriminator =
-      this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}',\n)` : ''
+      this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}'),\n` : ''
     const shape = shapeFields(fields, this.config, visitor);
 
     switch (this.config.validationSchemaExportType) {
