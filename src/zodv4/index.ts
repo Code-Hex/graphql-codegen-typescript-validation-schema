@@ -274,15 +274,15 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
   if (isListType(type)) {
     const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type, circularTypes);
     if (!isNonNullType(parentType)) {
-      const arrayGen = `z.array(${maybeLazy(type.type, gen)})`;
+      const arrayGen = `z.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
       return `${maybeLazyGen}.nullish()`;
     }
-    return `z.array(${maybeLazy(type.type, gen)})`;
+    return `z.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
   }
   if (isNonNullType(type)) {
     const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type, circularTypes);
-    return maybeLazy(type.type, gen);
+    return maybeLazy(type.type, gen, config, circularTypes);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeZodSchema(config, visitor, type.name);
