@@ -24,10 +24,13 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
+import { findCircularTypes } from '../utils.js';
 
 export class ValibotSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
+    this.circularTypes = findCircularTypes(schema);
+    this.config.lazyStrategy ??= 'all';
   }
 
   importValidationSchema(): string {
@@ -66,7 +69,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldValibotSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldValibotSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           default:
@@ -96,7 +99,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldValibotSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldValibotSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           default:
@@ -191,7 +194,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
     const typeName = visitor.prefixTypeNamespace(name);
     const discriminator =
       this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}'),\n` : ''
-    const shape = fields.map(field => generateFieldValibotSchema(this.config, visitor, field, 2)).join(',\n');
+    const shape = fields.map(field => generateFieldValibotSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
       default:
@@ -205,23 +208,23 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
   }
 }
 
-function generateFieldValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
-  const gen = generateFieldTypeValibotSchema(config, visitor, field, field.type);
-  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
+function generateFieldValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
+  const gen = generateFieldTypeValibotSchema(config, visitor, field, field.type, undefined, circularTypes);
+  return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
-function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode, circularTypes: Set<string>): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type);
-    const arrayGen = `v.array(${maybeLazy(type.type, gen)})`;
+    const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type, circularTypes);
+    const arrayGen = `v.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
     if (!isNonNullType(parentType))
       return `v.nullish(${arrayGen})`;
 
     return arrayGen;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type);
-    return maybeLazy(type.type, gen);
+    const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type, circularTypes);
+    return maybeLazy(type.type, gen, config, circularTypes);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeValibotSchema(config, visitor, type.name);
@@ -285,9 +288,24 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
   }
 }
 
-function maybeLazy(type: TypeNode, schema: string): string {
-  if (isNamedType(type) && isInput(type.name.value))
-    return `v.lazy(() => ${schema})`;
+function maybeLazy(
+  type: TypeNode,
+  schema: string,
+  config: ValidationSchemaPluginConfig,
+  circularTypes: Set<string>
+): string {
+  if (isNamedType(type)) {
+    // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
+    const typeName = type.name.value;
+
+    if (config.lazyStrategy === 'all' && isInput(typeName)) {
+      return `v.lazy(() => ${schema})`;
+    }
+
+    if (config.lazyStrategy === 'circular' && circularTypes.has(typeName)) {
+      return `v.lazy(() => ${schema})`;
+    }
+  }
 
   return schema;
 }
