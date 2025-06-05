@@ -240,8 +240,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
     name: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
-   const discriminator =
-      this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}'),\n` : ''
+    const discriminator = this.config.inputDiscriminator ? `\t${this.config.inputDiscriminator}: z.literal('${name}'),` : ''
     const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
