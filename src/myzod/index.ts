@@ -29,12 +29,15 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
+import { findCircularTypes } from '../utils.js';
 
 const anySchema = `definedNonNullAnySchema`;
 
 export class MyZodSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
+    this.circularTypes = findCircularTypes(schema);
+    this.config.lazyStrategy ??= 'all';
   }
 
   importValidationSchema(): string {
@@ -75,7 +78,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -116,7 +119,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -238,8 +241,8 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
     const discriminator =
-      this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}'),\n` : ''
-    const shape = fields.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
+     this.config.inputDiscriminator ? `\t${this.config.inputDiscriminator}: z.literal('${name}'),` : ''
+    const shape = fields.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
       case 'const':
@@ -262,24 +265,24 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
   }
 }
 
-function generateFieldMyZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
-  const gen = generateFieldTypeMyZodSchema(config, visitor, field, field.type);
-  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
+function generateFieldMyZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
+  const gen = generateFieldTypeMyZodSchema(config, visitor, field, field.type, undefined, circularTypes);
+  return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
-function generateFieldTypeMyZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeMyZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode, circularTypes: Set<string>): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeMyZodSchema(config, visitor, field, type.type, type);
+    const gen = generateFieldTypeMyZodSchema(config, visitor, field, type.type, type, circularTypes);
     if (!isNonNullType(parentType)) {
-      const arrayGen = `myzod.array(${maybeLazy(type.type, gen)})`;
+      const arrayGen = `myzod.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
       return `${maybeLazyGen}.optional().nullable()`;
     }
-    return `myzod.array(${maybeLazy(type.type, gen)})`;
+    return `myzod.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeMyZodSchema(config, visitor, field, type.type, type);
-    return maybeLazy(type.type, gen);
+    const gen = generateFieldTypeMyZodSchema(config, visitor, field, type.type, type, circularTypes);
+    return maybeLazy(type.type, gen, config, circularTypes);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeMyZodSchema(config, visitor, type.name);
@@ -360,9 +363,23 @@ function generateNameNodeMyZodSchema(config: ValidationSchemaPluginConfig, visit
   }
 }
 
-function maybeLazy(type: TypeNode, schema: string): string {
-  if (isNamedType(type) && isInput(type.name.value))
-    return `myzod.lazy(() => ${schema})`;
+function maybeLazy(
+  type: TypeNode,
+  schema: string,
+  config: ValidationSchemaPluginConfig,
+  circularTypes: Set<string>
+): string {
+  if (isNamedType(type)) {
+    const typeName = type.name.value;
+
+    if (config.lazyStrategy === 'all' && isInput(typeName)) {
+      return `myzod.lazy(() => ${schema})`;
+    }
+
+    if (config.lazyStrategy === 'circular' && circularTypes.has(typeName)) {
+      return `myzod.lazy(() => ${schema})`;
+    }
+  }
 
   return schema;
 }
