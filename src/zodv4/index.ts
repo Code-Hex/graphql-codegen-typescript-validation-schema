@@ -31,7 +31,7 @@ import {
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
 
-export class ZodSchemaVisitor extends BaseSchemaVisitor {
+export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
   }
