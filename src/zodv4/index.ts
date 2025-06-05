@@ -36,7 +36,8 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
   private circularTypes: Set<string>
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
-    this.generationStack = new Set()
+    this.circularTypes = findCircularTypes(schema);
+    this.config.lazyStrategy ??= 'all';
   }
 
   importValidationSchema(): string {
@@ -362,9 +363,23 @@ function generateNameNodeZodSchema(config: ValidationSchemaPluginConfig, visitor
   }
 }
 
-function maybeLazy(type: TypeNode, schema: string): string {
-  if (isNamedType(type) && isInput(type.name.value))
-    return `z.lazy(() => ${schema})`;
+function maybeLazy(
+  type: TypeNode,
+  schema: string,
+  config: ValidationSchemaPluginConfig,
+  circularTypes: Set<string>
+): string {
+  if (isNamedType(type)) {
+    const typeName = type.name.value;
+
+    if (config.lazyStrategy === 'all' && isInput(typeName)) {
+      return `z.lazy(() => ${schema})`;
+    }
+
+    if (config.lazyStrategy === 'circular' && circularTypes.has(typeName)) {
+      return `z.lazy(() => ${schema})`;
+    }
+  }
 
   return schema;
 }
