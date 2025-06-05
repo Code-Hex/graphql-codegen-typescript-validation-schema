@@ -82,7 +82,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
