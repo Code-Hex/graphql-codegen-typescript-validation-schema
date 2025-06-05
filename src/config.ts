@@ -2,6 +2,7 @@ import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 import type { NamingConventionMap } from '@graphql-codegen/visitor-plugin-common';
 
 export type ValidationSchema = 'yup' | 'zod' | 'zod/v4' | 'myzod' | 'valibot';
+export type LazyType = 'always' | 'circular'
 export type ValidationSchemaExportType = 'function' | 'const';
 
 export interface DirectiveConfig {
@@ -35,6 +36,23 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   schema?: ValidationSchema
+    /**
+     * @description specify generate schema
+     * @default yup
+     *
+     * @exampleMarkdown
+     * ```yml
+     * generates:
+     *   path/to/file.ts:
+     *     plugins:
+     *       - typescript
+     *       - graphql-codegen-validation-schema
+     *     config:
+     *       schema: yup
+     *       lazy: always
+     * ```
+     */
+  lazy?: LazyType;
   /**
    * @description import types from generated typescript type path
    * if not given, omit import statement.
