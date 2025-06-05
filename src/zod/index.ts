@@ -281,24 +281,24 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
   }
 }
 
-function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
-  const gen = generateFieldTypeZodSchema(config, visitor, field, field.type);
-  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
+function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
+  const gen = generateFieldTypeZodSchema(config, visitor, field, field.type, undefined, circularTypes);
+  return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
-function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode, circularTypes: Set<string>): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type, circularTypes);
     if (!isNonNullType(parentType)) {
-      const arrayGen = `z.array(${maybeLazy(type.type, gen)})`;
+      const arrayGen = `z.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
       return `${maybeLazyGen}.nullish()`;
     }
-    return `z.array(${maybeLazy(type.type, gen)})`;
+    return `z.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
-    return maybeLazy(type.type, gen);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type, circularTypes);
+    return maybeLazy(type.type, gen, config, circularTypes);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeZodSchema(config, visitor, type.name);
