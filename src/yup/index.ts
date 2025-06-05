@@ -29,10 +29,13 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
+import { findCircularTypes } from '../utils.js';
 
 export class YupSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
+    this.circularTypes = findCircularTypes(schema);
+    this.config.lazyStrategy ??= 'all';
   }
 
   importValidationSchema(): string {
@@ -85,7 +88,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
 
         // Building schema for fields.
         const shape = node.fields?.map((field) => {
-          const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
+          const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2, this.circularTypes);
           return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
         }).join(',\n');
 
@@ -128,7 +131,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = shapeFields(node.fields, this.config, visitor);
+        const shape = shapeFields(node.fields, this.config, visitor, this.circularTypes);
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -258,7 +261,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
     const typeName = visitor.prefixTypeNamespace(name);
     const discriminator =
       this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}'),\n` : ''
-    const shape = shapeFields(fields, this.config, visitor);
+    const shape = shapeFields(fields, this.config, visitor, this.circularTypes);
 
     switch (this.config.validationSchemaExportType) {
       case 'const':
@@ -281,10 +284,10 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
   }
 }
 
-function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[] | undefined, config: ValidationSchemaPluginConfig, visitor: Visitor) {
+function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[] | undefined, config: ValidationSchemaPluginConfig, visitor: Visitor, circularTypes: Set<string>) {
   return fields
     ?.map((field) => {
-      let fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
+      let fieldSchema = generateFieldYupSchema(config, visitor, field, 2, circularTypes);
 
       if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
         const { defaultValue } = field;
@@ -320,26 +323,26 @@ function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitio
     .join(',\n');
 }
 
-function generateFieldYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
-  let gen = generateFieldTypeYupSchema(config, visitor, field.type);
+function generateFieldYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
+  let gen = generateFieldTypeYupSchema(config, visitor, field.type, undefined, circularTypes);
   if (config.directives && field.directives) {
     const formatted = formatDirectiveConfig(config.directives);
     gen += buildApi(formatted, field.directives);
   }
-  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
+  return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
-function generateFieldTypeYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, type: TypeNode, parentType?: TypeNode, circularTypes: Set<string>): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
+    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type, circularTypes);
     if (!isNonNullType(parentType))
-      return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
+      return `yup.array(${maybeLazy(type.type, gen, config, circularTypes)}).defined().nullable()`;
 
-    return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
+    return `yup.array(${maybeLazy(type.type, gen, config, circularTypes)}).defined()`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
-    return maybeLazy(type.type, gen);
+    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type, circularTypes);
+    return maybeLazy(type.type, gen, config, circularTypes);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeYupSchema(config, visitor, type.name);
@@ -382,11 +385,25 @@ function generateNameNodeYupSchema(config: ValidationSchemaPluginConfig, visitor
   }
 }
 
-function maybeLazy(type: TypeNode, schema: string): string {
-  if (isNamedType(type) && isInput(type.name.value)) {
+function maybeLazy(
+  type: TypeNode,
+  schema: string,
+  config: ValidationSchemaPluginConfig,
+  circularTypes: Set<string>
+): string {
+  if (isNamedType(type)) {
     // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
-    return `yup.lazy(() => ${schema})`;
+    const typeName = type.name.value;
+
+    if (config.lazyStrategy === 'all' && isInput(typeName)) {
+      return `yup.lazy(() => ${schema})`;
+    }
+
+    if (config.lazyStrategy === 'circular' && circularTypes.has(typeName)) {
+      return `yup.lazy(() => ${schema})`;
+    }
   }
+
   return schema;
 }
 
