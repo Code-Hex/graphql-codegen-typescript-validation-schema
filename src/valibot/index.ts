@@ -85,7 +85,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
 
   get ObjectTypeDefinition() {
     return {
-      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
+      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType && !this.config.inputOnly, (node: ObjectTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
         const typeName = visitor.prefixTypeNamespace(name);
@@ -189,6 +189,8 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
     name: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
+    const discriminator =
+      this.config.inputDiscriminator ? `${this.config.inputDiscriminator}: z.literal('${name}',\n)` : ''
     const shape = fields.map(field => generateFieldValibotSchema(this.config, visitor, field, 2)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
@@ -197,7 +199,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): v.GenericSchema<${typeName}>`)
-          .withBlock([indent(`return v.object({`), shape, indent('})')].join('\n'))
+          .withBlock([indent(`return v.object({`), discriminator, shape, indent('})')].join('\n'))
           .string;
     }
   }
