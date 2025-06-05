@@ -1,7 +1,7 @@
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 import type { NamingConventionMap } from '@graphql-codegen/visitor-plugin-common';
 
-export type ValidationSchema = 'yup' | 'zod' | 'myzod' | 'valibot';
+export type ValidationSchema = 'yup' | 'zod' | 'zod/v4' | 'myzod' | 'valibot';
 export type ValidationSchemaExportType = 'function' | 'const';
 
 export interface DirectiveConfig {
@@ -96,6 +96,50 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   useTypeImports?: boolean
+    /**
+     * @description Creates schemas for input types only.
+     * This gives compatibility with TypeScript's "importsNotUsedAsValues": "error" option
+     * Should used in conjunction with `importFrom` option.
+     * @default false
+     *
+     * @exampleMarkdown
+     * ```yml
+     * generates:
+     *   path/to/types.ts:
+     *     plugins:
+     *       - typescript
+     *   path/to/schemas.ts:
+     *     plugins:
+     *       - graphql-codegen-validation-schema
+     *     config:
+     *       schema: yup
+     *       importFrom: ./path/to/types
+     *       inputsOnly: true
+     * ```
+     */
+    inputOnly?: boolean;
+    /**
+     * @description Creates schemas for input types only.
+     * This gives compatibility with TypeScript's "importsNotUsedAsValues": "error" option
+     * Should used in conjunction with `importFrom` option.
+     * @default false
+     *
+     * @exampleMarkdown
+     * ```yml
+     * generates:
+     *   path/to/types.ts:
+     *     plugins:
+     *       - typescript
+     *   path/to/schemas.ts:
+     *     plugins:
+     *       - graphql-codegen-validation-schema
+     *     config:
+     *       schema: yup
+     *       importFrom: ./path/to/types
+     *       inputsOnly: true
+     * ```
+     */
+    inputDiscriminator?: string;
   /**
    * @description Prefixes all import types from generated typescript type.
    * @default ""
