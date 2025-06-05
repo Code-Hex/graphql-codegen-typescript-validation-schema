@@ -240,7 +240,7 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
     name: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
-    const discriminator = this.config.inputDiscriminator ? `\t${this.config.inputDiscriminator}: z.literal('${name}'),` : ''
+    const discriminator = this.config.inputDiscriminator ? `\t${this.config.inputDiscriminator}: myzod.literal('${name}'),` : ''
     const shape = fields.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
