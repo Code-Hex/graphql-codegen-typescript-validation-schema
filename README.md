@@ -61,6 +61,56 @@ generates:
       schema: yup
 ```
 
+### `inputOnly`
+
+type: `boolean` default: `false`
+
+When true, will create only schema for input types.
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-validation-schema
+    config:
+      inputOnly: true
+```
+
+### `inputDiscriminator`
+
+type: `string` default: `''`
+
+When a discriminator is provided, it will add the type name as the defined string for the discriminator key provided.
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-validation-schema
+    config:
+      inputDiscriminator: __kind
+```
+
+### `lazyStrategy`
+
+type: `lazyStrategy` default: `'all'`
+
+Sets how the lazy function is added to references. All will apply it to all references, circular will only apply it to truly circular references.
+
+You can specify `all` or `circular`.
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-validation-schema
+    config:
+      lazyStrategy: circular
+```
+
 ### `importFrom`
 
 type: `string`
