@@ -114,28 +114,26 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   useTypeImports?: boolean
-    /**
-     * @description Creates schemas for input types only.
-     * This gives compatibility with TypeScript's "importsNotUsedAsValues": "error" option
-     * Should used in conjunction with `importFrom` option.
-     * @default false
-     *
-     * @exampleMarkdown
-     * ```yml
-     * generates:
-     *   path/to/types.ts:
-     *     plugins:
-     *       - typescript
-     *   path/to/schemas.ts:
-     *     plugins:
-     *       - graphql-codegen-validation-schema
-     *     config:
-     *       schema: yup
-     *       importFrom: ./path/to/types
-     *       inputsOnly: true
-     * ```
-     */
-    inputOnly?: boolean;
+  /**
+   * @description Will create strict type object.
+   * To be used with Zod schema.
+   * @default false
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/types.ts:
+   *     plugins:
+   *       - typescript
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: zod
+   *       strictShape: true
+   * ```
+   */
+  zodStrictObject?: boolean
     /**
      * @description Creates schemas for input types only.
      * This gives compatibility with TypeScript's "importsNotUsedAsValues": "error" option

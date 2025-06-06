@@ -88,7 +88,7 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
 
   get ObjectTypeDefinition() {
     return {
-      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType && !this.config.inputOnly, (node: ObjectTypeDefinitionNode) => {
+      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
         const typeName = visitor.prefixTypeNamespace(name);

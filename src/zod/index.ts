@@ -107,7 +107,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('const')
                 .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-                .withContent([`z.object({`, shape, '})'].join('\n'))
+                .withContent([`z.object({`, shape, `})${this.config.zodStrictObject ? '.strict()' : ''}`].join('\n'))
                 .string + appendArguments
             );
 
@@ -118,7 +118,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('function')
                 .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
+                .withBlock([indent(`return z.object({`), shape, indent(v)].join('\n'))
                 .string + appendArguments
             );
         }
@@ -128,7 +128,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
 
   get ObjectTypeDefinition() {
     return {
-      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType && !this.config.inputOnly, (node: ObjectTypeDefinitionNode) => {
+      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
         const typeName = visitor.prefixTypeNamespace(name);
@@ -153,7 +153,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                     `z.object({`,
                     indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
-                    '})',
+                    `})${this.config.zodStrictObject ? '.strict()' : ''}`,
                   ].join('\n'),
                 )
                 .string + appendArguments
@@ -171,7 +171,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                     indent(`return z.object({`),
                     indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
-                    indent('})'),
+                    indent(`})${this.config.zodStrictObject ? '.strict()' : ''}`),
                   ].join('\n'),
                 )
                 .string + appendArguments
@@ -265,7 +265,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('const')
           .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-          .withContent(['z.object({', discriminator, shape, '})'].join('\n'))
+          .withContent(['z.object({', discriminator, shape, `})${this.config.zodStrictObject ? '.strict()' : ''}`].join('\n'))
           .string;
 
       case 'function':
@@ -274,20 +274,20 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-          .withBlock([indent(`return z.object({`), discriminator, shape, indent('})')].join('\n'))
+          .withBlock([indent(`return z.object({`), discriminator, shape, indent(`})${this.config.zodStrictObject ? '.strict()' : ''}`)].join('\n'))
           .string;
     }
   }
 }
 
 function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
-  const gen = generateFieldTypeZodSchema(config, visitor, field, field.type, undefined, circularTypes);
+  const gen = generateFieldTypeZodSchema(config, visitor, field, field.type, circularTypes);
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
-function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode, circularTypes: Set<string>): string {
+function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, circularTypes: Set<string>, parentType?: TypeNode): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type, circularTypes);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, circularTypes, type);
     if (!isNonNullType(parentType)) {
       const arrayGen = `z.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
@@ -296,7 +296,7 @@ function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visito
     return `z.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type, circularTypes);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, circularTypes, type);
     return maybeLazy(type.type, gen, config, circularTypes);
   }
   if (isNamedType(type)) {
@@ -420,4 +420,12 @@ function zod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scal
 
   console.warn('unhandled scalar name:', scalarName);
   return anySchema;
+}
+
+function generateSchemaObject(name: string, discriminatorField: string, typeName: string, shape: string | undefined) {
+  const objectName = name.charAt(0).toLowerCase() + name.slice(1) + 'SchemaObject'
+  return {
+    string: `export const ${objectName}: Properties<${typeName}> = {\n${discriminatorField}\n${shape}\n}\n\n`,
+    name: objectName,
+  }
 }

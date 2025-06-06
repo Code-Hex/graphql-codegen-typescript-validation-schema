@@ -61,22 +61,6 @@ generates:
       schema: yup
 ```
 
-### `inputOnly`
-
-type: `boolean` default: `false`
-
-When true, will create only schema for input types.
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-      - typescript-validation-schema
-    config:
-      inputOnly: true
-```
-
 ### `inputDiscriminator`
 
 type: `string` default: `''`
@@ -91,6 +75,22 @@ generates:
       - typescript-validation-schema
     config:
       inputDiscriminator: __kind
+```
+
+### `zodStrictObject`
+
+type: `boolean` default: `false`
+
+Will create a strict zod object. Should be used with Zod schema.
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-validation-schema
+    config:
+      zodStrictObject: true
 ```
 
 ### `lazyStrategy`

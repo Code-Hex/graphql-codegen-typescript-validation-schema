@@ -91,7 +91,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('const')
                 .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-                .withContent([`z.object({`, shape, '})'].join('\n'))
+                .withContent([`${this.config.zodStrictObject ? 'z.strictObject' : 'z.object'}({`, shape, '})'].join('\n'))
                 .string + appendArguments
             );
 
@@ -102,7 +102,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('function')
                 .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
+                .withBlock([indent(`return ${this.config.zodStrictObject ? 'z.strictObject' : 'z.object'}({`), shape, indent('})')].join('\n'))
                 .string + appendArguments
             );
         }
@@ -112,7 +112,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
 
   get ObjectTypeDefinition() {
     return {
-      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType && !this.config.inputOnly, (node: ObjectTypeDefinitionNode) => {
+      leave: ObjectTypeDefinitionBuilder(this.config.withObjectType, (node: ObjectTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
         const typeName = visitor.prefixTypeNamespace(name);
@@ -134,7 +134,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
                 .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
                 .withContent(
                   [
-                    `z.object({`,
+                    `${this.config.zodStrictObject ? 'z.strictObject' : 'z.object'}({`,
                     indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
                     '})',
@@ -152,7 +152,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
                 .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
                 .withBlock(
                   [
-                    indent(`return z.object({`),
+                    indent(`return ${this.config.zodStrictObject ? 'z.strictObject' : 'z.object'}({`),
                     indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
                     indent('})'),
@@ -249,7 +249,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('const')
           .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-          .withContent(['z.object({', discriminator, shape, '})'].join('\n'))
+          .withContent([`${this.config.zodStrictObject ? 'z.strictObject' : 'z.object'}({`, discriminator, shape, '})'].join('\n'))
           .string;
 
       case 'function':
@@ -258,7 +258,7 @@ export class Zodv4SchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-          .withBlock([indent(`return z.object({`), discriminator, shape, indent('})')].join('\n'))
+          .withBlock([indent(`return ${this.config.zodStrictObject ? 'z.strictObject' : 'z.object'}({`), discriminator, shape, indent('})')].join('\n'))
           .string;
     }
   }
