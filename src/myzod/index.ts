@@ -29,12 +29,16 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
+import { findCircularTypes } from 'src/utils.js';
 
 const anySchema = `definedNonNullAnySchema`;
 
 export class MyZodSchemaVisitor extends BaseSchemaVisitor {
+  private circularTypes: Set<string>
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
+    this.circularTypes = findCircularTypes(schema)
+    this.config.lazyStrategy ??= 'all'
   }
 
   importValidationSchema(): string {
@@ -43,11 +47,10 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
 
   initialEmit(): string {
     return (
-      `\n${
-        [
-          new DeclarationBlock({}).export().asKind('const').withName(`${anySchema}`).withContent(`myzod.object({})`).string,
-          ...this.enumDeclarations,
-        ].join('\n')}`
+      `\n${[
+        new DeclarationBlock({}).export().asKind('const').withName(`${anySchema}`).withContent(`myzod.object({})`).string,
+        ...this.enumDeclarations,
+      ].join('\n')}`
     );
   }
 
@@ -75,29 +78,59 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
+        // Building schema object for separateSchemaObject config option
+        const schemaObject = buildSchemaObject(name, '', typeName, shape)
         switch (this.config.validationSchemaExportType) {
           case 'const':
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${name}Schema: myzod.Type<${typeName}>`)
-                .withContent([`myzod.object({`, shape, '})'].join('\n'))
-                .string + appendArguments
-            );
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema`)
+                    .withContent(['myzod.object(', indent(schemaObject.name, 1), ')'].join('\n'))
+                    .string + appendArguments
+                )
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema: myzod.Type<${typeName}>`)
+                    .withContent([`myzod.object({`, shape, '})'].join('\n'))
+                    .string + appendArguments
+                );
+            }
 
           case 'function':
           default:
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('function')
-                .withName(`${name}Schema(): myzod.Type<${typeName}>`)
-                .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n'))
-                .string + appendArguments
-            );
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema()`)
+                    .withBlock([indent('return myzod.object('), indent(schemaObject.name, 1), indent(')')].join('\n'))
+                    .string + appendArguments
+                )
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema(): myzod.Type<${typeName}>`)
+                    .withBlock([indent('return myzod.object({'), shape, indent('})')].join('\n'))
+                    .string + appendArguments
+                );
+            }
         }
       }),
     };
@@ -116,43 +149,84 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
+        // Building schema object for separateSchemaObject config option
+        const schemaObject = buildSchemaObject(name, `__typename: myzod.literal('${node.name.value}').optional(),`, typeName, shape)
         switch (this.config.validationSchemaExportType) {
           case 'const':
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${name}Schema: myzod.Type<${typeName}>`)
-                .withContent(
-                  [
-                    `myzod.object({`,
-                    indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
-                    shape,
-                    '})',
-                  ].join('\n'),
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema`)
+                    .withContent(
+                      [
+                        'myzod.object(',
+                        indent(schemaObject.name, 1),
+                        ')',
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
                 )
-                .string + appendArguments
-            );
-
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema: myzod.Type<${typeName}>`)
+                    .withContent(
+                      [
+                        'myzod.object({',
+                        indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
+                        shape,
+                        '})',
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
+                );
+            }
           case 'function':
           default:
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('function')
-                .withName(`${name}Schema(): myzod.Type<${typeName}>`)
-                .withBlock(
-                  [
-                    indent(`return myzod.object({`),
-                    indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
-                    shape,
-                    indent('})'),
-                  ].join('\n'),
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema()`)
+                    .withBlock(
+                      [
+                        indent('return myzod.object('),
+                        indent(schemaObject.name, 1),
+                        indent(')'),
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
                 )
-                .string + appendArguments
-            );
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema(): myzod.Type<${typeName}>`)
+                    .withBlock(
+                      [
+                        indent('return myzod.object({'),
+                        indent(`__typename: myzod.literal('${node.name.value}').optional(),`, 2),
+                        shape,
+                        indent('})'),
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
+                );
+            }
         }
       }),
     };
@@ -237,47 +311,69 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
     name: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
-    const shape = fields.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2)).join(',\n');
-
+    const shape = fields.map(field => generateFieldMyZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
+    const schemaObject = buildSchemaObject(name, discriminatorField, typeName, shape)
     switch (this.config.validationSchemaExportType) {
       case 'const':
-        return new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`${name}Schema: myzod.Type<${typeName}>`)
-          .withContent(['myzod.object({', shape, '})'].join('\n'))
-          .string;
-
+        switch (this.config.separateSchemaObject) {
+          case true:
+            return schemaObject.string + new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema`)
+              .withContent(['myzod.object(', indent(schemaObject.name, 1), ')'].join('\n'))
+              .string;
+          case false:
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema: myzod.Type<${typeName}>`)
+              .withContent(['myzod.object({', shape, '})'].join('\n'))
+              .string;
+        }
       case 'function':
       default:
-        return new DeclarationBlock({})
-          .export()
-          .asKind('function')
-          .withName(`${name}Schema(): myzod.Type<${typeName}>`)
-          .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n'))
-          .string;
+        switch (this.config.separateSchemaObject) {
+          case true:
+            return schemaObject.string + new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema()`)
+              .withBlock([indent('return myzod.object('), indent(schemaObject.name, 1), indent(')')].join('\n'))
+              .string;
+
+          case false:
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema(): myzod.Type<${typeName}>`)
+              .withBlock([indent(`return myzod.object({`), shape, indent('})')].join('\n'))
+              .string;
+        }
     }
   }
 }
 
-function generateFieldMyZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
-  const gen = generateFieldTypeMyZodSchema(config, visitor, field, field.type);
-  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
+function generateFieldMyZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
+  const gen = generateFieldTypeMyZodSchema(config, visitor, field, field.type, circularTypes);
+  return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
-function generateFieldTypeMyZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeMyZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, circularTypes: Set<string>, parentType?: TypeNode): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeMyZodSchema(config, visitor, field, type.type, type);
+    const gen = generateFieldTypeMyZodSchema(config, visitor, field, type.type, circularTypes, type);
     if (!isNonNullType(parentType)) {
-      const arrayGen = `myzod.array(${maybeLazy(type.type, gen)})`;
+      const arrayGen = `myzod.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
       return `${maybeLazyGen}.optional().nullable()`;
     }
-    return `myzod.array(${maybeLazy(type.type, gen)})`;
+    return `myzod.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeMyZodSchema(config, visitor, field, type.type, type);
-    return maybeLazy(type.type, gen);
+    const gen = generateFieldTypeMyZodSchema(config, visitor, field, type.type, circularTypes, type);
+    return maybeLazy(type.type, gen, config, circularTypes);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeMyZodSchema(config, visitor, type.name);
@@ -358,11 +454,20 @@ function generateNameNodeMyZodSchema(config: ValidationSchemaPluginConfig, visit
   }
 }
 
-function maybeLazy(type: TypeNode, schema: string): string {
-  if (isNamedType(type) && isInput(type.name.value))
-    return `myzod.lazy(() => ${schema})`;
+function maybeLazy(type: TypeNode, schema: string, config: ValidationSchemaPluginConfig, circularTypes: Set<string>) {
+  if (isNamedType(type)) {
+    const typeName = type.name.value
 
-  return schema;
+    if (config.lazyStrategy === 'all' && isInput(typeName)) {
+      return `myzod.lazy(() => ${schema})`
+    }
+
+    if (config.lazyStrategy === 'circular' && circularTypes.has(typeName)) {
+      return `myzod.lazy(() => ${schema})`
+    }
+  }
+
+  return schema
 }
 
 function myzod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
@@ -385,4 +490,12 @@ function myzod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, sc
 
   console.warn('unhandled name:', scalarName);
   return anySchema;
+}
+
+function buildSchemaObject(name: string, discriminator: string, typeName: string, shape: string | undefined) {
+  const objectName = name.charAt(0).toLowerCase() + name.slice(1) + 'SchemaObject'
+  return {
+    string: `export const ${objectName}: Properties<${typeName}> = {\n${discriminator}\n${shape}\n}\n\n`,
+    name: objectName,
+  }
 }

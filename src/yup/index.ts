@@ -29,10 +29,14 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
+import { findCircularTypes } from 'src/utils.js';
 
 export class YupSchemaVisitor extends BaseSchemaVisitor {
+  private circularTypes: Set<string>
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
+    this.circularTypes = findCircularTypes(schema)
+    this.config.lazyStrategy ??= 'all'
   }
 
   importValidationSchema(): string {
@@ -43,20 +47,18 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
     if (!this.config.withObjectType)
       return `\n${this.enumDeclarations.join('\n')}`;
     return (
-      `\n${
-        this.enumDeclarations.join('\n')
-      }\n${
-        new DeclarationBlock({})
-          .asKind('function')
-          .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
-          .withBlock(
-            [
-              indent('return yup.mixed<T>().test({'),
-              indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
-              indent('}).defined()'),
-            ].join('\n'),
-          )
-          .string}`
+      `\n${this.enumDeclarations.join('\n')
+      }\n${new DeclarationBlock({})
+        .asKind('function')
+        .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
+        .withBlock(
+          [
+            indent('return yup.mixed<T>().test({'),
+            indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
+            indent('}).defined()'),
+          ].join('\n'),
+        )
+        .string}`
     );
   }
 
@@ -85,31 +87,61 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
 
         // Building schema for fields.
         const shape = node.fields?.map((field) => {
-          const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
+          const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2, this.circularTypes);
           return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
         }).join(',\n');
 
+        // Building schema object for separateSchemaObject config option
+        const schemaObject = buildSchemaObject(name, '', typeName, shape)
         switch (this.config.validationSchemaExportType) {
           case 'const':
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
-                .withContent([`yup.object({`, shape, '})'].join('\n'))
-                .string + appendArguments
-            );
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema`)
+                    .withContent(['yup.object(', indent(schemaObject.name, 1), ')'].join('\n'))
+                    .string + appendArguments
+                )
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
+                    .withContent([`yup.object({`, shape, '})'].join('\n'))
+                    .string + appendArguments
+                );
+            }
 
           case 'function':
           default:
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('function')
-                .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
-                .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
-                .string + appendArguments
-            );
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema()`)
+                    .withBlock([indent('return yup.object('), indent(schemaObject.name, 1), indent(')')].join('\n'))
+                    .string + appendArguments
+                )
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
+                    .withBlock([indent('return yup.object({'), shape, indent('})')].join('\n'))
+                    .string + appendArguments
+                );
+            }
         }
       }),
     };
@@ -130,41 +162,83 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         // Building schema for fields.
         const shape = shapeFields(node.fields, this.config, visitor);
 
+        // Building schema object for separateSchemaObject config option
+        const schemaObject = buildSchemaObject(name, `__typename: yup.string<'${node.name.value}'>().optional(),`, typeName, shape)
         switch (this.config.validationSchemaExportType) {
-          case 'const':
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
-                .withContent(
-                  [
-                    `yup.object({`,
-                    indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
-                    shape,
-                    '})',
-                  ].join('\n'),
-                )
-                .string + appendArguments
-            );
 
+          case 'const':
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema`)
+                    .withContent(
+                      [
+                        'z.object(',
+                        indent(schemaObject.name, 1),
+                        ')',
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
+                )
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
+                    .withContent(
+                      [
+                        'z.object({',
+                        indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
+                        shape,
+                        '})',
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
+                );
+            }
           case 'function':
           default:
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('function')
-                .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
-                .withBlock(
-                  [
-                    indent(`return yup.object({`),
-                    indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
-                    shape,
-                    indent('})'),
-                  ].join('\n'),
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema()`)
+                    .withBlock(
+                      [
+                        indent('return z.object('),
+                        indent(schemaObject.name, 1),
+                        indent(')'),
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
                 )
-                .string + appendArguments
-            );
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
+                    .withBlock(
+                      [
+                        indent('return z.object({'),
+                        indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
+                        shape,
+                        indent('})'),
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
+                );
+            }
         }
       }),
     };
@@ -257,24 +331,46 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
     const shape = shapeFields(fields, this.config, visitor);
-
+    const schemaObject = buildSchemaObject(name, discriminatorField, typeName, shape)
     switch (this.config.validationSchemaExportType) {
       case 'const':
-        return new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
-          .withContent(['yup.object({', shape, '})'].join('\n'))
-          .string;
-
+        switch (this.config.separateSchemaObject) {
+          case true:
+            return schemaObject.string + new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema`)
+              .withContent(['yup.object(', indent(schemaObject.name, 1), ')'].join('\n'))
+              .string;
+          case false:
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
+              .withContent(['yup.object({', shape, '})'].join('\n'))
+              .string;
+        }
       case 'function':
       default:
-        return new DeclarationBlock({})
-          .export()
-          .asKind('function')
-          .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
-          .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
-          .string;
+        switch (this.config.separateSchemaObject) {
+          case true:
+            return schemaObject.string + new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema()`)
+              .withBlock([indent('return yup.object('), indent(schemaObject.name, 1), indent(')')].join('\n'))
+              .string;
+
+          case false:
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
+              .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
+              .string;
+        }
     }
   }
 }
@@ -282,7 +378,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
 function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[] | undefined, config: ValidationSchemaPluginConfig, visitor: Visitor) {
   return fields
     ?.map((field) => {
-      let fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
+      let fieldSchema = generateFieldYupSchema(config, visitor, field, 2, this.circularTypes);
 
       if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
         const { defaultValue } = field;
@@ -318,26 +414,26 @@ function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitio
     .join(',\n');
 }
 
-function generateFieldYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
-  let gen = generateFieldTypeYupSchema(config, visitor, field.type);
+function generateFieldYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
+  let gen = generateFieldTypeYupSchema(config, visitor, field.type, circularTypes);
   if (config.directives && field.directives) {
     const formatted = formatDirectiveConfig(config.directives);
     gen += buildApi(formatted, field.directives);
   }
-  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
+  return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
-function generateFieldTypeYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, type: TypeNode, circularTypes: Set<string>, parentType?: TypeNode): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
+    const gen = generateFieldTypeYupSchema(config, visitor, type.type, circularTypes, type);
     if (!isNonNullType(parentType))
-      return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
+      return `yup.array(${maybeLazy(type.type, gen, config, circularTypes)}).defined().nullable()`;
 
-    return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
+    return `yup.array(${maybeLazy(type.type, gen, config, circularTypes)}).defined()`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
-    return maybeLazy(type.type, gen);
+    const gen = generateFieldTypeYupSchema(config, visitor, type.type, circularTypes, type);
+    return maybeLazy(type.type, gen, config, circularTypes);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeYupSchema(config, visitor, type.name);
@@ -380,12 +476,20 @@ function generateNameNodeYupSchema(config: ValidationSchemaPluginConfig, visitor
   }
 }
 
-function maybeLazy(type: TypeNode, schema: string): string {
-  if (isNamedType(type) && isInput(type.name.value)) {
-    // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
-    return `yup.lazy(() => ${schema})`;
+function maybeLazy(type: TypeNode, schema: string, config: ValidationSchemaPluginConfig, circularTypes: Set<string>) {
+  if (isNamedType(type)) {
+    const typeName = type.name.value
+
+    if (config.lazyStrategy === 'all' && isInput(typeName)) {
+      return `yup.lazy(() => ${schema})`
+    }
+
+    if (config.lazyStrategy === 'circular' && circularTypes.has(typeName)) {
+      return `yup.lazy(() => ${schema})`
+    }
   }
-  return schema;
+
+  return schema
 }
 
 function yup4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
@@ -408,4 +512,13 @@ function yup4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scal
 
   console.warn('unhandled name:', scalarName);
   return `yup.mixed()`;
+}
+
+
+function buildSchemaObject(name: string, discriminator: string, typeName: string, shape: string | undefined) {
+  const objectName = name.charAt(0).toLowerCase() + name.slice(1) + 'SchemaObject'
+  return {
+    string: `export const ${objectName}: ${typeName} = {\n${discriminator}\n${shape}\n}\n\n`,
+    name: objectName,
+  }
 }

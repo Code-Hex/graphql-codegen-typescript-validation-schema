@@ -49,7 +49,7 @@ type: `ValidationSchema` default: `'yup'`
 
 Specify generete validation schema you want.
 
-You can specify `yup` or `zod` or `myzod`.
+You can specify `yup` or `zod` or `zodv4` or `myzod`.
 
 ```yml
 generates:
@@ -85,6 +85,77 @@ Then the generator generates code with import statement like below.
 import { GeneratedInput } from './graphql'
 
 /* generates validation schema here */
+```
+
+### `inputDiscriminator`
+
+type: `string`
+
+When provided, adds a discriminator to the input schemas with a literal value of the input type name.
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+  path/to/validation.ts:
+    plugins:
+      - typescript-validation-schema
+    config:
+      inputDiscriminator: __kind # discriminator key
+```
+
+### `lazyStrategy`
+
+type: `LazyStrategy` default: `'all'`
+
+Specify if lazy() => should be added all references or only circular references.
+
+You can specify `all` or `circular`.
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+  path/to/validation.ts:
+    plugins:
+      - typescript-validation-schema
+    config:
+      lazyStrategy: circular
+```
+
+### `separateSchemaObject`
+
+type: `boolean` default `false`
+
+Will separate the schema object from the object definition when set to true.
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+  path/to/validation.ts:
+    plugins:
+      - typescript-validation-schema
+    config:
+      schemaObjectSeparate: true
+```
+
+Then the generator generates code like below.
+
+```ts
+/* When set to false */
+// If validationSchemaExportType is 'const' and Zod as an example
+export const Schema: z.ZodObject<SchemaType> = z.object({foo: bar})
+
+
+/* When set to false */
+// If validationSchemaExportType is 'const' and Zod as an example
+// While these seem the same, Zod for example will add [x: string]: unknown to the first example while this will prevent that.
+export const schemaObject: SchemaType = {foo: bar}
+export const Schema = z.object(schemaObject)
 ```
 
 ### `schemaNamespacedImportName`
@@ -213,6 +284,16 @@ config:
   scalarSchemas:
     Date: z.date()
     Email: z.string().email()
+```
+
+#### zodv4 schema
+
+```yml
+config:
+  schema: zodv4
+  scalarSchemas:
+    Date: z.date()
+    Email: z.email()
 ```
 
 ### `defaultScalarTypeSchema`
