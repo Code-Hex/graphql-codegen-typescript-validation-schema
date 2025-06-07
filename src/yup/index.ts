@@ -331,6 +331,10 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
     const shape = shapeFields(fields, this.config, visitor);
+    const discriminatorField =
+      this.config.inputDiscriminator ?
+        `${indent(this.config.inputDiscriminator, this.config.validationSchemaExportType === 'const' ? 1 : 2)}: yup.string<'${name}'>(),'),`
+        : ''
     const schemaObject = buildSchemaObject(name, discriminatorField, typeName, shape)
     switch (this.config.validationSchemaExportType) {
       case 'const':

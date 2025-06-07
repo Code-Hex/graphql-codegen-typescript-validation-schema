@@ -294,6 +294,10 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
     const shape = fields.map(field => generateFieldValibotSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
+    const discriminatorField =
+      this.config.inputDiscriminator ?
+        `${indent(this.config.inputDiscriminator, this.config.validationSchemaExportType === 'const' ? 1 : 2)}: v.literal('${name}'),'),`
+        : ''
     const schemaObject = buildSchemaObject(name, discriminatorField, typeName, shape)
     switch (this.config.validationSchemaExportType) {
       case 'const':
