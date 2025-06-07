@@ -29,12 +29,16 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
+import { findCircularTypes } from 'src/utils.js';
 
 const anySchema = `definedNonNullAnySchema`;
 
 export class ZodSchemaVisitor extends BaseSchemaVisitor {
+  private circularTypes: Set<string>
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
+    this.circularTypes = findCircularTypes(schema)
+    this.config.lazyStrategy ??= 'all'
   }
 
   importValidationSchema(): string {
@@ -43,31 +47,30 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
 
   initialEmit(): string {
     return (
-      `\n${
-        [
-          new DeclarationBlock({})
-            .asKind('type')
-            .withName('Properties<T>')
-            .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;', '}>'].join('\n'))
-            .string,
-          // Unfortunately, zod doesn’t provide non-null defined any schema.
-          // This is a temporary hack until it is fixed.
-          // see: https://github.com/colinhacks/zod/issues/884
-          new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
-          new DeclarationBlock({})
-            .export()
-            .asKind('const')
-            .withName(`isDefinedNonNullAny`)
-            .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`)
-            .string,
-          new DeclarationBlock({})
-            .export()
-            .asKind('const')
-            .withName(`${anySchema}`)
-            .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`)
-            .string,
-          ...this.enumDeclarations,
-        ].join('\n')}`
+      `\n${[
+        new DeclarationBlock({})
+          .asKind('type')
+          .withName('Properties<T>')
+          .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], any, T[K]>;', '}>'].join('\n'))
+          .string,
+        // Unfortunately, zod doesn’t provide non-null defined any schema.
+        // This is a temporary hack until it is fixed.
+        // see: https://github.com/colinhacks/zod/issues/884
+        new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
+        new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`isDefinedNonNullAny`)
+          .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`)
+          .string,
+        new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`${anySchema}`)
+          .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`)
+          .string,
+        ...this.enumDeclarations,
+      ].join('\n')}`
     );
   }
 
@@ -95,29 +98,59 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
+        // Building schema object for separateSchemaObject config option
+        const schemaObject = buildSchemaObject(name, '', typeName, shape)
         switch (this.config.validationSchemaExportType) {
           case 'const':
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-                .withContent([`z.object({`, shape, '})'].join('\n'))
-                .string + appendArguments
-            );
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema`)
+                    .withContent(['z.object(', indent(schemaObject.name, 1), ')'].join('\n'))
+                    .string + appendArguments
+                )
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
+                    .withContent([`z.object({`, shape, '})'].join('\n'))
+                    .string + appendArguments
+                );
+            }
 
           case 'function':
           default:
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('function')
-                .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
-                .string + appendArguments
-            );
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema()`)
+                    .withBlock([indent('return z.object('), indent(schemaObject.name, 1), indent(')')].join('\n'))
+                    .string + appendArguments
+                )
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
+                    .withBlock([indent('return z.object({'), shape, indent('})')].join('\n'))
+                    .string + appendArguments
+                );
+            }
         }
       }),
     };
@@ -136,43 +169,84 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
+        // Building schema object for separateSchemaObject config option
+        const schemaObject = buildSchemaObject(name, `__typename: z.literal('${name}').optional(),`, typeName, shape)
         switch (this.config.validationSchemaExportType) {
           case 'const':
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('const')
-                .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-                .withContent(
-                  [
-                    `z.object({`,
-                    indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
-                    shape,
-                    '})',
-                  ].join('\n'),
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema`)
+                    .withContent(
+                      [
+                        'z.object(',
+                        indent(schemaObject.name, 1),
+                        ')',
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
                 )
-                .string + appendArguments
-            );
-
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('const')
+                    .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
+                    .withContent(
+                      [
+                        'z.object({',
+                        indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
+                        shape,
+                        '})',
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
+                );
+            }
           case 'function':
           default:
-            return (
-              new DeclarationBlock({})
-                .export()
-                .asKind('function')
-                .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-                .withBlock(
-                  [
-                    indent(`return z.object({`),
-                    indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
-                    shape,
-                    indent('})'),
-                  ].join('\n'),
+            switch (this.config.separateSchemaObject) {
+              case true:
+                return (
+                  schemaObject.string +
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema()`)
+                    .withBlock(
+                      [
+                        indent('return z.object('),
+                        indent(schemaObject.name, 1),
+                        indent(')'),
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
                 )
-                .string + appendArguments
-            );
+              case false:
+              default:
+                return (
+                  new DeclarationBlock({})
+                    .export()
+                    .asKind('function')
+                    .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
+                    .withBlock(
+                      [
+                        indent('return z.object({'),
+                        indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
+                        shape,
+                        indent('})'),
+                      ].join('\n'),
+                    )
+                    .string + appendArguments
+                );
+            }
         }
       }),
     };
@@ -253,47 +327,74 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
     name: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
-    const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+    const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2, this.circularTypes)).join(',\n');
 
+    const discriminatorField =
+      this.config.inputDiscriminator ?
+        `${indent(this.config.inputDiscriminator, this.config.validationSchemaExportType === 'const' ? 1 : 2)}: z.literal('${name}'),`
+        : ''
+    const schemaObject = buildSchemaObject(name, discriminatorField, typeName, shape)
     switch (this.config.validationSchemaExportType) {
       case 'const':
-        return new DeclarationBlock({})
-          .export()
-          .asKind('const')
-          .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-          .withContent(['z.object({', shape, '})'].join('\n'))
-          .string;
-
+        switch (this.config.separateSchemaObject) {
+          case true:
+            return schemaObject.string + new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema`)
+              .withContent(['z.object(', indent(schemaObject.name, 1), ')'].join('\n'))
+              .string;
+          case false:
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('const')
+              .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
+              .withContent(['z.object({', shape, '})'].join('\n'))
+              .string;
+        }
       case 'function':
       default:
-        return new DeclarationBlock({})
-          .export()
-          .asKind('function')
-          .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-          .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
-          .string;
+        switch (this.config.separateSchemaObject) {
+          case true:
+            return schemaObject.string + new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema()`)
+              .withBlock([indent('return z.object('), indent(schemaObject.name, 1), indent(')')].join('\n'))
+              .string;
+
+          case false:
+          default:
+            return new DeclarationBlock({})
+              .export()
+              .asKind('function')
+              .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
+              .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
+              .string;
+        }
     }
   }
 }
 
-function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
-  const gen = generateFieldTypeZodSchema(config, visitor, field, field.type);
-  return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
+function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number, circularTypes: Set<string>): string {
+  const gen = generateFieldTypeZodSchema(config, visitor, field, field.type, circularTypes);
+  return indent(`${field.name.value}: ${maybeLazy(field.type, gen, config, circularTypes)}`, indentCount);
 }
 
-function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, circularTypes: Set<string>, parentType?: TypeNode): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, circularTypes, type);
     if (!isNonNullType(parentType)) {
-      const arrayGen = `z.array(${maybeLazy(type.type, gen)})`;
+      const arrayGen = `z.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
       const maybeLazyGen = applyDirectives(config, field, arrayGen);
       return `${maybeLazyGen}.nullish()`;
     }
-    return `z.array(${maybeLazy(type.type, gen)})`;
+    return `z.array(${maybeLazy(type.type, gen, config, circularTypes)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
-    return maybeLazy(type.type, gen);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, circularTypes, type);
+    return maybeLazy(type.type, gen, config, circularTypes);
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeZodSchema(config, visitor, type.name);
@@ -374,11 +475,20 @@ function generateNameNodeZodSchema(config: ValidationSchemaPluginConfig, visitor
   }
 }
 
-function maybeLazy(type: TypeNode, schema: string): string {
-  if (isNamedType(type) && isInput(type.name.value))
-    return `z.lazy(() => ${schema})`;
+function maybeLazy(type: TypeNode, schema: string, config: ValidationSchemaPluginConfig, circularTypes: Set<string>) {
+  if (isNamedType(type)) {
+    const typeName = type.name.value
 
-  return schema;
+    if (config.lazyStrategy === 'all' && isInput(typeName)) {
+      return `z.lazy(() => ${schema})`
+    }
+
+    if (config.lazyStrategy === 'circular' && circularTypes.has(typeName)) {
+      return `z.lazy(() => ${schema})`
+    }
+  }
+
+  return schema
 }
 
 function zod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
@@ -401,4 +511,12 @@ function zod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scal
 
   console.warn('unhandled scalar name:', scalarName);
   return anySchema;
+}
+
+function buildSchemaObject(name: string, discriminator: string, typeName: string, shape: string | undefined) {
+  const objectName = name.charAt(0).toLowerCase() + name.slice(1) + 'SchemaObject'
+  return {
+    string: `export const ${objectName}: Properties<${typeName}> = {\n${discriminator}\n${shape}\n}\n\n`,
+    name: objectName,
+  }
 }
