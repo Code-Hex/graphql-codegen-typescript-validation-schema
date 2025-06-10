@@ -76,8 +76,8 @@ importers:
         specifier: 1.6.1
         version: 1.6.1
       zod:
-        specifier: 3.25.56
-        version: 3.25.56
+        specifier: 3.25.57
+        version: 3.25.57
 
 packages:
 
@@ -3662,8 +3662,8 @@ packages:
   yup@1.6.1:
     resolution: {integrity: sha512-JED8pB50qbA4FOkDol0bYF/p60qSEDQqBD0/qeIrUCG1KbPBIQ776fCUNb9ldbPcSTxA69g/47XTo4TqWiuXOA==}
 
-  zod@3.25.56:
-    resolution: {integrity: sha512-rd6eEF3BTNvQnR2e2wwolfTmUTnp70aUTqr0oaGbHifzC3BKJsoV+Gat8vxUMR1hwOKBs6El+qWehrHbCpW6SQ==}
+  zod@3.25.57:
+    resolution: {integrity: sha512-6tgzLuwVST5oLUxXTmBqoinKMd3JeesgbgseXeFasKKj8Q1FCZrHnbqJOyiEvr4cVAlbug+CgIsmJ8cl/pU5FA==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -7966,6 +7966,6 @@ snapshots:
       toposort: 2.0.2
       type-fest: 2.19.0
 
-  zod@3.25.56: {}
+  zod@3.25.57: {}
 
   zwitch@2.0.4: {}
