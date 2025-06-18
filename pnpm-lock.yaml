@@ -37,8 +37,8 @@ importers:
         specifier: ^4.0.0
         version: 4.1.6(graphql@16.11.0)
       '@tsconfig/recommended':
-        specifier: 1.0.9
-        version: 1.0.9
+        specifier: 1.0.10
+        version: 1.0.10
       '@types/graphlib':
         specifier: ^2.1.8
         version: 2.1.12
@@ -1108,8 +1108,8 @@ packages:
     peerDependencies:
       eslint: '>=9.0.0'
 
-  '@tsconfig/recommended@1.0.9':
-    resolution: {integrity: sha512-jf+a+mlsEi7V/RhoSgn7KlxCplFV2DVyfNEKSWBiUYKe2OuRVC/LZB5pUTA7KSB++c23LI66qc2VJXF7DCHGAA==}
+  '@tsconfig/recommended@1.0.10':
+    resolution: {integrity: sha512-cGvydvg03lONp5Z9yaplW493Vw9/um7k588mvDkm+VFPF2PZUVPx0uswq4PFpeEySsLbQRETrDRhzh4Dmxaslw==}
 
   '@tybys/wasm-util@0.9.0':
     resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
@@ -5142,7 +5142,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@tsconfig/recommended@1.0.9': {}
+  '@tsconfig/recommended@1.0.10': {}
 
   '@tybys/wasm-util@0.9.0':
     dependencies:
