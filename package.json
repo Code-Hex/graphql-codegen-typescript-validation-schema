@@ -92,7 +92,7 @@
     "@types/graphlib": "^2.1.8",
     "@types/node": "^22.0.0",
     "eslint": "9.29.0",
-    "jest": "30.0.1",
+    "jest": "30.0.2",
     "myzod": "1.12.1",
     "npm-run-all2": "8.0.4",
     "ts-dedent": "^2.2.0",
