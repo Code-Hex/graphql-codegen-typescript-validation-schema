@@ -87,6 +87,10 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
       leave: InterfaceTypeDefinitionBuilder(this.config.withObjectType, (node: InterfaceTypeDefinitionNode) => {
         const visitor = this.createVisitor('output');
         const name = visitor.convertName(node.name.value);
+        const functionName = visitor.convertName(node.name.value, {
+          useTypesPrefix: false,
+          useTypesSuffix: false,
+        });
         const typeName = visitor.prefixTypeNamespace(name);
         this.importTypes.push(name);
 
@@ -114,7 +118,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('function')
-                .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
+                .withName(`${functionName}Schema(): z.ZodObject<Properties<${typeName}>>`)
                 .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
                 .string + appendArguments
             );
