@@ -1,8 +1,9 @@
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 import type { NamingConventionMap } from '@graphql-codegen/visitor-plugin-common';
 
-export type ValidationSchema = 'yup' | 'zod' | 'myzod' | 'valibot';
+export type ValidationSchema = 'yup' | 'zod' | 'zodv4' | 'myzod' | 'valibot';
 export type ValidationSchemaExportType = 'function' | 'const';
+export type LazyStrategy = 'all' | 'circular'
 
 export interface DirectiveConfig {
   [directive: string]: {
@@ -54,6 +55,59 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   importFrom?: string
+  /**
+   * @description When provided, adds a discriminator to the input schemas with a literal value of the input type name.
+   * @default ""
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/types.ts:
+   *     plugins:
+   *       - typescript
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: yup
+   *       inputDiscriminator: __kind
+   * ```
+   */
+  inputDiscriminator?: string
+  /**
+   * @description Setting to determine when to set a property to lazy. 'Circular' will only use lazy for circular references. 'All' will set lazy for all properties referencing another schema.
+   * @default all
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - typescript
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: yup
+   *       lazy: circular
+   * ```
+   */
+  lazyStrategy?: LazyStrategy;
+  /**
+   * @description Will separate the schema object from the object definition when set to true.
+   * @default false
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - typescript
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: yup
+   *       schemaObjectSeparate: true
+   * ```
+   */
+  separateSchemaObject?: boolean;
   /**
    * @description If defined, will use named imports from the specified module (defined in `importFrom`)
    * rather than individual imports for each type.
