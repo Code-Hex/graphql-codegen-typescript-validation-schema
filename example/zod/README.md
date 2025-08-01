@@ -2,7 +2,7 @@
 
 ## How to overwrite generated schema?
 
-You can use zod [extend API](https://github.com/colinhacks/zod#extend).
+You can use zod [extend API](https://v3.zod.dev/?id=extend).
 
 ```ts
 const AttributeInputSchemaWithCUID = AttributeInputSchema().extend({

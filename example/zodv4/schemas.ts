@@ -1,8 +1,8 @@
-import { z } from 'zod/v3'
+import * as z from 'zod'
 import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User } from '../types'
 
 type Properties<T> = Required<{
-  [K in keyof T]: z.ZodType<T[K], any, T[K]>;
+  [K in keyof T]: z.ZodType<T[K]>;
 }>;
 
 type definedNonNullAny = {};
@@ -11,13 +11,13 @@ export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== und
 
 export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
 
-export const ButtonComponentTypeSchema = z.nativeEnum(ButtonComponentType);
+export const ButtonComponentTypeSchema = z.enum(ButtonComponentType);
 
-export const EventOptionTypeSchema = z.nativeEnum(EventOptionType);
+export const EventOptionTypeSchema = z.enum(EventOptionType);
 
-export const HttpMethodSchema = z.nativeEnum(HttpMethod);
+export const HttpMethodSchema = z.enum(HttpMethod);
 
-export const PageTypeSchema = z.nativeEnum(PageType);
+export const PageTypeSchema = z.enum(PageType);
 
 export function AdminSchema(): z.ZodObject<Properties<Admin>> {
   return z.object({
