@@ -1,7 +1,7 @@
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript';
 import type { NamingConventionMap } from '@graphql-codegen/visitor-plugin-common';
 
-export type ValidationSchema = 'yup' | 'zod' | 'myzod' | 'valibot';
+export type ValidationSchema = 'yup' | 'zod' | 'zodv4' | 'myzod' | 'valibot';
 export type ValidationSchemaExportType = 'function' | 'const';
 
 export interface DirectiveConfig {
@@ -19,6 +19,25 @@ interface ScalarSchemas {
 }
 
 export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
+  /**
+   * @description Specifies a custom import path for the zod package. This is useful when you want to use a specific
+   * version or subpath of zod, such as the v3 compatibility layer in zod v4 ('zod/v3').
+   * Only applies when schema is set to 'zod'.
+   * @default 'zod'
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/schemas.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: zod
+   *       # Use zod v3 compatibility layer when using zod v4
+   *       zodImportPath: zod/v3
+   * ```
+   */
+  zodImportPath?: string
   /**
    * @description specify generate schema
    * @default yup
