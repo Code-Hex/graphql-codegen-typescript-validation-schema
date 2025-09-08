@@ -77,17 +77,17 @@
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0"
   },
   "dependencies": {
-    "@graphql-codegen/plugin-helpers": "^5.0.0",
-    "@graphql-codegen/schema-ast": "4.1.0",
-    "@graphql-codegen/visitor-plugin-common": "^5.0.0",
+    "@graphql-codegen/plugin-helpers": "^6.0.0",
+    "@graphql-codegen/schema-ast": "5.0.0",
+    "@graphql-codegen/visitor-plugin-common": "^6.0.0",
     "@graphql-tools/utils": "^10.0.0",
     "graphlib": "^2.1.8",
     "graphql": "^16.6.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.0.0",
-    "@graphql-codegen/cli": "5.0.7",
-    "@graphql-codegen/typescript": "^4.0.0",
+    "@graphql-codegen/cli": "6.0.0",
+    "@graphql-codegen/typescript": "^5.0.0",
     "@tsconfig/recommended": "1.0.10",
     "@types/graphlib": "^2.1.8",
     "@types/node": "^22.0.0",
