@@ -38,7 +38,8 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
   }
 
   importValidationSchema(): string {
-    return `import { z } from 'zod'`;
+    const importPath = this.config.zodImportPath || 'zod';
+    return `import { z } from '${importPath}'`;
   }
 
   initialEmit(): string {

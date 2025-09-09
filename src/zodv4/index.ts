@@ -30,33 +30,44 @@ import {
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
 
-export class YupSchemaVisitor extends BaseSchemaVisitor {
+const anySchema = `definedNonNullAnySchema`;
+
+export class ZodV4SchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
     super(schema, config);
   }
 
   importValidationSchema(): string {
-    return `import * as yup from 'yup'`;
+    return `import * as z from 'zod'`;
   }
 
   initialEmit(): string {
-    if (!this.config.withObjectType)
-      return `\n${this.enumDeclarations.join('\n')}`;
     return (
       `\n${
-        this.enumDeclarations.join('\n')
-      }\n${
-        new DeclarationBlock({})
-          .asKind('function')
-          .withName('union<T extends {}>(...schemas: ReadonlyArray<yup.Schema<T>>): yup.MixedSchema<T>')
-          .withBlock(
-            [
-              indent('return yup.mixed<T>().test({'),
-              indent('test: (value) => schemas.some((schema) => schema.isValidSync(value))', 2),
-              indent('}).defined()'),
-            ].join('\n'),
-          )
-          .string}`
+        [
+          new DeclarationBlock({})
+            .asKind('type')
+            .withName('Properties<T>')
+            .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K]>;', '}>'].join('\n'))
+            .string,
+          // Unfortunately, zod doesn’t provide non-null defined any schema.
+          // This is a temporary hack until it is fixed.
+          // see: https://github.com/colinhacks/zod/issues/884
+          new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
+          new DeclarationBlock({})
+            .export()
+            .asKind('const')
+            .withName(`isDefinedNonNullAny`)
+            .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`)
+            .string,
+          new DeclarationBlock({})
+            .export()
+            .asKind('const')
+            .withName(`${anySchema}`)
+            .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`)
+            .string,
+          ...this.enumDeclarations,
+        ].join('\n')}`
     );
   }
 
@@ -84,10 +95,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = node.fields?.map((field) => {
-          const fieldSchema = generateFieldYupSchema(this.config, visitor, field, 2);
-          return isNonNullType(field.type) ? fieldSchema : `${fieldSchema}.optional()`;
-        }).join(',\n');
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -95,8 +103,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('const')
-                .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
-                .withContent([`yup.object({`, shape, '})'].join('\n'))
+                .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
+                .withContent([`z.object({`, shape, '})'].join('\n'))
                 .string + appendArguments
             );
 
@@ -106,8 +114,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('function')
-                .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
-                .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
+                .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
+                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
                 .string + appendArguments
             );
         }
@@ -128,7 +136,7 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         const appendArguments = argumentBlocks ? `\n${argumentBlocks}` : '';
 
         // Building schema for fields.
-        const shape = shapeFields(node.fields, this.config, visitor);
+        const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
@@ -136,11 +144,11 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('const')
-                .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
+                .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
                 .withContent(
                   [
-                    `yup.object({`,
-                    indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
+                    `z.object({`,
+                    indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
                     '})',
                   ].join('\n'),
@@ -154,11 +162,11 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               new DeclarationBlock({})
                 .export()
                 .asKind('function')
-                .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
+                .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
                 .withBlock(
                   [
-                    indent(`return yup.object({`),
-                    indent(`__typename: yup.string<'${node.name.value}'>().optional(),`, 2),
+                    indent(`return z.object({`),
+                    indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
                     indent('})'),
                   ].join('\n'),
@@ -178,27 +186,19 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         const enumTypeName = visitor.prefixTypeNamespace(enumname);
         this.importTypes.push(enumname);
 
-        // hoise enum declarations
-        if (this.config.enumsAsTypes) {
-          const enums = node.values?.map(enumOption => `'${enumOption.name.value}'`);
-
-          this.enumDeclarations.push(
-            new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${enumname}Schema`)
-              .withContent(`yup.string().oneOf([${enums?.join(', ')}]).defined()`).string,
-          );
-        }
-        else {
-          this.enumDeclarations.push(
-            new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${enumname}Schema`)
-              .withContent(`yup.string<${enumTypeName}>().oneOf(Object.values(${enumTypeName})).defined()`).string,
-          );
-        }
+        // hoist enum declarations
+        this.enumDeclarations.push(
+          new DeclarationBlock({})
+            .export()
+            .asKind('const')
+            .withName(`${enumname}Schema`)
+            .withContent(
+              this.config.enumsAsTypes
+                ? `z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`
+                : `z.enum(${enumTypeName})`,
+            )
+            .string,
+        );
       },
     };
   }
@@ -209,12 +209,8 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         if (!node.types || !this.config.withObjectType)
           return;
         const visitor = this.createVisitor('output');
-
         const unionName = visitor.convertName(node.name.value);
-        const unionTypeName = visitor.prefixTypeNamespace(unionName);
-        this.importTypes.push(unionName);
-
-        const unionElements = node.types?.map((t) => {
+        const unionElements = node.types.map((t) => {
           const element = visitor.convertName(t.name.value);
           const typ = visitor.getType(t.name.value);
           if (typ?.astNode?.kind === 'EnumTypeDefinition')
@@ -228,22 +224,20 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
               return `${element}Schema()`;
           }
         }).join(', ');
+        const unionElementsCount = node.types.length ?? 0;
+
+        const union = unionElementsCount > 1 ? `z.union([${unionElements}])` : unionElements;
 
         switch (this.config.validationSchemaExportType) {
           case 'const':
-            return new DeclarationBlock({})
-              .export()
-              .asKind('const')
-              .withName(`${unionName}Schema: yup.MixedSchema<${unionTypeName}>`)
-              .withContent(`union<${unionTypeName}>(${unionElements})`)
-              .string;
+            return new DeclarationBlock({}).export().asKind('const').withName(`${unionName}Schema`).withContent(union).string;
           case 'function':
           default:
             return new DeclarationBlock({})
               .export()
               .asKind('function')
-              .withName(`${unionName}Schema(): yup.MixedSchema<${unionTypeName}>`)
-              .withBlock(indent(`return union<${unionTypeName}>(${unionElements})`))
+              .withName(`${unionName}Schema()`)
+              .withBlock(indent(`return ${union}`))
               .string;
         }
       },
@@ -256,15 +250,15 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
     name: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
-    const shape = shapeFields(fields, this.config, visitor);
+    const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
 
     switch (this.config.validationSchemaExportType) {
       case 'const':
         return new DeclarationBlock({})
           .export()
           .asKind('const')
-          .withName(`${name}Schema: yup.ObjectSchema<${typeName}>`)
-          .withContent(['yup.object({', shape, '})'].join('\n'))
+          .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
+          .withContent(['z.object({', shape, '})'].join('\n'))
           .string;
 
       case 'function':
@@ -272,96 +266,84 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
         return new DeclarationBlock({})
           .export()
           .asKind('function')
-          .withName(`${name}Schema(): yup.ObjectSchema<${typeName}>`)
-          .withBlock([indent(`return yup.object({`), shape, indent('})')].join('\n'))
+          .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
+          .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
           .string;
     }
   }
 }
 
-function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[] | undefined, config: ValidationSchemaPluginConfig, visitor: Visitor) {
-  return fields
-    ?.map((field) => {
-      let fieldSchema = generateFieldYupSchema(config, visitor, field, 2);
-
-      if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
-        const { defaultValue } = field;
-
-        if (
-          defaultValue?.kind === Kind.INT
-          || defaultValue?.kind === Kind.FLOAT
-          || defaultValue?.kind === Kind.BOOLEAN
-        ) {
-          fieldSchema = `${fieldSchema}.default(${defaultValue.value})`;
-        }
-
-        if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM) {
-          if (config.useEnumTypeAsDefaultValue && defaultValue?.kind !== Kind.STRING) {
-            let value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn('change-case-all#pascalCase'), config?.namingConvention?.transformUnderscore);
-
-            if (config.namingConvention?.enumValues)
-              value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues), config?.namingConvention?.transformUnderscore);
-            const enumName = isNonNullType(field.type) && isNamedType(field.type.type)
-              ? field.type.type.name.value
-              : isNamedType(field.type)
-                ? field.type.name.value
-                : field.name.value;
-            fieldSchema = `${fieldSchema}.default(${visitor.convertName(enumName)}.${value})`;
-          }
-          else {
-            fieldSchema = `${fieldSchema}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;
-          }
-        }
-      }
-
-      if (isNonNullType(field.type))
-        return fieldSchema;
-
-      return `${fieldSchema}.optional()`;
-    })
-    .join(',\n');
-}
-
-function generateFieldYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
-  let gen = generateFieldTypeYupSchema(config, visitor, field.type);
-  if (config.directives && field.directives) {
-    const formatted = formatDirectiveConfig(config.directives);
-    gen += buildApi(formatted, field.directives);
-  }
+function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
+  const gen = generateFieldTypeZodSchema(config, visitor, field, field.type);
   return indent(`${field.name.value}: ${maybeLazy(field.type, gen)}`, indentCount);
 }
 
-function generateFieldTypeYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
-    if (!isNonNullType(parentType))
-      return `yup.array(${maybeLazy(type.type, gen)}).defined().nullable()`;
-
-    return `yup.array(${maybeLazy(type.type, gen)}).defined()`;
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
+    if (!isNonNullType(parentType)) {
+      const arrayGen = `z.array(${maybeLazy(type.type, gen)})`;
+      const maybeLazyGen = applyDirectives(config, field, arrayGen);
+      return `${maybeLazyGen}.nullish()`;
+    }
+    return `z.array(${maybeLazy(type.type, gen)})`;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeYupSchema(config, visitor, type.type, type);
+    const gen = generateFieldTypeZodSchema(config, visitor, field, type.type, type);
     return maybeLazy(type.type, gen);
   }
   if (isNamedType(type)) {
-    const gen = generateNameNodeYupSchema(config, visitor, type.name);
+    const gen = generateNameNodeZodSchema(config, visitor, type.name);
+    if (isListType(parentType))
+      return `${gen}.nullable()`;
+
+    let appliedDirectivesGen = applyDirectives(config, field, gen);
+
+    if (field.kind === Kind.INPUT_VALUE_DEFINITION) {
+      const { defaultValue } = field;
+
+      if (defaultValue?.kind === Kind.INT || defaultValue?.kind === Kind.FLOAT || defaultValue?.kind === Kind.BOOLEAN)
+        appliedDirectivesGen = `${appliedDirectivesGen}.default(${defaultValue.value})`;
+
+      if (defaultValue?.kind === Kind.STRING || defaultValue?.kind === Kind.ENUM) {
+        if (config.useEnumTypeAsDefaultValue && defaultValue?.kind !== Kind.STRING) {
+          let value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn('change-case-all#pascalCase'), config.namingConvention?.transformUnderscore);
+
+          if (config.namingConvention?.enumValues)
+            value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues), config.namingConvention?.transformUnderscore);
+
+          appliedDirectivesGen = `${appliedDirectivesGen}.default(${type.name.value}.${value})`;
+        }
+        else {
+          appliedDirectivesGen = `${appliedDirectivesGen}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;
+        }
+      }
+    }
+
     if (isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value))
-        return `${gen}.required()`;
+        return `${appliedDirectivesGen}.min(1)`;
 
-      return `${gen}.nonNullable()`;
+      return appliedDirectivesGen;
     }
-    const typ = visitor.getType(type.name.value);
-    if (typ?.astNode?.kind === 'InputObjectTypeDefinition')
-      return `${gen}`;
+    if (isListType(parentType))
+      return `${appliedDirectivesGen}.nullable()`;
 
-    return `${gen}.nullable()`;
+    return `${appliedDirectivesGen}.nullish()`;
   }
   console.warn('unhandled type:', type);
   return '';
 }
 
-function generateNameNodeYupSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string {
+function applyDirectives(config: ValidationSchemaPluginConfig, field: InputValueDefinitionNode | FieldDefinitionNode, gen: string): string {
+  if (config.directives && field.directives) {
+    const formatted = formatDirectiveConfig(config.directives);
+    return gen + buildApi(formatted, field.directives);
+  }
+  return gen;
+}
+
+function generateNameNodeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, node: NameNode): string {
   const converter = visitor.getNameNodeConverter(node);
 
   switch (converter?.targetKind) {
@@ -379,37 +361,41 @@ function generateNameNodeYupSchema(config: ValidationSchemaPluginConfig, visitor
       }
     case 'EnumTypeDefinition':
       return `${converter.convertName()}Schema`;
+    case 'ScalarTypeDefinition':
+      return zod4Scalar(config, visitor, node.value);
     default:
-      return yup4Scalar(config, visitor, node.value);
+      if (converter?.targetKind)
+        console.warn('Unknown targetKind', converter?.targetKind);
+
+      return zod4Scalar(config, visitor, node.value);
   }
 }
 
 function maybeLazy(type: TypeNode, schema: string): string {
-  if (isNamedType(type) && isInput(type.name.value)) {
-    // https://github.com/jquense/yup/issues/1283#issuecomment-786559444
-    return `yup.lazy(() => ${schema})`;
-  }
+  if (isNamedType(type) && isInput(type.name.value))
+    return `z.lazy(() => ${schema})`;
+
   return schema;
 }
 
-function yup4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
+function zod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
   if (config.scalarSchemas?.[scalarName])
-    return `${config.scalarSchemas[scalarName]}.defined()`;
+    return config.scalarSchemas[scalarName];
 
   const tsType = visitor.getScalarType(scalarName);
   switch (tsType) {
     case 'string':
-      return `yup.string().defined()`;
+      return `z.string()`;
     case 'number':
-      return `yup.number().defined()`;
+      return `z.number()`;
     case 'boolean':
-      return `yup.boolean().defined()`;
+      return `z.boolean()`;
   }
 
   if (config.defaultScalarTypeSchema) {
-    return config.defaultScalarTypeSchema
+    return config.defaultScalarTypeSchema;
   }
 
-  console.warn('unhandled name:', scalarName);
-  return `yup.mixed()`;
+  console.warn('unhandled scalar name:', scalarName);
+  return anySchema;
 }
