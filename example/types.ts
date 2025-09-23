@@ -31,6 +31,11 @@ export enum ButtonComponentType {
   Submit = 'SUBMIT'
 }
 
+export type Comment = {
+  __typename?: 'Comment';
+  replies?: Maybe<Array<Comment>>;
+};
+
 export type ComponentInput = {
   child?: InputMaybe<ComponentInput>;
   childrens?: InputMaybe<Array<InputMaybe<ComponentInput>>>;

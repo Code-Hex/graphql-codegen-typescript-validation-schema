@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User, UserKind } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, Comment, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User, UserKind } from '../types'
 
 export const ButtonComponentTypeSchema = yup.string<ButtonComponentType>().oneOf(Object.values(ButtonComponentType)).defined();
 
@@ -26,6 +26,13 @@ export function AttributeInputSchema(): yup.ObjectSchema<AttributeInput> {
   return yup.object({
     key: yup.string().defined().nullable().optional(),
     val: yup.string().defined().nullable().optional()
+  })
+}
+
+export function CommentSchema(): yup.ObjectSchema<Comment> {
+  return yup.object({
+    __typename: yup.string<'Comment'>().optional(),
+    replies: yup.array(yup.lazy(() => CommentSchema().nonNullable())).defined().nullable().optional()
   })
 }
 
