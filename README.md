@@ -6,6 +6,7 @@
 
 - [x] support [yup](https://github.com/jquense/yup)
 - [x] support [zod](https://github.com/colinhacks/zod)
+- [x] support [zod v4](https://github.com/colinhacks/zod) (zodv4)
 - [x] support [myzod](https://github.com/davidmdm/myzod)
 - [x] support [valibot](https://valibot.dev/)
 
@@ -49,7 +50,7 @@ type: `ValidationSchema` default: `'yup'`
 
 Specify generete validation schema you want.
 
-You can specify `yup` or `zod` or `myzod`.
+You can specify `yup` or `zod` or `zodv4` or `myzod` or `valibot`.
 
 ```yml
 generates:
@@ -59,6 +60,26 @@ generates:
       - typescript-validation-schema
     config:
       schema: yup
+```
+
+### `zodImportPath`
+
+type: `string` default: `'zod'`
+
+Specifies a custom import path for the zod package. This is useful when you want to use a specific
+version or subpath of zod, such as the v3 compatibility layer in zod v4 ('zod/v3').
+Only applies when schema is set to 'zod'.
+
+```yml
+generates:
+  path/to/schemas.ts:
+    plugins:
+      - typescript
+      - typescript-validation-schema
+    config:
+      schema: zod
+      # Use zod v3 compatibility layer when using zod v4
+      zodImportPath: zod/v3
 ```
 
 ### `importFrom`
@@ -215,6 +236,16 @@ config:
     Email: z.string().email()
 ```
 
+#### zodv4 schema
+
+```yml
+config:
+  schema: zodv4
+  scalarSchemas:
+    Date: z.date()
+    Email: z.string().email()
+```
+
 ### `defaultScalarTypeSchema`
 
 type: `string`
@@ -232,6 +263,13 @@ config:
 ```yml
 config:
   schema: zod
+  defaultScalarSchema: z.unknown()
+```
+
+#### zodv4 schema
+```yml
+config:
+  schema: zodv4
   defaultScalarSchema: z.unknown()
 ```
 
@@ -353,6 +391,38 @@ Then generates zod validation schema like below.
 
 ```ts
 export function ExampleInputSchema(): z.ZodSchema<ExampleInput> {
+  return z.object({
+    email: z.string().min(50).email(),
+    message: z.string().regex(/^Hello/, 'message')
+  })
+}
+```
+
+#### zodv4 schema
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-validation-schema
+    config:
+      schema: zodv4
+      directives:
+        constraint:
+          minLength: min
+          # Replace $1 with specified `startsWith` argument value of the constraint directive
+          startsWith: [regex, /^$1/, message]
+          format:
+            # This example means `validation-schema: directive-arg`
+            # directive-arg is supported String and Enum.
+            email: email
+```
+
+Then generates zodv4 validation schema like below.
+
+```ts
+export function ExampleInputSchema(): z.ZodObject<Properties<ExampleInput>> {
   return z.object({
     email: z.string().min(50).email(),
     message: z.string().regex(/^Hello/, 'message')
