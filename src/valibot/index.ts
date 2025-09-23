@@ -10,11 +10,11 @@ import type {
   TypeNode,
   UnionTypeDefinitionNode,
 } from 'graphql';
-import { isEnumType, isScalarType } from 'graphql';
 import type { ValidationSchemaPluginConfig } from '../config.js';
 import type { Visitor } from '../visitor.js';
-
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
+
+import { isEnumType, isScalarType } from 'graphql';
 import { buildApiForValibot, formatDirectiveConfig } from '../directive.js';
 import {
   InterfaceTypeDefinitionBuilder,
