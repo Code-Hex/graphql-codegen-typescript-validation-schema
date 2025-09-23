@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, Comment, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User } from '../types'
 
 type Properties<T> = Required<{
   [K in keyof T]: z.ZodType<T[K]>;
@@ -30,6 +30,13 @@ export function AttributeInputSchema(): z.ZodObject<Properties<AttributeInput>> 
   return z.object({
     key: z.string().nullish(),
     val: z.string().nullish()
+  })
+}
+
+export function CommentSchema(): z.ZodObject<Properties<Comment>> {
+  return z.object({
+    __typename: z.literal('Comment').optional(),
+    replies: z.array(z.lazy(() => CommentSchema())).nullish()
   })
 }
 
@@ -128,7 +135,7 @@ export function UserSchema(): z.ZodObject<Properties<User>> {
     createdAt: definedNonNullAnySchema.nullish(),
     email: z.string().nullish(),
     id: z.string().nullish(),
-    kind: UserKindSchema().nullish(),
+    kind: z.lazy(() => UserKindSchema().nullish()),
     name: z.string().nullish(),
     password: z.string().nullish(),
     updatedAt: definedNonNullAnySchema.nullish()

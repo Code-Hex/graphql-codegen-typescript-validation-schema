@@ -121,3 +121,7 @@ directive @constraint(
   multipleOf: Float
   uniqueTypeName: String
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+type Comment {
+   replies: [Comment!]
+}

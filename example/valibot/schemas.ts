@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { Admin, AttributeInput, ButtonComponentType, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User } from '../types'
+import { Admin, AttributeInput, ButtonComponentType, Comment, ComponentInput, DropDownComponentInput, EventArgumentInput, EventInput, EventOptionType, Guest, HttpInput, HttpMethod, LayoutInput, MyType, MyTypeFooArgs, Namer, PageInput, PageType, User } from '../types'
 
 export const ButtonComponentTypeSchema = v.enum_(ButtonComponentType);
 
@@ -20,6 +20,13 @@ export function AttributeInputSchema(): v.GenericSchema<AttributeInput> {
   return v.object({
     key: v.nullish(v.string()),
     val: v.nullish(v.string())
+  })
+}
+
+export function CommentSchema(): v.GenericSchema<Comment> {
+  return v.object({
+    __typename: v.optional(v.literal('Comment')),
+    replies: v.nullish(v.array(v.lazy(() => CommentSchema())))
   })
 }
 
