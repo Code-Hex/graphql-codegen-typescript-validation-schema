@@ -98,7 +98,7 @@
     "myzod": "1.12.1",
     "npm-run-all2": "8.0.4",
     "ts-dedent": "^2.2.0",
-    "ts-jest": "29.4.4",
+    "ts-jest": "29.4.5",
     "typescript": "5.9.3",
     "valibot": "1.1.0",
     "vitest": "^3.0.0",
