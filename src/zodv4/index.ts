@@ -49,7 +49,7 @@ export class ZodV4SchemaVisitor extends BaseSchemaVisitor {
           new DeclarationBlock({})
             .asKind('type')
             .withName('Properties<T>')
-            .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K]>;', '}>'].join('\n'))
+            .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K], T[K]>;', '}>'].join('\n'))
             .string,
           // Unfortunately, zod doesn’t provide non-null defined any schema.
           // This is a temporary hack until it is fixed.
