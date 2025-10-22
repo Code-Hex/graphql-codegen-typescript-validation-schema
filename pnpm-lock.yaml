@@ -31,8 +31,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0(@vue/compiler-sfc@3.5.12)(eslint@9.38.0(jiti@2.4.0))(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.12)(jiti@2.4.0)(yaml@2.8.1))
       '@graphql-codegen/cli':
-        specifier: 6.0.0
-        version: 6.0.0(@types/node@22.18.12)(graphql@16.11.0)(typescript@5.9.3)
+        specifier: 6.0.1
+        version: 6.0.1(@types/node@22.18.12)(graphql@16.11.0)(typescript@5.9.3)
       '@graphql-codegen/typescript':
         specifier: ^5.0.0
         version: 5.0.2(graphql@16.11.0)
@@ -572,8 +572,8 @@ packages:
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
 
-  '@graphql-codegen/cli@6.0.0':
-    resolution: {integrity: sha512-tvchLVCMtorDE+UwgQbrjyaQK16GCZA+QomTxZazRx64ixtgmbEiQV7GhCBy0y0Bo7/tcTJb6sy9G/TL/BgiOg==}
+  '@graphql-codegen/cli@6.0.1':
+    resolution: {integrity: sha512-6iP91joxb7phdicDrIF8Cv9ah2QpPVXUUu7rbOaQKvqey+QKYmHcxGCi9r5/7p4lUiHZPQvfB7xDHURHQca1SA==}
     engines: {node: '>=16'}
     hasBin: true
     peerDependencies:
@@ -1037,16 +1037,8 @@ packages:
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
-  '@jridgewell/gen-mapping@0.3.8':
-    resolution: {integrity: sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA==}
-    engines: {node: '>=6.0.0'}
-
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
-    engines: {node: '>=6.0.0'}
-
-  '@jridgewell/set-array@1.2.1':
-    resolution: {integrity: sha512-R8gLRTZeyp03ymzP/6Lil/28tGeGEzhx1q2k703KGWRAI1VdvPIXdG70VJc2pAMw3NA6JKL5hhFu1sJX0Mnn/A==}
     engines: {node: '>=6.0.0'}
 
   '@jridgewell/sourcemap-codec@1.5.0':
@@ -3958,7 +3950,7 @@ snapshots:
   '@ampproject/remapping@2.3.0':
     dependencies:
       '@jridgewell/gen-mapping': 0.3.13
-      '@jridgewell/trace-mapping': 0.3.25
+      '@jridgewell/trace-mapping': 0.3.31
 
   '@antfu/eslint-config@6.0.0(@vue/compiler-sfc@3.5.12)(eslint@9.38.0(jiti@2.4.0))(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.12)(jiti@2.4.0)(yaml@2.8.1))':
     dependencies:
@@ -4065,8 +4057,8 @@ snapshots:
     dependencies:
       '@babel/parser': 7.28.4
       '@babel/types': 7.28.4
-      '@jridgewell/gen-mapping': 0.3.8
-      '@jridgewell/trace-mapping': 0.3.25
+      '@jridgewell/gen-mapping': 0.3.13
+      '@jridgewell/trace-mapping': 0.3.31
       jsesc: 3.1.0
 
   '@babel/generator@7.28.3':
@@ -4219,7 +4211,7 @@ snapshots:
   '@babel/traverse@7.27.4':
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/generator': 7.27.5
+      '@babel/generator': 7.28.3
       '@babel/parser': 7.28.4
       '@babel/template': 7.27.2
       '@babel/types': 7.28.4
@@ -4438,9 +4430,9 @@ snapshots:
       graphql: 16.11.0
       tslib: 2.6.3
 
-  '@graphql-codegen/cli@6.0.0(@types/node@22.18.12)(graphql@16.11.0)(typescript@5.9.3)':
+  '@graphql-codegen/cli@6.0.1(@types/node@22.18.12)(graphql@16.11.0)(typescript@5.9.3)':
     dependencies:
-      '@babel/generator': 7.27.5
+      '@babel/generator': 7.28.3
       '@babel/template': 7.27.2
       '@babel/types': 7.28.4
       '@graphql-codegen/client-preset': 5.0.0(graphql@16.11.0)
@@ -5125,7 +5117,7 @@ snapshots:
 
   '@jest/source-map@30.0.1':
     dependencies:
-      '@jridgewell/trace-mapping': 0.3.25
+      '@jridgewell/trace-mapping': 0.3.31
       callsites: 3.1.0
       graceful-fs: 4.2.11
 
@@ -5178,15 +5170,7 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
       '@jridgewell/trace-mapping': 0.3.31
 
-  '@jridgewell/gen-mapping@0.3.8':
-    dependencies:
-      '@jridgewell/set-array': 1.2.1
-      '@jridgewell/sourcemap-codec': 1.5.5
-      '@jridgewell/trace-mapping': 0.3.25
-
   '@jridgewell/resolve-uri@3.1.2': {}
-
-  '@jridgewell/set-array@1.2.1': {}
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
 
@@ -5849,7 +5833,7 @@ snapshots:
   camel-case@4.1.2:
     dependencies:
       pascal-case: 3.1.2
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   camelcase@5.3.1: {}
 
@@ -5860,7 +5844,7 @@ snapshots:
   capital-case@1.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   ccount@2.0.1: {}
@@ -5966,7 +5950,7 @@ snapshots:
   constant-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case: 2.0.2
 
   convert-source-map@2.0.0: {}
@@ -6056,7 +6040,7 @@ snapshots:
   dot-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   dset@3.1.4: {}
 
@@ -6652,7 +6636,7 @@ snapshots:
   header-case@2.0.4:
     dependencies:
       capital-case: 1.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   html-escaper@2.0.2: {}
 
@@ -7620,7 +7604,7 @@ snapshots:
   no-case@3.0.4:
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   node-fetch@2.7.0:
     dependencies:
@@ -7711,7 +7695,7 @@ snapshots:
   param-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   parent-module@1.0.1:
     dependencies:
@@ -7741,12 +7725,12 @@ snapshots:
   pascal-case@3.1.2:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   path-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   path-exists@4.0.0: {}
 
@@ -7942,7 +7926,7 @@ snapshots:
   sentence-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   setimmediate@1.0.5: {}
@@ -7980,7 +7964,7 @@ snapshots:
   snake-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   source-map-js@1.2.1: {}
 
