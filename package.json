@@ -90,7 +90,7 @@
     "@antfu/eslint-config": "^6.0.0",
     "@graphql-codegen/cli": "6.0.1",
     "@graphql-codegen/typescript": "^5.0.0",
-    "@tsconfig/recommended": "1.0.10",
+    "@tsconfig/recommended": "1.0.11",
     "@types/graphlib": "^2.1.8",
     "@types/node": "^24.0.0",
     "eslint": "9.38.0",
