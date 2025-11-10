@@ -227,7 +227,7 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.nativeEnum(PageType);
+      export const PageTypeSchema: z.ZodEnum<typeof PageType> = z.nativeEnum(PageType);
 
       export function PageInputSchema(): z.ZodObject<Properties<PageInput>> {
         return z.object({
@@ -252,7 +252,7 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars, importFrom: './', schemaNamespacedImportName: 't' }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.nativeEnum(t.PageType);
+      export const PageTypeSchema: z.ZodEnum<typeof t.PageType> = z.nativeEnum(t.PageType);
 
       export function PageInputSchema(): z.ZodObject<Properties<t.PageInput>> {
         return z.object({
@@ -281,7 +281,7 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const HttpMethodSchema = z.nativeEnum(HttpMethod);
+      export const HttpMethodSchema: z.ZodEnum<typeof HttpMethod> = z.nativeEnum(HttpMethod);
 
       export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>> {
         return z.object({
@@ -443,7 +443,7 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.enum(['PUBLIC', 'BASIC_AUTH']);
+      export const PageTypeSchema: z.ZodEnum<{ PUBLIC: "PUBLIC"; BASIC_AUTH: "BASIC_AUTH" }> = z.enum(['PUBLIC', 'BASIC_AUTH']);
       "
     `)
   });
@@ -468,7 +468,7 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.enum(['PUBLIC', 'BASIC_AUTH']);
+      export const PageTypeSchema: z.ZodEnum<{ PUBLIC: "PUBLIC"; BASIC_AUTH: "BASIC_AUTH" }> = z.enum(['PUBLIC', 'BASIC_AUTH']);
       "
     `)
   });
@@ -711,7 +711,7 @@ describe('zod', () => {
       },
     );
 
-    expect(result.content).toContain('export const PageTypeSchema = z.nativeEnum(PageType)');
+    expect(result.content).toContain('export const PageTypeSchema: z.ZodEnum<typeof PageType> = z.nativeEnum(PageType)');
     expect(result.content).toContain('export function PageInputSchema(): z.ZodObject<Properties<PageInput>>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.default(PageType.Public)');
@@ -747,7 +747,7 @@ describe('zod', () => {
       },
     );
 
-    expect(result.content).toContain('export const PageTypeSchema = z.nativeEnum(PageType)');
+    expect(result.content).toContain('export const PageTypeSchema: z.ZodEnum<typeof PageType> = z.nativeEnum(PageType)');
     expect(result.content).toContain('export function PageInputSchema(): z.ZodObject<Properties<PageInput>>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.default(PageType.Basic_Auth)');
@@ -786,7 +786,7 @@ describe('zod', () => {
       },
     );
 
-    expect(result.content).toContain('export const PageTypeSchema = z.nativeEnum(PageType)');
+    expect(result.content).toContain('export const PageTypeSchema: z.ZodEnum<typeof PageType> = z.nativeEnum(PageType)');
     expect(result.content).toContain('export function PageInputSchema(): z.ZodObject<Properties<PageInput>>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.default(PageType.BasicAuth)');
@@ -823,7 +823,7 @@ describe('zod', () => {
 
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.nativeEnum(PageType);
+      export const PageTypeSchema: z.ZodEnum<typeof PageType> = z.nativeEnum(PageType);
 
       export function PageInputSchema(): z.ZodObject<Properties<PageInput>> {
         return z.object({
@@ -1369,9 +1369,9 @@ describe('zod', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        export const PageTypeSchema = z.nativeEnum(PageType);
+        export const PageTypeSchema: z.ZodEnum<typeof PageType> = z.nativeEnum(PageType);
 
-        export const MethodTypeSchema = z.nativeEnum(MethodType);
+        export const MethodTypeSchema: z.ZodEnum<typeof MethodType> = z.nativeEnum(MethodType);
 
         export function AnyTypeSchema() {
           return z.union([PageTypeSchema, MethodTypeSchema])
@@ -1787,7 +1787,7 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const TestSchema = z.nativeEnum(Test);
+      export const TestSchema: z.ZodEnum<typeof Test> = z.nativeEnum(Test);
 
       export function QueryInputSchema(): z.ZodObject<Properties<QueryInput>> {
         return z.object({
