@@ -87,7 +87,7 @@
     "graphql": "^16.6.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^6.0.0",
+    "@antfu/eslint-config": "^7.0.0",
     "@graphql-codegen/cli": "6.1.1",
     "@graphql-codegen/typescript": "^5.0.0",
     "@tsconfig/recommended": "1.0.13",
