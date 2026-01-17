@@ -44,31 +44,43 @@ export class ZodV4SchemaVisitor extends BaseSchemaVisitor {
 
   initialEmit(): string {
     return (
-      `\n${
-        [
-          new DeclarationBlock({})
-            .asKind('type')
-            .withName('Properties<T>')
-            .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K]>;', '}>'].join('\n'))
-            .string,
-          // Unfortunately, zod doesn’t provide non-null defined any schema.
-          // This is a temporary hack until it is fixed.
-          // see: https://github.com/colinhacks/zod/issues/884
-          new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
-          new DeclarationBlock({})
-            .export()
-            .asKind('const')
-            .withName(`isDefinedNonNullAny`)
-            .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`)
-            .string,
-          new DeclarationBlock({})
-            .export()
-            .asKind('const')
-            .withName(`${anySchema}`)
-            .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`)
-            .string,
-          ...this.enumDeclarations,
-        ].join('\n')}`
+      `\n${[
+        new DeclarationBlock({})
+          .asKind('type')
+          .withName('Properties<T>')
+          .withContent(['Required<{', '  [K in keyof T]: z.ZodType<T[K]>;', '}>'].join('\n'))
+          .string,
+        new DeclarationBlock({})
+          .asKind('type')
+          .withName('OneOf<T>')
+          .withContent([
+            '{',
+            '  [K in keyof Required<T>]: Required<{',
+            '    [V in keyof Pick<Required<T>, K>]: z.ZodType<Pick<Required<T>, K>[V], unknown, any>',
+            '  } & {',
+            '    [P in Exclude<keyof T, K>]: z.ZodNever',
+            '  }>',
+            '}[keyof T]',
+          ].join('\n'))
+          .string,
+        // Unfortunately, zod doesn’t provide non-null defined any schema.
+        // This is a temporary hack until it is fixed.
+        // see: https://github.com/colinhacks/zod/issues/884
+        new DeclarationBlock({}).asKind('type').withName('definedNonNullAny').withContent('{}').string,
+        new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`isDefinedNonNullAny`)
+          .withContent(`(v: any): v is definedNonNullAny => v !== undefined && v !== null`)
+          .string,
+        new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`${anySchema}`)
+          .withContent(`z.any().refine((v) => isDefinedNonNullAny(v))`)
+          .string,
+        ...this.enumDeclarations,
+      ].join('\n')}`
     );
   }
 
@@ -78,6 +90,13 @@ export class ZodV4SchemaVisitor extends BaseSchemaVisitor {
         const visitor = this.createVisitor('input');
         const name = visitor.convertName(node.name.value);
         this.importTypes.push(name);
+
+        const hasOneOf = node.directives?.some(directive => directive?.name.value === 'oneOf');
+        if (hasOneOf) {
+          const result = this.buildOneOfInputFields(node.fields ?? [], visitor, name)
+          return result;
+        }
+
         return this.buildInputFields(node.fields ?? [], visitor, name);
       },
     };
@@ -272,11 +291,87 @@ export class ZodV4SchemaVisitor extends BaseSchemaVisitor {
           .string;
     }
   }
+
+  protected buildOneOfInputFields(
+    fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[],
+    visitor: Visitor,
+    name: string,
+  ) {
+    // FIXME: If I end up adding an explicit z.ZodUnion return type, make sure to handle schemaNamespacedImportName
+    // Also type prefix and suffix
+
+    const typeName = visitor.prefixTypeNamespace(name);
+    const union = generateFieldUnionZodSchema(this.config, visitor, fields, 2)
+
+    switch (this.config.validationSchemaExportType) {
+      case 'const':
+        return new DeclarationBlock({})
+          .export()
+          .asKind('const')
+          .withName(`${typeName}Schema`)
+          .withContent(['z.union([', union, '])'].join('\n'))
+          .string;
+
+      case 'function':
+      default:
+        return new DeclarationBlock({})
+          .export()
+          .asKind('function')
+          .withName(`${name}Schema(): z.ZodUnion<z.ZodObject<OneOf<${typeName}>>[]>`)
+          .withBlock([indent(`return z.union([`), `${union}`, indent('])')].join('\n'))
+          .string;
+    }
+  }
 }
 
 function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
   const gen = generateFieldTypeZodSchema(config, visitor, field, field.type);
   return indent(`${field.name.value}: ${maybeLazy(visitor, field.type, gen)}`, indentCount);
+}
+
+function generateFieldUnionZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[], indentCount: number): string {
+  const union = fields.map((field) => {
+    const objectFields = fields.map((nestedObjectField) => {
+      const isSameField = field.name === nestedObjectField.name;
+
+      if (!isSameField) {
+        return indent(`${nestedObjectField.name.value}: z.never()`, indentCount + 1);
+      }
+
+      if (isListType(nestedObjectField.type)) {
+        const gen = generateFieldTypeZodSchema(config, visitor, nestedObjectField, nestedObjectField.type.type, nestedObjectField.type);
+
+        const maybeLazyGen = `z.array(${maybeLazy(visitor, nestedObjectField.type.type, gen)})`;
+        const appliedDirectivesGen = applyDirectives(config, nestedObjectField, maybeLazyGen);
+
+        return indent(`${nestedObjectField.name.value}: ${appliedDirectivesGen}`, 3);
+      }
+
+      if (isNonNullType(nestedObjectField.type)) {
+        const gen = generateFieldTypeZodSchema(config, visitor, field, nestedObjectField.type.type, nestedObjectField.type);
+
+        return indent(`${nestedObjectField.name.value}: ${maybeLazy(visitor, nestedObjectField.type.type, gen)}`, indentCount + 1);
+      }
+
+      if (isNamedType(nestedObjectField.type)) {
+        const gen = generateNameNodeZodSchema(config, visitor, nestedObjectField.type.name);
+
+        const appliedDirectivesGen = applyDirectives(config, nestedObjectField, gen);
+
+        if (visitor.shouldEmitAsNotAllowEmptyString(nestedObjectField.type.name.value))
+          return indent(`${nestedObjectField.name.value}: ${maybeLazy(visitor, nestedObjectField.type, appliedDirectivesGen)}.min(1)`, indentCount + 1);
+
+        return indent(`${nestedObjectField.name.value}: ${maybeLazy(visitor, nestedObjectField.type, appliedDirectivesGen)}`, indentCount + 1);
+      }
+
+      console.warn('unhandled type:', field.type);
+      return '';
+    });
+
+    return [indent('z.object({', indentCount), objectFields.join(',\n'), indent('})', indentCount)].join('\n');
+  }).join(',\n');
+
+  return union;
 }
 
 function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
