@@ -21,10 +21,9 @@ export type Admin = {
   lastModifiedAt?: Maybe<Scalars['Date']['output']>;
 };
 
-export type AttributeInput = {
-  key?: InputMaybe<Scalars['String']['input']>;
-  val?: InputMaybe<Scalars['String']['input']>;
-};
+export type AttributeInput =
+  { key: Scalars['String']['input']; val?: never; }
+  |  { key?: never; val: Scalars['String']['input']; };
 
 export enum ButtonComponentType {
   Button = 'BUTTON',
@@ -36,18 +35,16 @@ export type Comment = {
   replies?: Maybe<Array<Comment>>;
 };
 
-export type ComponentInput = {
-  child?: InputMaybe<ComponentInput>;
-  childrens?: InputMaybe<Array<InputMaybe<ComponentInput>>>;
-  event?: InputMaybe<EventInput>;
-  name: Scalars['String']['input'];
-  type: ButtonComponentType;
-};
+export type ComponentInput =
+  { child: ComponentInput; childrens?: never; event?: never; name?: never; type?: never; }
+  |  { child?: never; childrens: Array<InputMaybe<ComponentInput>>; event?: never; name?: never; type?: never; }
+  |  { child?: never; childrens?: never; event: EventInput; name?: never; type?: never; }
+  |  { child?: never; childrens?: never; event?: never; name: Scalars['String']['input']; type?: never; }
+  |  { child?: never; childrens?: never; event?: never; name?: never; type: ButtonComponentType; };
 
-export type DropDownComponentInput = {
-  dropdownComponent?: InputMaybe<ComponentInput>;
-  getEvent: EventInput;
-};
+export type DropDownComponentInput =
+  { dropdownComponent: ComponentInput; getEvent?: never; }
+  |  { dropdownComponent?: never; getEvent: EventInput; };
 
 export type EventArgumentInput = {
   name: Scalars['String']['input'];
@@ -69,10 +66,9 @@ export type Guest = {
   lastLoggedIn?: Maybe<Scalars['Date']['output']>;
 };
 
-export type HttpInput = {
-  method?: InputMaybe<HttpMethod>;
-  url: Scalars['URL']['input'];
-};
+export type HttpInput =
+  { method: HttpMethod; url?: never; }
+  |  { method?: never; url: Scalars['URL']['input']; };
 
 export enum HttpMethod {
   Get = 'GET',
@@ -100,19 +96,19 @@ export type Namer = {
   name?: Maybe<Scalars['String']['output']>;
 };
 
-export type PageInput = {
-  attributes?: InputMaybe<Array<AttributeInput>>;
-  date?: InputMaybe<Scalars['Date']['input']>;
-  height: Scalars['Float']['input'];
-  id: Scalars['ID']['input'];
-  layout: LayoutInput;
-  pageType: PageType;
-  postIDs?: InputMaybe<Array<Scalars['ID']['input']>>;
-  show: Scalars['Boolean']['input'];
-  tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  title: Scalars['String']['input'];
-  width: Scalars['Int']['input'];
-};
+export type PageInput =
+  { attributes: Array<AttributeInput>; date?: never; height?: never; id?: never; layout?: never; pageType?: never; postIDs?: never; postIDs2?: never; show?: never; tags?: never; title?: never; width?: never; }
+  |  { attributes?: never; date: Scalars['Date']['input']; height?: never; id?: never; layout?: never; pageType?: never; postIDs?: never; postIDs2?: never; show?: never; tags?: never; title?: never; width?: never; }
+  |  { attributes?: never; date?: never; height: Scalars['Float']['input']; id?: never; layout?: never; pageType?: never; postIDs?: never; postIDs2?: never; show?: never; tags?: never; title?: never; width?: never; }
+  |  { attributes?: never; date?: never; height?: never; id: Scalars['ID']['input']; layout?: never; pageType?: never; postIDs?: never; postIDs2?: never; show?: never; tags?: never; title?: never; width?: never; }
+  |  { attributes?: never; date?: never; height?: never; id?: never; layout: LayoutInput; pageType?: never; postIDs?: never; postIDs2?: never; show?: never; tags?: never; title?: never; width?: never; }
+  |  { attributes?: never; date?: never; height?: never; id?: never; layout?: never; pageType: PageType; postIDs?: never; postIDs2?: never; show?: never; tags?: never; title?: never; width?: never; }
+  |  { attributes?: never; date?: never; height?: never; id?: never; layout?: never; pageType?: never; postIDs: Array<InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>>; postIDs2?: never; show?: never; tags?: never; title?: never; width?: never; }
+  |  { attributes?: never; date?: never; height?: never; id?: never; layout?: never; pageType?: never; postIDs?: never; postIDs2: Array<Array<InputMaybe<Scalars['ID']['input']>>>; show?: never; tags?: never; title?: never; width?: never; }
+  |  { attributes?: never; date?: never; height?: never; id?: never; layout?: never; pageType?: never; postIDs?: never; postIDs2?: never; show: Scalars['Boolean']['input']; tags?: never; title?: never; width?: never; }
+  |  { attributes?: never; date?: never; height?: never; id?: never; layout?: never; pageType?: never; postIDs?: never; postIDs2?: never; show?: never; tags: Array<InputMaybe<Scalars['String']['input']>>; title?: never; width?: never; }
+  |  { attributes?: never; date?: never; height?: never; id?: never; layout?: never; pageType?: never; postIDs?: never; postIDs2?: never; show?: never; tags?: never; title: Scalars['String']['input']; width?: never; }
+  |  { attributes?: never; date?: never; height?: never; id?: never; layout?: never; pageType?: never; postIDs?: never; postIDs2?: never; show?: never; tags?: never; title?: never; width: Scalars['Int']['input']; };
 
 export enum PageType {
   BasicAuth = 'BASIC_AUTH',
