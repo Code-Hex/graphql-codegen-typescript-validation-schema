@@ -297,9 +297,6 @@ export class ZodV4SchemaVisitor extends BaseSchemaVisitor {
     visitor: Visitor,
     name: string,
   ) {
-    // FIXME: If I end up adding an explicit z.ZodUnion return type, make sure to handle schemaNamespacedImportName
-    // Also type prefix and suffix
-
     const typeName = visitor.prefixTypeNamespace(name);
     const union = generateFieldUnionZodSchema(this.config, visitor, fields, 2)
 
