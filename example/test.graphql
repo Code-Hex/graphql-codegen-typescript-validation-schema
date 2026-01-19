@@ -122,6 +122,25 @@ directive @constraint(
   uniqueTypeName: String
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
+directive @oneOf on INPUT_OBJECT | FIELD_DEFINITION
+
 type Comment {
    replies: [Comment!]
+}
+
+# @oneOf examples - exactly one field must be provided
+input SearchFilter @oneOf {
+  userId: ID
+  email: String
+  username: String
+}
+
+input MediaInput @oneOf {
+  url: URL
+  file: FileInput
+}
+
+input FileInput {
+  name: String!
+  size: Int!
 }
