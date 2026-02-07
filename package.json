@@ -93,7 +93,7 @@
     "@tsconfig/recommended": "1.0.13",
     "@types/graphlib": "^2.1.8",
     "@types/node": "^24.0.0",
-    "eslint": "9.39.2",
+    "eslint": "10.0.0",
     "jest": "30.2.0",
     "myzod": "1.12.1",
     "npm-run-all2": "8.0.4",
