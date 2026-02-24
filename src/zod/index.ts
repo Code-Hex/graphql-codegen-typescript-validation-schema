@@ -194,13 +194,13 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
             ? new DeclarationBlock({})
               .export()
               .asKind('const')
-              .withName(`${enumname}Schema`)
+              .withName(`${enumname}Schema: z.ZodEnum<{ ${node.values?.map(enumOption => `${enumOption.name.value}: "${enumOption.name.value}"`).join('; ')} }>`)
               .withContent(`z.enum([${node.values?.map(enumOption => `'${enumOption.name.value}'`).join(', ')}])`)
               .string
             : new DeclarationBlock({})
               .export()
               .asKind('const')
-              .withName(`${enumname}Schema`)
+              .withName(`${enumname}Schema: z.ZodEnum<typeof ${enumTypeName}>`)
               .withContent(`z.nativeEnum(${enumTypeName})`)
               .string,
         );
