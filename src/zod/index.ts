@@ -23,6 +23,7 @@ import {
 import { buildApi, formatDirectiveConfig } from '../directive.js';
 import {
   escapeGraphQLCharacters,
+  escapeForDescribe,
   InterfaceTypeDefinitionBuilder,
   isListType,
   isNamedType,
@@ -79,7 +80,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         const visitor = this.createVisitor('input');
         const name = visitor.convertName(node.name.value);
         this.importTypes.push(name);
-        return this.buildInputFields(node.fields ?? [], visitor, name);
+        return this.buildInputFields(node.fields ?? [], visitor, name, node.description?.value);
       },
     };
   }
@@ -99,6 +100,10 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         // Building schema for fields.
         const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
 
+        const maybeDescribe = this.config.withDescriptions && node.description?.value
+          ? `.describe('${escapeForDescribe(node.description.value)}')`
+          : '';
+
         switch (this.config.validationSchemaExportType) {
           case 'const':
             return (
@@ -106,7 +111,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('const')
                 .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-                .withContent([`z.object({`, shape, '})'].join('\n'))
+                .withContent([`z.object({`, shape, `})${maybeDescribe}`].join('\n'))
                 .string + appendArguments
             );
 
@@ -117,7 +122,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                 .export()
                 .asKind('function')
                 .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-                .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
+                .withBlock([indent(`return z.object({`), shape, indent(`})${maybeDescribe}`)].join('\n'))
                 .string + appendArguments
             );
         }
@@ -140,6 +145,10 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
         // Building schema for fields.
         const shape = node.fields?.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
 
+        const maybeDescribe = this.config.withDescriptions && node.description?.value
+          ? `.describe('${escapeForDescribe(node.description.value)}')`
+          : '';
+
         switch (this.config.validationSchemaExportType) {
           case 'const':
             return (
@@ -152,7 +161,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                     `z.object({`,
                     indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
-                    '})',
+                    `})${maybeDescribe}`,
                   ].join('\n'),
                 )
                 .string + appendArguments
@@ -170,7 +179,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
                     indent(`return z.object({`),
                     indent(`__typename: z.literal('${node.name.value}').optional(),`, 2),
                     shape,
-                    indent('})'),
+                    indent(`})${maybeDescribe}`),
                   ].join('\n'),
                 )
                 .string + appendArguments
@@ -253,9 +262,14 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
     fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[],
     visitor: Visitor,
     name: string,
+    description?: string,
   ) {
     const typeName = visitor.prefixTypeNamespace(name);
     const shape = fields.map(field => generateFieldZodSchema(this.config, visitor, field, 2)).join(',\n');
+
+    const maybeDescribe = this.config.withDescriptions && description
+      ? `.describe('${escapeForDescribe(description)}')`
+      : '';
 
     switch (this.config.validationSchemaExportType) {
       case 'const':
@@ -263,7 +277,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('const')
           .withName(`${name}Schema: z.ZodObject<Properties<${typeName}>>`)
-          .withContent(['z.object({', shape, '})'].join('\n'))
+          .withContent([`z.object({`, shape, `})${maybeDescribe}`].join('\n'))
           .string;
 
       case 'function':
@@ -272,7 +286,7 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
           .export()
           .asKind('function')
           .withName(`${name}Schema(): z.ZodObject<Properties<${typeName}>>`)
-          .withBlock([indent(`return z.object({`), shape, indent('})')].join('\n'))
+          .withBlock([indent(`return z.object({`), shape, indent(`})${maybeDescribe}`)].join('\n'))
           .string;
     }
   }
@@ -280,7 +294,11 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
 
 function generateFieldZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
   const gen = generateFieldTypeZodSchema(config, visitor, field, field.type);
-  return indent(`${field.name.value}: ${maybeLazy(visitor, field.type, gen)}`, indentCount);
+  let schema = maybeLazy(visitor, field.type, gen);
+  if (config.withDescriptions && field.description?.value) {
+    schema = `${schema}.describe('${escapeForDescribe(field.description.value)}')`;
+  }
+  return indent(`${field.name.value}: ${schema}`, indentCount);
 }
 
 function generateFieldTypeZodSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
