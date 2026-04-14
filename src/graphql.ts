@@ -219,3 +219,7 @@ export function escapeGraphQLCharacters(input: string): string {
   // eslint-disable-next-line regexp/no-escape-backspace
   return input.replace(/["\\/\f\n\r\t\b]/g, match => escapeMap[match]);
 }
+
+export function escapeForDescribe(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+}

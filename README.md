@@ -303,6 +303,47 @@ Uses the full path of the enum type as the default value instead of the stringif
 
 Related: https://the-guild.dev/graphql/codegen/docs/config-reference/naming-convention#namingconvention
 
+### `withDescriptions`
+
+type: `boolean` default: `false`
+
+Generates `.describe()` calls on Zod schemas using GraphQL descriptions. When enabled, any GraphQL type or field that has a description comment will have `.describe('...')` appended to its generated Zod schema.
+
+Only applies when `schema` is set to `zod` or `zodv4`.
+
+```yml
+generates:
+  path/to/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-validation-schema
+    config:
+      schema: zod
+      withDescriptions: true
+```
+
+For the following GraphQL schema:
+
+```graphql
+"""A user input"""
+input UserInput {
+  """The user's name"""
+  name: String!
+  email: String
+}
+```
+
+It generates:
+
+```ts
+export function UserInputSchema(): z.ZodObject<Properties<UserInput>> {
+  return z.object({
+    name: z.string().describe('The user\'s name'),
+    email: z.string().nullish()
+  }).describe('A user input')
+}
+```
+
 ### `directives`
 
 type: `DirectiveConfig`

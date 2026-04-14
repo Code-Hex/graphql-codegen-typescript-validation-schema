@@ -46,7 +46,8 @@ export abstract class BaseSchemaVisitor implements SchemaVisitor {
   protected abstract buildInputFields(
     fields: readonly (FieldDefinitionNode | InputValueDefinitionNode)[],
     visitor: Visitor,
-    name: string
+    name: string,
+    description?: string
   ): string;
 
   protected buildTypeDefinitionArguments(

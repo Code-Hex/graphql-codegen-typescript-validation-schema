@@ -306,6 +306,25 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   namingConvention?: NamingConventionMap
   /**
+   * @description Generates `.describe()` calls on Zod schemas using GraphQL descriptions.
+   * When enabled, any GraphQL type or field that has a description comment will have
+   * `.describe('...')` appended to its generated Zod schema.
+   * Only applies when schema is set to 'zod' or 'zodv4'.
+   * @default false
+   *
+   * @exampleMarkdown
+   * ```yml
+   * generates:
+   *   path/to/file.ts:
+   *     plugins:
+   *       - graphql-codegen-validation-schema
+   *     config:
+   *       schema: zod
+   *       withDescriptions: true
+   * ```
+   */
+  withDescriptions?: boolean
+  /**
    * @description Generates validation schema with more API based on directive schema.
    * @exampleMarkdown
    * ```yml

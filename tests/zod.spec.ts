@@ -1861,4 +1861,112 @@ describe('zod', () => {
       "
     `);
   });
+
+  describe('withDescriptions', () => {
+    it('adds field-level describe from GraphQL descriptions', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserInput {
+          """The user's name"""
+          name: String!
+          """The user's email address"""
+          email: String
+        }
+      `);
+      const result = await plugin(schema, [], { schema: 'zod', withDescriptions: true }, {});
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function UserInputSchema(): z.ZodObject<Properties<UserInput>> {
+          return z.object({
+            name: z.string().describe('The user\\'s name'),
+            email: z.string().nullish().describe('The user\\'s email address')
+          })
+        }
+        "
+      `);
+    });
+
+    it('adds type-level describe from GraphQL descriptions', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        """An input for creating a user"""
+        input CreateUserInput {
+          name: String!
+        }
+      `);
+      const result = await plugin(schema, [], { schema: 'zod', withDescriptions: true }, {});
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function CreateUserInputSchema(): z.ZodObject<Properties<CreateUserInput>> {
+          return z.object({
+            name: z.string()
+          }).describe('An input for creating a user')
+        }
+        "
+      `);
+    });
+
+    it('adds both type-level and field-level describe', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        """A user input"""
+        input UserInput {
+          """The user's name"""
+          name: String!
+        }
+      `);
+      const result = await plugin(schema, [], { schema: 'zod', withDescriptions: true }, {});
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function UserInputSchema(): z.ZodObject<Properties<UserInput>> {
+          return z.object({
+            name: z.string().describe('The user\\'s name')
+          }).describe('A user input')
+        }
+        "
+      `);
+    });
+
+    it('does not add describe when withDescriptions is false', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        """A user input"""
+        input UserInput {
+          """The user's name"""
+          name: String!
+        }
+      `);
+      const result = await plugin(schema, [], { schema: 'zod', withDescriptions: false }, {});
+      expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
+        "
+        export function UserInputSchema(): z.ZodObject<Properties<UserInput>> {
+          return z.object({
+            name: z.string()
+          })
+        }
+        "
+      `);
+    });
+
+    it('escapes special characters in descriptions', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input TestInput {
+          """Contains a backslash \\ and a newline"""
+          field: String!
+        }
+      `);
+      const result = await plugin(schema, [], { schema: 'zod', withDescriptions: true }, {});
+      expect(result.content).toContain(`.describe(`);
+    });
+
+    it('adds describe to object types with withObjectType', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        """A user type"""
+        type User {
+          """The user's name"""
+          name: String!
+        }
+      `);
+      const result = await plugin(schema, [], { schema: 'zod', withObjectType: true, withDescriptions: true }, {});
+      const content = removedInitialEmitValue(result.content);
+      expect(content).toContain(`.describe('A user type')`);
+      expect(content).toContain(`.describe('The user\\'s name')`);
+    });
+  });
 });
