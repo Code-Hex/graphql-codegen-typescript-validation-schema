@@ -1,6 +1,14 @@
+import { createRequire } from 'node:module';
 import { defineConfig } from 'vitest/config';
 
+const require = createRequire(import.meta.url);
+
 export default defineConfig({
+  resolve: {
+    alias: {
+      graphql: require.resolve('graphql/index.js'),
+    },
+  },
   test: {
     globals: true,
     environment: 'node',
@@ -9,6 +17,7 @@ export default defineConfig({
     exclude: ['node_modules', 'dist', 'example', '.idea', '.git', '.cache', '.github'],
     server: {
       deps: {
+        external: ['graphql'],
         fallbackCJS: true,
       },
     },
