@@ -18,7 +18,6 @@ import {
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
-import { buildZodOperationSchemas } from './operation.js';
 import {
   anySchema,
   buildObjectExpression,
@@ -31,7 +30,8 @@ import {
   schemaDepthVariable,
   unionLiterals,
   withDescription,
-} from './shared.js';
+} from '../zod_shared.js';
+import { buildZodOperationSchemas } from './operation.js';
 
 export class ZodSchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
