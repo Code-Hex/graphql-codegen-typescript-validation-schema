@@ -2362,6 +2362,10 @@ describe('zod', () => {
 
     it('supports strict objects and GraphQL descriptions', async () => {
       const schema = buildSchema(/* GraphQL */ `
+        """
+        User "input"
+        with \\ slash
+        """
         input UserInput {
           "Display name shown to users"
           name: String!
@@ -2376,7 +2380,46 @@ describe('zod', () => {
       );
 
       expect(result.content).toContain('name: z.string().describe("Display name shown to users")');
-      expect(result.content).toContain('}).strict()');
+      expect(result.content).toContain('}).strict().describe("User \\"input\\"\\nwith \\\\ slash")');
+    });
+
+    it('adds type-level descriptions to const object schemas', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        "Node contract"
+        interface Node {
+          id: ID!
+        }
+
+        "User object"
+        type User implements Node {
+          id: ID!
+          name: String!
+        }
+
+        "User input"
+        input UserInput {
+          name: String!
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          validationSchemaExportType: 'const',
+          withDescriptions: true,
+          withObjectType: true,
+        },
+        {},
+      );
+
+      expect(result.content).toContain('export const NodeSchema: z.ZodObject<Properties<Node>>');
+      expect(result.content).toContain('}).describe("Node contract")');
+      expect(result.content).toContain('export const UserSchema: z.ZodObject<Properties<User>>');
+      expect(result.content).toContain('}).describe("User object")');
+      expect(result.content).toContain('export const UserInputSchema: z.ZodObject<Properties<UserInput>>');
+      expect(result.content).toContain('}).describe("User input")');
     });
 
     it('respects enumPrefix: false when typesPrefix is configured', async () => {

@@ -2242,19 +2242,60 @@ describe('zodv4', () => {
           placeholder: String!
         }
 
+        "Exactly one event payload"
         input EventInput @oneOf {
           assignEvent: AssignEventInput
           placeholder: PlaceholderEventInput
         }
       `);
 
-      const result = await plugin(schema, [], { schema: 'zodv4' }, {});
+      const result = await plugin(schema, [], { schema: 'zodv4', withDescriptions: true }, {});
 
       expect(result.content).toContain('export function EventInputSchema(): z.ZodType<EventInput>');
       expect(result.content).toContain('assignEvent: z.lazy(() => AssignEventInputSchema())');
       expect(result.content).toContain('placeholder: z.never().optional()');
       expect(result.content).toContain('placeholder: z.lazy(() => PlaceholderEventInputSchema())');
       expect(result.content).toContain('assignEvent: z.never().optional()');
+      expect(result.content).toContain(']).describe("Exactly one event payload")');
+    });
+
+    it('adds type-level descriptions to const object schemas', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        "Node contract"
+        interface Node {
+          id: ID!
+        }
+
+        "User object"
+        type User implements Node {
+          id: ID!
+          name: String!
+        }
+
+        "User input"
+        input UserInput {
+          name: String!
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zodv4',
+          validationSchemaExportType: 'const',
+          withDescriptions: true,
+          withObjectType: true,
+        },
+        {},
+      );
+
+      expect(result.content).toContain('export const NodeSchema: z.ZodObject<Properties<Node>>');
+      expect(result.content).toContain('}).describe("Node contract")');
+      expect(result.content).toContain('export const UserSchema: z.ZodObject<Properties<User>>');
+      expect(result.content).toContain('}).describe("User object")');
+      expect(result.content).toContain('export const UserInputSchema: z.ZodObject<Properties<UserInput>>');
+      expect(result.content).toContain('}).describe("User input")');
     });
 
     it('supports configurable nullable field behavior', async () => {

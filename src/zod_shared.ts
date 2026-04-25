@@ -91,16 +91,27 @@ export function isOneOfInputObject(node: InputObjectTypeDefinitionNode): boolean
   return node.directives?.some(directive => directive.name.value === 'oneOf') === true;
 }
 
-export function buildObjectExpression(config: ValidationSchemaPluginConfig, shape: string | undefined): string {
-  return ['z.object({', shape, `})${strictObjectSuffix(config)}`].join('\n');
+export function buildObjectExpression(config: ValidationSchemaPluginConfig, shape: string | undefined, description?: string): string {
+  return ['z.object({', shape, `})${strictObjectSuffix(config)}${descriptionSuffix(config, description)}`].join('\n');
 }
 
-export function buildObjectReturn(config: ValidationSchemaPluginConfig, shape: string | undefined): string {
-  return [indent('return z.object({'), shape, indent(`})${strictObjectSuffix(config)}`)].join('\n');
+export function buildObjectReturn(config: ValidationSchemaPluginConfig, shape: string | undefined, description?: string): string {
+  return [indent('return z.object({'), shape, indent(`})${strictObjectSuffix(config)}${descriptionSuffix(config, description)}`)].join('\n');
 }
 
 export function strictObjectSuffix(config: ValidationSchemaPluginConfig): string {
   return config.strictObjectSchemas === true ? '.strict()' : '';
+}
+
+export function descriptionSuffix(config: ValidationSchemaPluginConfig, description: string | undefined): string {
+  if (config.withDescriptions !== true || !description)
+    return '';
+
+  return `.describe(${JSON.stringify(description)})`;
+}
+
+export function withTypeDescription(config: ValidationSchemaPluginConfig, description: string | undefined, gen: string): string {
+  return `${gen}${descriptionSuffix(config, description)}`;
 }
 
 export function zodOptionalType(config: ValidationSchemaPluginConfig): string {

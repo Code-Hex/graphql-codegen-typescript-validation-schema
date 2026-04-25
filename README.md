@@ -373,7 +373,7 @@ Appends `.strict()` to generated Zod object schemas.
 
 type: `boolean` default: `false`
 
-Appends `.describe()` to generated Zod fields from GraphQL descriptions.
+Appends `.describe()` to generated Zod fields and object schemas from GraphQL descriptions.
 
 ### `onlyEnums`
 
