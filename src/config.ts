@@ -3,15 +3,30 @@ import type { NamingConventionMap } from '@graphql-codegen/visitor-plugin-common
 
 export type ValidationSchema = 'yup' | 'zod' | 'zodv4' | 'myzod' | 'valibot';
 export type ValidationSchemaExportType = 'function' | 'const';
+export type ZodOptionalType = 'nullish' | 'nullable' | 'optional';
+
+export type DirectiveSchemaTemplate
+  = | string
+    | number
+    | boolean
+    | bigint
+    | null
+    | undefined
+    | ((...args: any[]) => any)
+    | DirectiveSchemaTemplate[]
+    | { [key: string]: DirectiveSchemaTemplate };
 
 export interface DirectiveConfig {
-  [directive: string]: {
-    [argument: string]: string | string[] | DirectiveObjectArguments
-  }
+  [directive: string]:
+    | DirectiveSchemaTemplate
+    | DirectiveSchemaTemplate[]
+    | {
+      [argument: string]: DirectiveSchemaTemplate | DirectiveSchemaTemplate[] | DirectiveObjectArguments
+    }
 }
 
 export interface DirectiveObjectArguments {
-  [matched: string]: string | string[]
+  [matched: string]: DirectiveSchemaTemplate | DirectiveSchemaTemplate[]
 }
 
 interface ScalarSchemas {
@@ -253,6 +268,14 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    */
   withObjectType?: boolean
   /**
+   * @description Generates validation schemas for GraphQL operation result selection sets.
+   * This is separate from withObjectType: object type schemas describe the full GraphQL type,
+   * while operation schemas describe only the fields selected by each operation document.
+   * Currently supported by zod and zodv4.
+   * @default false
+   */
+  withOperationType?: boolean
+  /**
    * @description Specify validation schema export type.
    * @default function
    *
@@ -268,6 +291,38 @@ export interface ValidationSchemaPluginConfig extends TypeScriptPluginConfig {
    * ```
    */
   validationSchemaExportType?: ValidationSchemaExportType
+  /**
+   * @description Controls how nullable GraphQL fields are represented in Zod schemas.
+   * The default `nullish` mode matches GraphQL input coercion. `nullable` and `optional`
+   * are opt-in compatibility modes for projects that also customize their generated
+   * TypeScript Maybe/InputMaybe contracts.
+   * @default nullish
+   */
+  zodOptionalType?: ZodOptionalType
+  /**
+   * @description Alias for zodOptionalType.
+   * The default `nullish` mode matches GraphQL input coercion. `nullable` and `optional`
+   * are opt-in compatibility modes for projects that also customize their generated
+   * TypeScript Maybe/InputMaybe contracts.
+   * @default nullish
+   */
+  nullishBehavior?: ZodOptionalType
+  /**
+   * @description Appends `.strict()` to generated Zod object schemas.
+   * @default false
+   */
+  strictObjectSchemas?: boolean
+  /**
+   * @description Appends `.describe()` calls from GraphQL descriptions in generated Zod schemas.
+   * @default false
+   */
+  withDescriptions?: boolean
+  /**
+   * @description Maximum nested object depth to validate from generated object schemas.
+   * This is useful for cyclic output graphs. The option currently applies to zod and zodv4
+   * object type schemas generated with withObjectType.
+   */
+  maxDepth?: number
   /**
    * @description Uses the full path of the enum type as the default value instead of the stringified value.
    * @default false

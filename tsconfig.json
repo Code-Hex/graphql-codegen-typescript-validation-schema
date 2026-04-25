@@ -4,6 +4,7 @@
     "target": "ES2022",
     "incremental": true,
     "declaration": true,
+    "ignoreDeprecations": "6.0",
     "noEmit": false,
     "outDir": "dist",
     "baseUrl": ".",

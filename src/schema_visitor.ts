@@ -1,4 +1,7 @@
 import type {
+  Types,
+} from '@graphql-codegen/plugin-helpers';
+import type {
   FieldDefinitionNode,
   GraphQLSchema,
   InputValueDefinitionNode,
@@ -12,6 +15,7 @@ import { Visitor } from './visitor.js';
 
 export abstract class BaseSchemaVisitor implements SchemaVisitor {
   protected importTypes: string[] = [];
+  protected importValueTypes: string[] = [];
   protected enumDeclarations: string[] = [];
 
   constructor(
@@ -24,20 +28,37 @@ export abstract class BaseSchemaVisitor implements SchemaVisitor {
   buildImports(): string[] {
     if (this.config.importFrom && this.importTypes.length > 0) {
       const namedImportPrefix = this.config.useTypeImports ? 'type ' : '';
+      const importValueTypes = [...new Set(this.importValueTypes)];
+      const importTypes = [...new Set(this.importTypes)]
+        .filter(type => this.config.useTypeImports !== true || !importValueTypes.includes(type));
 
       const importCore = this.config.schemaNamespacedImportName
         ? `* as ${this.config.schemaNamespacedImportName}`
-        : `${namedImportPrefix}{ ${this.importTypes.join(', ')} }`;
+        : `${namedImportPrefix}{ ${importTypes.join(', ')} }`;
 
-      return [
-        this.importValidationSchema(),
-        `import ${importCore} from '${this.config.importFrom}'`,
-      ];
+      const imports = [this.importValidationSchema()];
+
+      if (this.config.schemaNamespacedImportName) {
+        imports.push(`import ${importCore} from '${this.config.importFrom}'`);
+        return imports;
+      }
+
+      if (this.config.useTypeImports === true && importValueTypes.length > 0)
+        imports.push(`import { ${importValueTypes.join(', ')} } from '${this.config.importFrom}'`);
+
+      if (importTypes.length > 0)
+        imports.push(`import ${importCore} from '${this.config.importFrom}'`);
+
+      return imports;
     }
     return [this.importValidationSchema()];
   }
 
   abstract initialEmit(): string;
+
+  buildOperationDefinitions(_documents: Types.DocumentFile[]): string[] {
+    return [];
+  }
 
   createVisitor(scalarDirection: 'input' | 'output' | 'both'): Visitor {
     return new Visitor(scalarDirection, this.schema, this.config);

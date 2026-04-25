@@ -1,7 +1,8 @@
-import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
+import { buildClientSchema, buildSchema, introspectionFromSchema, parse } from 'graphql';
 import { dedent } from 'ts-dedent';
 
 import { plugin } from '../src/index';
+import { expectTypeScriptToCompile } from './typescript-compile';
 
 const initialEmitValue = dedent(`
   type Properties<T> = Required<{
@@ -44,6 +45,16 @@ describe('zod', () => {
 
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>> {
         return z.object({
           a: z.string(),
@@ -75,6 +86,16 @@ describe('zod', () => {
 
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>> {
         return z.object({
           a: z.string().nullish(),
@@ -104,6 +125,16 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function ArrayInputSchema(): z.ZodObject<Properties<ArrayInput>> {
         return z.object({
           a: z.array(z.string().nullable()).nullish(),
@@ -134,6 +165,16 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function AInputSchema(): z.ZodObject<Properties<AInput>> {
         return z.object({
           b: z.lazy(() => BInputSchema())
@@ -171,6 +212,16 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars, importFrom: './types', schemaNamespacedImportName: 't' }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function AInputSchema(): z.ZodObject<Properties<t.AInput>> {
         return z.object({
           b: z.lazy(() => BInputSchema())
@@ -203,6 +254,16 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function NestedInputSchema(): z.ZodObject<Properties<NestedInput>> {
         return z.object({
           child: z.lazy(() => NestedInputSchema().nullish()),
@@ -227,7 +288,17 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.nativeEnum(PageType);
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
+      export const PageTypeSchema: z.ZodType<PageType> = z.nativeEnum(PageType);
 
       export function PageInputSchema(): z.ZodObject<Properties<PageInput>> {
         return z.object({
@@ -252,7 +323,17 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars, importFrom: './', schemaNamespacedImportName: 't' }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.nativeEnum(t.PageType);
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
+      export const PageTypeSchema: z.ZodType<t.PageType> = z.nativeEnum(t.PageType);
 
       export function PageInputSchema(): z.ZodObject<Properties<t.PageInput>> {
         return z.object({
@@ -281,7 +362,17 @@ describe('zod', () => {
     const result = await plugin(schema, [], { schema: 'zod', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const HttpMethodSchema = z.nativeEnum(HttpMethod);
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
+      export const HttpMethodSchema: z.ZodType<HttpMethod> = z.nativeEnum(HttpMethod);
 
       export function HttpInputSchema(): z.ZodObject<Properties<HttpInput>> {
         return z.object({
@@ -317,6 +408,16 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function SaySchema(): z.ZodObject<Properties<Say>> {
         return z.object({
           phrase: z.string(),
@@ -350,6 +451,16 @@ describe('zod', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function SaySchema(): z.ZodObject<Properties<Say>> {
         return z.object({
           phrase: z.string()
@@ -383,6 +494,16 @@ describe('zod', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function SaySchema(): z.ZodObject<Properties<Say>> {
         return z.object({
           phrase: z.string()
@@ -416,6 +537,16 @@ describe('zod', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function SaySchema(): z.ZodObject<Properties<t.Say>> {
         return z.object({
           phrase: z.string()
@@ -443,7 +574,17 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.enum(['PUBLIC', 'BASIC_AUTH']);
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
+      export const PageTypeSchema: z.ZodType<"PUBLIC" | "BASIC_AUTH"> = z.enum(['PUBLIC', 'BASIC_AUTH']);
       "
     `)
   });
@@ -468,7 +609,17 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.enum(['PUBLIC', 'BASIC_AUTH']);
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
+      export const PageTypeSchema: z.ZodType<"PUBLIC" | "BASIC_AUTH"> = z.enum(['PUBLIC', 'BASIC_AUTH']);
       "
     `)
   });
@@ -497,6 +648,16 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function PrimitiveInputSchema(): z.ZodObject<Properties<PrimitiveInput>> {
         return z.object({
           a: z.string().min(1),
@@ -534,6 +695,16 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function InputOneSchema(): z.ZodObject<Properties<InputOne>> {
         return z.object({
           field: z.lazy(() => InputNestedSchema())
@@ -573,6 +744,16 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function ScalarsInputSchema(): z.ZodObject<Properties<ScalarsInput>> {
         return z.object({
           date: z.date(),
@@ -608,6 +789,16 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function ScalarsInputSchema(): z.ZodObject<Properties<ScalarsInput>> {
         return z.object({
           date: z.string(),
@@ -643,6 +834,16 @@ describe('zod', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function ISaySchema(): z.ZodObject<Properties<ISay>> {
         return z.object({
           phrase: z.string()
@@ -676,6 +877,16 @@ describe('zod', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function SayISchema(): z.ZodObject<Properties<SayI>> {
         return z.object({
           phrase: z.string()
@@ -711,7 +922,7 @@ describe('zod', () => {
       },
     );
 
-    expect(result.content).toContain('export const PageTypeSchema = z.nativeEnum(PageType)');
+    expect(result.content).toContain('export const PageTypeSchema: z.ZodType<PageType> = z.nativeEnum(PageType)');
     expect(result.content).toContain('export function PageInputSchema(): z.ZodObject<Properties<PageInput>>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.default(PageType.Public)');
@@ -747,7 +958,7 @@ describe('zod', () => {
       },
     );
 
-    expect(result.content).toContain('export const PageTypeSchema = z.nativeEnum(PageType)');
+    expect(result.content).toContain('export const PageTypeSchema: z.ZodType<PageType> = z.nativeEnum(PageType)');
     expect(result.content).toContain('export function PageInputSchema(): z.ZodObject<Properties<PageInput>>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.default(PageType.Basic_Auth)');
@@ -786,7 +997,7 @@ describe('zod', () => {
       },
     );
 
-    expect(result.content).toContain('export const PageTypeSchema = z.nativeEnum(PageType)');
+    expect(result.content).toContain('export const PageTypeSchema: z.ZodType<PageType> = z.nativeEnum(PageType)');
     expect(result.content).toContain('export function PageInputSchema(): z.ZodObject<Properties<PageInput>>');
 
     expect(result.content).toContain('pageType: PageTypeSchema.default(PageType.BasicAuth)');
@@ -823,11 +1034,21 @@ describe('zod', () => {
 
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const PageTypeSchema = z.nativeEnum(PageType);
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
+      export const PageTypeSchema: z.ZodType<PageType> = z.nativeEnum(PageType);
 
       export function PageInputSchema(): z.ZodObject<Properties<PageInput>> {
         return z.object({
-          pageType: PageTypeSchema.default("PUBLIC"),
+          pageType: PageTypeSchema.default(PageType.Public),
           greeting: z.string().default("Hello").nullish(),
           newline: z.string().default("Hello\\nWorld").nullish(),
           score: z.number().default(100).nullish(),
@@ -864,6 +1085,16 @@ describe('zod', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {
           return z.object({
             profile: z.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000").nullish()
@@ -897,6 +1128,16 @@ describe('zod', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {
           return z.object({
             profile: z.string().min(1, "Please input more than 1").max(5000, "Please input less than 5000")
@@ -930,6 +1171,16 @@ describe('zod', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {
           return z.object({
             profile: z.array(z.string().nullable()).min(1, "Please input more than 1").max(5000, "Please input less than 5000").nullish()
@@ -966,6 +1217,16 @@ describe('zod', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {
           return z.object({
             profile: z.string().max(5000, "Please input less than 5000").min(1),
@@ -1000,6 +1261,16 @@ describe('zod', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {
           return z.object({
             profile: z.string().max(5000, "Please input less than 5000"),
@@ -1053,6 +1324,16 @@ describe('zod', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function BookSchema(): z.ZodObject<Properties<Book>> {
           return z.object({
             __typename: z.literal('Book').optional(),
@@ -1130,6 +1411,16 @@ describe('zod', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {
           return z.object({
             name: z.string(),
@@ -1186,6 +1477,16 @@ describe('zod', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function SquareSchema(): z.ZodObject<Properties<Square>> {
           return z.object({
             __typename: z.literal('Square').optional(),
@@ -1232,6 +1533,16 @@ describe('zod', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function SquareSchema(): z.ZodObject<Properties<t.Square>> {
           return z.object({
             __typename: z.literal('Square').optional(),
@@ -1280,6 +1591,16 @@ describe('zod', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function SquareSchema(): z.ZodObject<Properties<Square>> {
           return z.object({
             __typename: z.literal('Square').optional(),
@@ -1328,6 +1649,16 @@ describe('zod', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function CircleSchema(): z.ZodObject<Properties<Circle>> {
           return z.object({
             __typename: z.literal('Circle').optional(),
@@ -1369,9 +1700,19 @@ describe('zod', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        export const PageTypeSchema = z.nativeEnum(PageType);
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
 
-        export const MethodTypeSchema = z.nativeEnum(MethodType);
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
+        export const PageTypeSchema: z.ZodType<PageType> = z.nativeEnum(PageType);
+
+        export const MethodTypeSchema: z.ZodType<MethodType> = z.nativeEnum(MethodType);
 
         export function AnyTypeSchema() {
           return z.union([PageTypeSchema, MethodTypeSchema])
@@ -1408,6 +1749,16 @@ describe('zod', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export const CircleSchema: z.ZodObject<Properties<Circle>> = z.object({
             __typename: z.literal('Circle').optional(),
             radius: z.number().nullish()
@@ -1449,6 +1800,16 @@ describe('zod', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
+        type Properties<T> = Required<{
+          [K in keyof T]: z.ZodType<T[K]>;
+        }>;
+
+        type definedNonNullAny = {};
+
+        export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+        export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
         export function MyTypeSchema(): z.ZodObject<Properties<MyType>> {
           return z.object({
             __typename: z.literal('MyType').optional(),
@@ -1506,6 +1867,16 @@ describe('zod', () => {
         );
         expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
           "
+          type Properties<T> = Required<{
+            [K in keyof T]: z.ZodType<T[K]>;
+          }>;
+
+          type definedNonNullAny = {};
+
+          export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+          export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
           export function BookSchema(): z.ZodObject<Properties<Book>> {
             return z.object({
               title: z.string().nullish()
@@ -1542,6 +1913,16 @@ describe('zod', () => {
         );
         expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
           "
+          type Properties<T> = Required<{
+            [K in keyof T]: z.ZodType<T[K]>;
+          }>;
+
+          type definedNonNullAny = {};
+
+          export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+          export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
           export function BookSchema(): z.ZodObject<Properties<Book>> {
             return z.object({
               author: z.lazy(() => AuthorSchema().nullish()),
@@ -1594,6 +1975,16 @@ describe('zod', () => {
         );
         expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
           "
+          type Properties<T> = Required<{
+            [K in keyof T]: z.ZodType<T[K]>;
+          }>;
+
+          type definedNonNullAny = {};
+
+          export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+          export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
           export function BookSchema(): z.ZodObject<Properties<Book>> {
             return z.object({
               title: z.string(),
@@ -1657,6 +2048,16 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function UserCreateInputSchema(): z.ZodObject<Properties<UserCreateInput>> {
         return z.object({
           name: z.string().regex(/^Sir/),
@@ -1684,6 +2085,16 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export const SaySchema: z.ZodObject<Properties<Say>> = z.object({
           phrase: z.string()
       });
@@ -1735,6 +2146,16 @@ describe('zod', () => {
 
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export const UserSchema: z.ZodObject<Properties<User>> = z.object({
           __typename: z.literal('User').optional(),
           id: z.string(),
@@ -1787,7 +2208,17 @@ describe('zod', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      export const TestSchema = z.nativeEnum(Test);
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
+      export const TestSchema: z.ZodType<Test> = z.nativeEnum(Test);
 
       export function QueryInputSchema(): z.ZodObject<Properties<QueryInput>> {
         return z.object({
@@ -1820,6 +2251,16 @@ describe('zod', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function SaySchema(): z.ZodObject<Properties<Say>> {
         return z.object({
           phrase: z.string()
@@ -1853,6 +2294,16 @@ describe('zod', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
+      type Properties<T> = Required<{
+        [K in keyof T]: z.ZodType<T[K]>;
+      }>;
+
+      type definedNonNullAny = {};
+
+      export const isDefinedNonNullAny = (v: any): v is definedNonNullAny => v !== undefined && v !== null;
+
+      export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny(v));
+
       export function SaySchema(): z.ZodObject<Properties<Say>> {
         return z.object({
           phrase: z.string()
@@ -1860,5 +2311,564 @@ describe('zod', () => {
       }
       "
     `);
+  });
+
+  describe('open issue coverage', () => {
+    it('supports configurable nullable field behavior', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserInput {
+          name: String
+          age: Int
+        }
+      `);
+
+      const nullable = await plugin(schema, [], { schema: 'zod', nullishBehavior: 'nullable' }, {});
+      expect(nullable.content).toContain('name: z.string().nullable()');
+      expect(nullable.content).toContain('age: z.number().nullable()');
+
+      const optional = await plugin(schema, [], { schema: 'zod', zodOptionalType: 'optional' }, {});
+      expect(optional.content).toContain('name: z.string().optional()');
+      expect(optional.content).toContain('age: z.number().optional()');
+    });
+
+    it('applies defaults and directives to non-null arrays', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          names: [String!]! = []
+          tags: [String!]! @constraint(minLength: 1, maxLength: 10)
+        }
+
+        directive @constraint(minLength: Int!, maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          directives: {
+            constraint: {
+              minLength: ['min', '$1'],
+              maxLength: ['max', '$1'],
+            },
+          },
+        },
+        {},
+      );
+
+      expect(result.content).toContain('names: z.array(z.string()).default([])');
+      expect(result.content).toContain('tags: z.array(z.string()).min(1).max(10)');
+    });
+
+    it('supports strict objects and GraphQL descriptions', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserInput {
+          "Display name shown to users"
+          name: String!
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        { schema: 'zod', strictObjectSchemas: true, withDescriptions: true },
+        {},
+      );
+
+      expect(result.content).toContain('name: z.string().describe("Display name shown to users")');
+      expect(result.content).toContain('}).strict()');
+    });
+
+    it('respects enumPrefix: false when typesPrefix is configured', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum UserRole {
+          ADMIN
+          USER
+        }
+
+        input CreateUserInput {
+          role: UserRole!
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          importFrom: './types',
+          typesPrefix: 'I',
+          enumPrefix: false,
+        },
+        {},
+      );
+
+      expect(result.prepend).toContain(`import { UserRole, ICreateUserInput } from './types'`);
+      expect(result.content).toContain('export const UserRoleSchema: z.ZodType<UserRole> = z.nativeEnum(UserRole)');
+      expect(result.content).toContain('export function ICreateUserInputSchema(): z.ZodObject<Properties<ICreateUserInput>>');
+    });
+
+    it('qualifies enum defaults when schemaNamespacedImportName is configured', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum PageType {
+          PUBLIC
+        }
+
+        input PageInput {
+          pageType: PageType! = PUBLIC
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          importFrom: './types',
+          schemaNamespacedImportName: 't',
+          useEnumTypeAsDefaultValue: true,
+        },
+        {},
+      );
+
+      expect(result.content).toContain('pageType: PageTypeSchema.default(t.PageType.Public)');
+    });
+
+    it('keeps native enums as value imports when useTypeImports is configured', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum UserRole {
+          ADMIN
+        }
+
+        input CreateUserInput {
+          role: UserRole!
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          importFrom: './types',
+          useTypeImports: true,
+        },
+        {},
+      );
+
+      expect(result.prepend).toContain(`import { UserRole } from './types'`);
+      expect(result.prepend).toContain(`import type { CreateUserInput } from './types'`);
+    });
+
+    it('generates type-checkable native enum defaults', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum PageType {
+          PUBLIC
+        }
+
+        input PageInput {
+          pageType: PageType! = PUBLIC
+          pageTypes: [PageType!]! = [PUBLIC]
+          inner: InnerInput! = { pageType: PUBLIC }
+          nullableNames: [String!] = null
+          nullableName: String = null
+          names: [String!]! = []
+        }
+
+        input InnerInput {
+          pageType: PageType!
+        }
+      `);
+
+      const result = await plugin(schema, [], { schema: 'zod' }, {});
+
+      expectTypeScriptToCompile(`
+        ${(result.prepend ?? []).join('\n')}
+
+        export enum PageType {
+          Public = 'PUBLIC'
+        }
+
+        export type PageInput = {
+          pageType: PageType
+          pageTypes: PageType[]
+          inner: InnerInput
+          nullableNames?: string[] | null
+          nullableName?: string | null
+          names: string[]
+        }
+
+        export type InnerInput = {
+          pageType: PageType
+        }
+
+        ${result.content}
+      `);
+    });
+
+    it('generates type-checkable null defaults with optional nullable behavior', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input PageInput {
+          nullableNames: [String!] = null
+          nullableName: String = null
+        }
+      `);
+
+      const result = await plugin(schema, [], { schema: 'zod', zodOptionalType: 'optional' }, {});
+
+      expect(result.content).toContain('nullableNames: z.array(z.string()).nullable().optional().default(null)');
+      expect(result.content).toContain('nullableName: z.string().nullable().optional().default(null)');
+      expectTypeScriptToCompile(`
+        ${(result.prepend ?? []).join('\n')}
+
+        export type PageInput = {
+          nullableNames?: string[] | null
+          nullableName?: string | null
+        }
+
+        ${result.content}
+      `);
+    });
+
+    it('coerces nested input object defaults from field defaults', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum PageType {
+          PUBLIC
+        }
+
+        input InnerInput {
+          pageType: PageType! = PUBLIC
+        }
+
+        extend input InnerInput {
+          slug: String = "public"
+        }
+
+        input PageInput {
+          inner: InnerInput! = {}
+        }
+      `);
+
+      const result = await plugin(schema, [], { schema: 'zod' }, {});
+
+      expect(result.content).toContain('inner: z.lazy(() => InnerInputSchema().default({ pageType: PageType.Public, slug: "public" }))');
+    });
+
+    it('supports onlyEnums', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum UserRole {
+          ADMIN
+          USER
+        }
+
+        input CreateUserInput {
+          role: UserRole!
+        }
+      `);
+
+      const result = await plugin(schema, [], { schema: 'zod', onlyEnums: true }, {});
+
+      expect(result.content).toContain('export const UserRoleSchema');
+      expect(result.content).not.toContain('CreateUserInputSchema');
+    });
+
+    it('does not generate operation schemas when onlyEnums is enabled', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        enum UserRole {
+          ADMIN
+        }
+
+        type Query {
+          role: UserRole!
+        }
+      `);
+      const document = parse(/* GraphQL */ `
+        query Role {
+          role
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [{ document }],
+        {
+          schema: 'zod',
+          onlyEnums: true,
+          withOperationType: true,
+        },
+        {},
+      );
+
+      expect(result.content).toContain('export const UserRoleSchema');
+      expect(result.content).not.toContain('RoleQuerySchema');
+    });
+
+    it('orders const object schemas before dependents', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type User {
+          profile: Profile!
+        }
+
+        type Profile {
+          name: String!
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withObjectType: true,
+          validationSchemaExportType: 'const',
+        },
+        {},
+      );
+
+      expect(result.content.indexOf('export const ProfileSchema')).toBeLessThan(
+        result.content.indexOf('export const UserSchema'),
+      );
+      expect(result.content).toContain('profile: z.lazy(() => ProfileSchema)');
+    });
+
+    it('generates operation schemas from selected query fields', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Author {
+          email: String!
+          name: String!
+          password: String!
+        }
+
+        type Query {
+          author: Author!
+        }
+      `);
+      const document = parse(/* GraphQL */ `
+        query Author {
+          author {
+            email
+          }
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [{ document }],
+        {
+          schema: 'zod',
+          withOperationType: true,
+          importFrom: './types',
+          useTypeImports: true,
+        },
+        {},
+      );
+
+      expect(result.prepend).toContain('import type { AuthorQuery } from \'./types\'');
+      expect(result.content).toContain('export function AuthorQuerySchema(): z.ZodType<AuthorQuery>');
+      expect(result.content).toContain('author: z.object({');
+      expect(result.content).toContain('email: z.string()');
+      expect(result.content).not.toContain('name: z.string()');
+      expect(result.content).not.toContain('password: z.string()');
+    });
+
+    it('qualifies operation result types with namespace imports', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Author {
+          email: String!
+        }
+
+        type Query {
+          author: Author!
+        }
+      `);
+      const document = parse(/* GraphQL */ `
+        query Author {
+          author {
+            email
+          }
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [{ document }],
+        {
+          schema: 'zod',
+          withOperationType: true,
+          importFrom: './types',
+          schemaNamespacedImportName: 't',
+        },
+        {},
+      );
+
+      expect(result.prepend).toContain('import * as t from \'./types\'');
+      expect(result.content).toContain('export function AuthorQuerySchema(): z.ZodType<t.AuthorQuery>');
+    });
+
+    it('generates branch schemas for union operation fragments', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type User {
+          name: String!
+        }
+
+        type Post {
+          title: String!
+        }
+
+        union SearchResult = User | Post
+
+        type Query {
+          search: [SearchResult!]!
+        }
+      `);
+      const document = parse(/* GraphQL */ `
+        query Search {
+          search {
+            __typename
+            ... on User {
+              name
+            }
+            ... on Post {
+              title
+            }
+          }
+        }
+      `);
+
+      const result = await plugin(schema, [{ document }], { schema: 'zod', withOperationType: true }, {});
+
+      expect(result.content).toContain('search: z.array(z.union([');
+      expect(result.content).toContain('__typename: z.literal(\'User\')');
+      expect(result.content).toContain('name: z.string()');
+      expect(result.content).toContain('__typename: z.literal(\'Post\')');
+      expect(result.content).toContain('title: z.string()');
+    });
+
+    it('honors conditional operation directives', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Author {
+          email: String!
+          name: String!
+          password: String!
+        }
+
+        type Query {
+          author: Author!
+        }
+      `);
+      const document = parse(/* GraphQL */ `
+        query Author($showEmail: Boolean!) {
+          author {
+            email @include(if: $showEmail)
+            name @skip(if: true)
+            password @include(if: false)
+          }
+        }
+      `);
+
+      const result = await plugin(schema, [{ document }], { schema: 'zod', withOperationType: true }, {});
+
+      expect(result.content).toContain('email: z.string().optional()');
+      expect(result.content).not.toContain('name: z.string()');
+      expect(result.content).not.toContain('password: z.string()');
+    });
+
+    it('generates type-checkable operation schemas with nonOptionalTypename', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Author {
+          email: String!
+        }
+
+        type Query {
+          author: Author!
+        }
+      `);
+      const document = parse(/* GraphQL */ `
+        query Author {
+          author {
+            email
+          }
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [{ document }],
+        {
+          schema: 'zod',
+          withOperationType: true,
+          nonOptionalTypename: true,
+        },
+        {},
+      );
+
+      expect(result.content).toContain('__typename: z.literal(\'Query\')');
+      expect(result.content).toContain('__typename: z.literal(\'Author\')');
+      expectTypeScriptToCompile(`
+        ${(result.prepend ?? []).join('\n')}
+
+        export type AuthorQuery = {
+          __typename: 'Query'
+          author: {
+            __typename: 'Author'
+            email: string
+          }
+        }
+
+        ${result.content}
+      `);
+    });
+
+    it('limits circular object validation depth', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type Movie {
+          id: ID!
+          alternativeTitles: [MovieAlternativeTitle!]!
+        }
+
+        type MovieAlternativeTitle {
+          title: String!
+          movie: Movie!
+        }
+      `);
+
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'zod',
+          withObjectType: true,
+          maxDepth: 1,
+        },
+        {},
+      );
+
+      expect(result.content).toContain('export function MovieSchema(depth = 0): z.ZodObject<Properties<Movie>>');
+      expect(result.content).toContain(
+        'alternativeTitles: z.array(z.lazy(() => depth >= 1 ? definedNonNullAnySchema : MovieAlternativeTitleSchema(depth + 1)))',
+      );
+      expect(result.content).toContain('movie: z.lazy(() => depth >= 1 ? definedNonNullAnySchema : MovieSchema(depth + 1))');
+    });
+
+    it('propagates maxDepth through union schemas', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        type A {
+          b: U!
+        }
+
+        union U = B
+
+        type B {
+          a: A!
+        }
+      `);
+
+      const result = await plugin(schema, [], { schema: 'zod', withObjectType: true, maxDepth: 1 }, {});
+
+      expect(result.content).toContain('export function USchema(depth = 0)');
+      expect(result.content).toContain('return BSchema(depth)');
+      expect(result.content).toContain('b: z.lazy(() => depth >= 1 ? definedNonNullAnySchema : USchema(depth + 1))');
+      expect(result.content).toContain('a: z.lazy(() => depth >= 1 ? definedNonNullAnySchema : ASchema(depth + 1))');
+    });
   });
 });

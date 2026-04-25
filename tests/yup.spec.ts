@@ -1,6 +1,7 @@
 import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql';
 
 import { plugin } from '../src/index';
+import { expectTypeScriptToCompile } from './typescript-compile';
 
 describe('yup', () => {
   it('defined', async () => {
@@ -1716,5 +1717,105 @@ describe('yup', () => {
     expect(result.content).toContain('score: yup.number().defined().nullable().default(100).optional()');
     expect(result.content).toContain('ratio: yup.number().defined().nullable().default(0.5).optional()');
     expect(result.content).toContain('isMember: yup.boolean().defined().nullable().default(true).optional()');
+  });
+
+  it('respects enumPrefix: false when typesPrefix is configured', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum UserRole {
+        ADMIN
+      }
+
+      input CreateUserInput {
+        role: UserRole!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'yup',
+        importFrom: './types',
+        useTypeImports: true,
+        typesPrefix: 'I',
+        enumPrefix: false,
+      },
+      {},
+    );
+
+    expect(result.prepend).toContain('import { UserRole } from \'./types\'');
+    expect(result.prepend).toContain('import type { ICreateUserInput } from \'./types\'');
+    expect(result.content).toContain(
+      'export const UserRoleSchema = yup.string<UserRole>().oneOf(Object.values(UserRole)).defined()',
+    );
+    expect(result.content).toContain('export function ICreateUserInputSchema(): yup.ObjectSchema<ICreateUserInput>');
+    expect(result.content).toContain('role: UserRoleSchema.nonNullable()');
+  });
+
+  it('generates type-checkable yup v1 arrays of non-null input objects', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input QuestionAnswerInput {
+        answer: String
+        index: Int!
+        multichoiceAnswers: [String!]!
+      }
+
+      input UpdateAssessmentInput {
+        answers: [QuestionAnswerInput!]!
+        domainIndex: Int!
+        encodedId: String!
+        groupIndex: Int!
+        previous: Boolean!
+        save: Boolean!
+      }
+    `);
+
+    const result = await plugin(schema, [], { schema: 'yup' }, {});
+
+    expectTypeScriptToCompile(`
+      ${(result.prepend ?? []).join('\n')}
+
+      export type Maybe<T> = T | null;
+      export type QuestionAnswerInput = {
+        answer?: Maybe<string>;
+        index: number;
+        multichoiceAnswers: string[];
+      };
+      export type UpdateAssessmentInput = {
+        answers: QuestionAnswerInput[];
+        domainIndex: number;
+        encodedId: string;
+        groupIndex: number;
+        previous: boolean;
+        save: boolean;
+      };
+
+      ${result.content}
+    `);
+  });
+
+  it('qualifies enum defaults with namespace imports', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+      }
+
+      input PageInput {
+        pageType: PageType! = PUBLIC
+      }
+    `);
+
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'yup',
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
+        useEnumTypeAsDefaultValue: true,
+      },
+      {},
+    );
+
+    expect(result.content).toContain('pageType: PageTypeSchema.nonNullable().default(t.PageType.Public)');
   });
 });
