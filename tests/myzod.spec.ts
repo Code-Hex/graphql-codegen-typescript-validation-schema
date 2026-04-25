@@ -2,6 +2,7 @@ import { buildClientSchema, buildSchema, introspectionFromSchema } from 'graphql
 import dedent from 'ts-dedent';
 
 import { plugin } from '../src/index';
+import { expectTypeScriptToCompile } from './typescript-compile';
 
 const initialEmitValue = dedent(`
   export const definedNonNullAnySchema = myzod.object({});
@@ -48,6 +49,19 @@ describe('myzod', () => {
       }
       "
     `)
+    expectTypeScriptToCompile(`
+      ${(result.prepend ?? []).join('\n')}
+
+      type PrimitiveInput = {
+        a: string;
+        b: string;
+        c: boolean;
+        d: number;
+        e: number;
+      }
+
+      ${result.content}
+    `);
   });
 
   it('nullish', async () => {

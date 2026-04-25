@@ -39,6 +39,19 @@ describe('yup', () => {
       }
       "
     `)
+    expectTypeScriptToCompile(`
+      ${(result.prepend ?? []).join('\n')}
+
+      type PrimitiveInput = {
+        a: string;
+        b: string;
+        c: boolean;
+        d: number;
+        e: number;
+      }
+
+      ${result.content}
+    `);
   });
 
   it('optional', async () => {
