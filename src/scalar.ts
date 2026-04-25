@@ -28,7 +28,7 @@ export function buildScalarSchema(
   }
 
   const tsType = visitor.getScalarType(scalarName);
-  if (tsType in options.typeMap)
+  if (tsType != null && tsType in options.typeMap)
     return options.typeMap[tsType as keyof typeof options.typeMap];
 
   if (config.defaultScalarTypeSchema)
