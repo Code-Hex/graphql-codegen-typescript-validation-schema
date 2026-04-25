@@ -16,11 +16,11 @@ import type { Visitor } from '../visitor.js';
 import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
 import { convertNameParts, DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import {
-  isEnumType,
-  isScalarType,
   Kind,
 } from 'graphql';
+import { buildMaybeLazy } from '../lazy.js';
 import { buildApi, formatDirectiveConfig } from '../directive.js';
+import { buildScalarSchema } from '../scalar.js';
 import {
   escapeGraphQLCharacters,
   InterfaceTypeDefinitionBuilder,
@@ -365,33 +365,12 @@ function generateNameNodeMyZodSchema(config: ValidationSchemaPluginConfig, visit
 }
 
 function maybeLazy(visitor: Visitor, type: TypeNode, schema: string): string {
-  if (!isNamedType(type)) {
-    return schema;
-  }
-
-  const schemaType = visitor.getType(type.name.value);
-  const isComplexType = !isScalarType(schemaType) && !isEnumType(schemaType);
-  return isComplexType ? `myzod.lazy(() => ${schema})` : schema;
+  return buildMaybeLazy(visitor, type, schema, s => `myzod.lazy(() => ${s})`);
 }
 
 function myzod4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
-  if (config.scalarSchemas?.[scalarName])
-    return config.scalarSchemas[scalarName];
-
-  const tsType = visitor.getScalarType(scalarName);
-  switch (tsType) {
-    case 'string':
-      return `myzod.string()`;
-    case 'number':
-      return `myzod.number()`;
-    case 'boolean':
-      return `myzod.boolean()`;
-  }
-
-  if (config.defaultScalarTypeSchema) {
-    return config.defaultScalarTypeSchema;
-  }
-
-  console.warn('unhandled name:', scalarName);
-  return anySchema;
+  return buildScalarSchema(config, visitor, scalarName, {
+    typeMap: { string: 'myzod.string()', number: 'myzod.number()', boolean: 'myzod.boolean()' },
+    fallback: anySchema,
+  });
 }

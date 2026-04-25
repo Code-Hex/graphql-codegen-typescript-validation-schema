@@ -14,8 +14,9 @@ import type { ValidationSchemaPluginConfig } from '../config.js';
 import type { Visitor } from '../visitor.js';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 
-import { isEnumType, isScalarType } from 'graphql';
+import { buildMaybeLazy } from '../lazy.js';
 import { buildApiForValibot, formatDirectiveConfig } from '../directive.js';
+import { buildScalarSchema } from '../scalar.js';
 import {
   InterfaceTypeDefinitionBuilder,
   isListType,
@@ -287,33 +288,12 @@ function generateNameNodeValibotSchema(config: ValidationSchemaPluginConfig, vis
 }
 
 function maybeLazy(visitor: Visitor, type: TypeNode, schema: string): string {
-  if (!isNamedType(type)) {
-    return schema;
-  }
-
-  const schemaType = visitor.getType(type.name.value);
-  const isComplexType = !isScalarType(schemaType) && !isEnumType(schemaType);
-  return isComplexType ? `v.lazy(() => ${schema})` : schema;
+  return buildMaybeLazy(visitor, type, schema, s => `v.lazy(() => ${s})`);
 }
 
 function valibot4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
-  if (config.scalarSchemas?.[scalarName])
-    return config.scalarSchemas[scalarName];
-
-  const tsType = visitor.getScalarType(scalarName);
-  switch (tsType) {
-    case 'string':
-      return `v.string()`;
-    case 'number':
-      return `v.number()`;
-    case 'boolean':
-      return `v.boolean()`;
-  }
-
-  if (config.defaultScalarTypeSchema) {
-    return config.defaultScalarTypeSchema;
-  }
-
-  console.warn('unhandled scalar name:', scalarName);
-  return 'v.any()';
+  return buildScalarSchema(config, visitor, scalarName, {
+    typeMap: { string: 'v.string()', number: 'v.number()', boolean: 'v.boolean()' },
+    fallback: 'v.any()',
+  });
 }

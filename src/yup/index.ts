@@ -16,11 +16,11 @@ import type { Visitor } from '../visitor.js';
 import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
 import { convertNameParts, DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import {
-  isEnumType,
-  isScalarType,
   Kind,
 } from 'graphql';
+import { buildMaybeLazy } from '../lazy.js';
 import { buildApi, formatDirectiveConfig } from '../directive.js';
+import { buildScalarSchema } from '../scalar.js';
 import {
   escapeGraphQLCharacters,
   InterfaceTypeDefinitionBuilder,
@@ -391,33 +391,13 @@ function generateNameNodeYupSchema(config: ValidationSchemaPluginConfig, visitor
 }
 
 function maybeLazy(visitor: Visitor, type: TypeNode, schema: string): string {
-  if (!isNamedType(type)) {
-    return schema;
-  }
-
-  const schemaType = visitor.getType(type.name.value);
-  const isComplexType = !isScalarType(schemaType) && !isEnumType(schemaType);
-  return isComplexType ? `yup.lazy(() => ${schema})` : schema;
+  return buildMaybeLazy(visitor, type, schema, s => `yup.lazy(() => ${s})`);
 }
 
 function yup4Scalar(config: ValidationSchemaPluginConfig, visitor: Visitor, scalarName: string): string {
-  if (config.scalarSchemas?.[scalarName])
-    return `${config.scalarSchemas[scalarName]}.defined()`;
-
-  const tsType = visitor.getScalarType(scalarName);
-  switch (tsType) {
-    case 'string':
-      return `yup.string().defined()`;
-    case 'number':
-      return `yup.number().defined()`;
-    case 'boolean':
-      return `yup.boolean().defined()`;
-  }
-
-  if (config.defaultScalarTypeSchema) {
-    return config.defaultScalarTypeSchema
-  }
-
-  console.warn('unhandled name:', scalarName);
-  return `yup.mixed()`;
+  return buildScalarSchema(config, visitor, scalarName, {
+    typeMap: { string: 'yup.string().defined()', number: 'yup.number().defined()', boolean: 'yup.boolean().defined()' },
+    fallback: 'yup.mixed()',
+    wrapCustom: s => `${s}.defined()`,
+  });
 }

@@ -1,6 +1,7 @@
 import { buildSchema } from 'graphql';
 
 import { plugin } from '../src/index';
+import { expectTypeScriptToCompile } from './typescript-compile';
 
 describe('valibot', () => {
   it('non-null and defined', async () => {
@@ -30,6 +31,19 @@ describe('valibot', () => {
         })
       }
       "
+    `);
+    expectTypeScriptToCompile(`
+      ${(result.prepend ?? []).join('\n')}
+
+      type PrimitiveInput = {
+        a: string;
+        b: string;
+        c: boolean;
+        d: number;
+        e: number;
+      }
+
+      ${result.content}
     `);
   })
   it('nullish', async () => {
