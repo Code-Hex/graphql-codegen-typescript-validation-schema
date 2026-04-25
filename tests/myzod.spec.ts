@@ -1718,4 +1718,60 @@ describe('myzod', () => {
     expect(result.content).toContain('ratio: myzod.number().default(0.5).optional().nullable()');
     expect(result.content).toContain('isMember: myzod.boolean().default(true).optional().nullable()');
   });
+
+  it('respects enumPrefix: false when typesPrefix is configured', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum UserRole {
+        ADMIN
+      }
+
+      input CreateUserInput {
+        role: UserRole!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        importFrom: './types',
+        useTypeImports: true,
+        typesPrefix: 'I',
+        enumPrefix: false,
+      },
+      {},
+    );
+
+    expect(result.prepend).toContain('import { UserRole } from \'./types\'');
+    expect(result.prepend).toContain('import type { ICreateUserInput } from \'./types\'');
+    expect(result.content).toContain('export const UserRoleSchema = myzod.enum(UserRole)');
+    expect(result.content).toContain('export function ICreateUserInputSchema(): myzod.Type<ICreateUserInput>');
+    expect(result.content).toContain('role: UserRoleSchema');
+  });
+
+  it('qualifies enum defaults with namespace imports', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum PageType {
+        PUBLIC
+      }
+
+      input PageInput {
+        pageType: PageType! = PUBLIC
+      }
+    `);
+
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'myzod',
+        importFrom: './types',
+        schemaNamespacedImportName: 't',
+        useEnumTypeAsDefaultValue: true,
+      },
+      {},
+    );
+
+    expect(result.content).toContain('pageType: PageTypeSchema.default(t.PageType.Public)');
+  });
 });

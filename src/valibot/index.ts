@@ -124,9 +124,11 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
     return {
       leave: (node: EnumTypeDefinitionNode) => {
         const visitor = this.createVisitor('both');
-        const enumname = visitor.convertName(node.name.value);
+        const enumname = visitor.convertSchemaName(node.name.value, node.kind);
         const enumTypeName = visitor.prefixTypeNamespace(enumname);
         this.importTypes.push(enumname);
+        if (!this.config.enumsAsTypes)
+          this.importValueTypes.push(enumname);
 
         // hoist enum declarations
         this.enumDeclarations.push(
@@ -205,13 +207,13 @@ export class ValibotSchemaVisitor extends BaseSchemaVisitor {
 
 function generateFieldValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, indentCount: number): string {
   const gen = generateFieldTypeValibotSchema(config, visitor, field, field.type);
-  return indent(`${field.name.value}: ${maybeLazy(visitor, field.type, gen)}`, indentCount);
+  return indent(`${field.name.value}: ${gen}`, indentCount);
 }
 
 function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
   if (isListType(type)) {
     const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type);
-    const arrayGen = `v.array(${maybeLazy(visitor, type.type, gen)})`;
+    const arrayGen = `v.array(${gen})`;
     if (!isNonNullType(parentType))
       return `v.nullish(${arrayGen})`;
 
@@ -219,24 +221,25 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
   }
   if (isNonNullType(type)) {
     const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type);
-    return maybeLazy(visitor, type.type, gen);
+    return gen;
   }
   if (isNamedType(type)) {
     const gen = generateNameNodeValibotSchema(config, visitor, type.name);
     if (isListType(parentType))
-      return `v.nullable(${gen})`;
+      return `v.nullable(${maybeLazy(visitor, type, gen)})`;
 
     const actions = actionsFromDirectives(config, field);
+    const schema = maybeLazy(visitor, type, pipeSchemaAndActions(gen, actions));
 
     if (isNonNullType(parentType)) {
       if (visitor.shouldEmitAsNotAllowEmptyString(type.name.value)) {
         actions.push('v.minLength(1)');
       }
 
-      return pipeSchemaAndActions(gen, actions);
+      return maybeLazy(visitor, type, pipeSchemaAndActions(gen, actions));
     }
 
-    return `v.nullish(${pipeSchemaAndActions(gen, actions)})`;
+    return `v.nullish(${schema})`;
   }
   console.warn('unhandled type:', type);
   return '';

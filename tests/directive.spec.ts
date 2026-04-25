@@ -1,5 +1,5 @@
 import type { ConstArgumentNode, ConstDirectiveNode, ConstValueNode, NameNode } from 'graphql';
-import type { DirectiveConfig, DirectiveObjectArguments } from '../src/config';
+import type { DirectiveConfig, DirectiveObjectArguments, DirectiveSchemaTemplate } from '../src/config';
 import type {
   FormattedDirectiveArguments,
   FormattedDirectiveConfig,
@@ -141,6 +141,17 @@ describe('format directive config', () => {
           },
         },
       },
+      {
+        name: 'directive without arguments',
+        arg: {
+          Positive: 'positive',
+        },
+        want: {
+          Positive: {
+            __directive: ['positive'],
+          },
+        },
+      },
     ];
     for (const tc of cases) {
       it(tc.name, () => {
@@ -154,7 +165,7 @@ describe('format directive config', () => {
     const cases: {
       name: string
       args: {
-        template: string
+        template: DirectiveSchemaTemplate
         apiArgs: any[]
       }
       want: string
@@ -238,6 +249,22 @@ describe('format directive config', () => {
           apiArgs: [{ hello: 'world' }],
         },
         want: `{"hello":"world"}`,
+      },
+      {
+        name: 'function',
+        args: {
+          template: (items: unknown[]) => new Set(items).size === items.length,
+          apiArgs: [],
+        },
+        want: `(items) => new Set(items).size === items.length`,
+      },
+      {
+        name: 'object template',
+        args: {
+          template: { required_error: '$1' },
+          apiArgs: ['The field is required.'],
+        },
+        want: `{"required_error":"The field is required."}`,
       },
       {
         name: 'undefined',
@@ -527,6 +554,40 @@ describe('format directive config', () => {
           }),
         },
         want: `.required("message")`,
+      },
+      {
+        name: 'directive without arguments',
+        args: {
+          config: {
+            __directive: ['positive'],
+          },
+          args: [],
+        },
+        want: `.positive()`,
+      },
+      {
+        name: 'function argument',
+        args: {
+          config: {
+            unique: ['refine', (items: unknown[]) => new Set(items).size === items.length],
+          },
+          args: buildConstArgumentNodes({
+            unique: `true`,
+          }),
+        },
+        want: `.refine((items) => new Set(items).size === items.length)`,
+      },
+      {
+        name: 'object argument template',
+        args: {
+          config: {
+            errorMessage: ['string', { required_error: '$1' }],
+          },
+          args: buildConstArgumentNodes({
+            errorMessage: `"The field is required."`,
+          }),
+        },
+        want: `.string({"required_error":"The field is required."})`,
       },
     ];
     for (const tc of cases) {

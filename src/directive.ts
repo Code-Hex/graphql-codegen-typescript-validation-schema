@@ -1,5 +1,5 @@
 import type { ConstArgumentNode, ConstDirectiveNode, ConstValueNode } from 'graphql';
-import type { DirectiveConfig, DirectiveObjectArguments } from './config.js';
+import type { DirectiveConfig, DirectiveObjectArguments, DirectiveSchemaTemplate } from './config.js';
 import { Kind, valueFromASTUntyped } from 'graphql';
 
 import { isConvertableRegexp } from './regexp.js';
@@ -9,12 +9,14 @@ export interface FormattedDirectiveConfig {
 }
 
 export interface FormattedDirectiveArguments {
-  [argument: string]: string[] | FormattedDirectiveObjectArguments | undefined
+  [argument: string]: DirectiveSchemaTemplate[] | FormattedDirectiveObjectArguments | undefined
 }
 
 export interface FormattedDirectiveObjectArguments {
-  [matched: string]: string[] | undefined
+  [matched: string]: DirectiveSchemaTemplate[] | undefined
 }
+
+const DIRECTIVE_SCHEMA_KEY = '__directive';
 
 function isFormattedDirectiveObjectArguments(arg: FormattedDirectiveArguments[keyof FormattedDirectiveArguments]): arg is FormattedDirectiveObjectArguments {
   return arg !== undefined && !Array.isArray(arg)
@@ -47,12 +49,18 @@ function isFormattedDirectiveObjectArguments(arg: FormattedDirectiveArguments[ke
 export function formatDirectiveConfig(config: DirectiveConfig): FormattedDirectiveConfig {
   return Object.fromEntries(
     Object.entries(config).map(([directive, arg]) => {
+      if (Array.isArray(arg))
+        return [directive, { [DIRECTIVE_SCHEMA_KEY]: arg }];
+
+      if (typeof arg !== 'object' || arg === null || typeof arg === 'function')
+        return [directive, { [DIRECTIVE_SCHEMA_KEY]: [arg] }];
+
       const formatted = Object.fromEntries(
         Object.entries(arg).map(([arg, val]) => {
           if (Array.isArray(val))
             return [arg, val];
 
-          if (typeof val === 'string')
+          if (typeof val !== 'object' || val === null || typeof val === 'function')
             return [arg, [val, '$1']];
 
           return [arg, formatDirectiveObjectArguments(val)];
@@ -154,13 +162,16 @@ export function buildApiForValibot(config: FormattedDirectiveConfig, directives:
     .flat()
 }
 
-function buildApiSchema(validationSchema: string[] | undefined, argValue: ConstValueNode): string {
+function buildApiSchema(validationSchema: DirectiveSchemaTemplate[] | undefined, argValue?: ConstValueNode): string {
   if (!validationSchema)
     return '';
 
   const schemaApi = validationSchema[0];
+  if (typeof schemaApi !== 'string')
+    return '';
+
   const schemaApiArgs = validationSchema.slice(1).map((templateArg) => {
-    const gqlSchemaArgs = apiArgsFromConstValueNode(argValue);
+    const gqlSchemaArgs = argValue ? apiArgsFromConstValueNode(argValue) : [];
     return applyArgToApiSchemaTemplate(templateArg, gqlSchemaArgs);
   });
   return `.${schemaApi}(${schemaApiArgs.join(', ')})`;
@@ -171,6 +182,11 @@ function buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, arg
 }
 
 function _buildApiFromDirectiveArguments(config: FormattedDirectiveArguments, args: ReadonlyArray<ConstArgumentNode>): string[] {
+  if (args.length === 0) {
+    const validationSchema = config[DIRECTIVE_SCHEMA_KEY];
+    return [isFormattedDirectiveObjectArguments(validationSchema) ? '' : buildApiSchema(validationSchema)];
+  }
+
   return args
     .map((arg) => {
       const argName = arg.name.value;
@@ -190,7 +206,10 @@ function buildApiFromDirectiveObjectArguments(config: FormattedDirectiveObjectAr
   return buildApiSchema(validationSchema, argValue);
 }
 
-function applyArgToApiSchemaTemplate(template: string, apiArgs: any[]): string {
+function applyArgToApiSchemaTemplate(template: DirectiveSchemaTemplate, apiArgs: any[]): string {
+  if (typeof template !== 'string')
+    return stringify(applyArgsToTemplateValue(template, apiArgs));
+
   const matches = template.matchAll(/\$(\d+)/g);
   for (const match of matches) {
     const placeholder = match[0]; // `$1`
@@ -215,6 +234,9 @@ function stringify(arg: any, quoteString?: boolean): string {
   if (Array.isArray(arg))
     return arg.map(v => stringify(v, true)).join(',');
 
+  if (typeof arg === 'function')
+    return arg.toString();
+
   if (typeof arg === 'string') {
     if (isConvertableRegexp(arg))
       return arg;
@@ -231,6 +253,33 @@ function stringify(arg: any, quoteString?: boolean): string {
     return `${arg}`;
 
   return JSON.stringify(arg);
+}
+
+function applyArgsToTemplateValue(template: DirectiveSchemaTemplate, apiArgs: any[]): any {
+  if (typeof template === 'string') {
+    if (template === '')
+      return template;
+
+    let value = template;
+    for (const match of template.matchAll(/\$(\d+)/g)) {
+      const placeholder = match[0];
+      const idx = Number.parseInt(match[1], 10) - 1;
+      const apiArg = apiArgs[idx];
+      value = value.replace(placeholder, apiArg === undefined ? '' : apiArg);
+    }
+    return value;
+  }
+
+  if (Array.isArray(template))
+    return template.map(item => applyArgsToTemplateValue(item, apiArgs));
+
+  if (template && typeof template === 'object') {
+    return Object.fromEntries(
+      Object.entries(template).map(([key, value]) => [key, applyArgsToTemplateValue(value, apiArgs)]),
+    );
+  }
+
+  return template;
 }
 
 function apiArgsFromConstValueNode(value: ConstValueNode): any[] {

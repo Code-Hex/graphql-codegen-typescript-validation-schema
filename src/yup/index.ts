@@ -175,9 +175,11 @@ export class YupSchemaVisitor extends BaseSchemaVisitor {
     return {
       leave: (node: EnumTypeDefinitionNode) => {
         const visitor = this.createVisitor('both');
-        const enumname = visitor.convertName(node.name.value);
+        const enumname = visitor.convertSchemaName(node.name.value, node.kind);
         const enumTypeName = visitor.prefixTypeNamespace(enumname);
         this.importTypes.push(enumname);
+        if (!this.config.enumsAsTypes)
+          this.importValueTypes.push(enumname);
 
         // hoise enum declarations
         if (this.config.enumsAsTypes) {
@@ -307,7 +309,10 @@ function shapeFields(fields: readonly (FieldDefinitionNode | InputValueDefinitio
               : isNamedType(field.type)
                 ? field.type.name.value
                 : field.name.value;
-            fieldSchema = `${fieldSchema}.default(${visitor.convertName(enumName)}.${value})`;
+            const enumTypeName = visitor.prefixTypeNamespace(
+              visitor.convertSchemaName(enumName, visitor.getType(enumName)?.astNode?.kind),
+            );
+            fieldSchema = `${fieldSchema}.default(${enumTypeName}.${value})`;
           }
           else {
             fieldSchema = `${fieldSchema}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;

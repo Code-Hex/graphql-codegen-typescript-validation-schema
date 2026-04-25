@@ -45,8 +45,16 @@ export class Visitor extends TsVisitor {
 
     return {
       targetKind: astNode.kind,
-      convertName: () => this.convertName(astNode.name.value),
+      convertName: () => this.convertSchemaName(astNode.name.value, astNode.kind),
     };
+  }
+
+  public convertSchemaName(name: string, kind?: string): string {
+    return this.convertName(name, {
+      useTypesPrefix: kind === 'EnumTypeDefinition' && this.pluginConfig.enumPrefix === false
+        ? false
+        : undefined,
+    });
   }
 
   public getScalarType(scalarName: string): string | null {

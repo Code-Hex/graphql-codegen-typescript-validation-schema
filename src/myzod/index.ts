@@ -163,9 +163,11 @@ export class MyZodSchemaVisitor extends BaseSchemaVisitor {
     return {
       leave: (node: EnumTypeDefinitionNode) => {
         const visitor = this.createVisitor('both');
-        const enumname = visitor.convertName(node.name.value);
+        const enumname = visitor.convertSchemaName(node.name.value, node.kind);
         const enumTypeName = visitor.prefixTypeNamespace(enumname);
         this.importTypes.push(enumname);
+        if (!this.config.enumsAsTypes)
+          this.importValueTypes.push(enumname);
         // z.enum are basically myzod.literals
         // hoist enum declarations
         this.enumDeclarations.push(
@@ -300,7 +302,10 @@ function generateFieldTypeMyZodSchema(config: ValidationSchemaPluginConfig, visi
           if (config.namingConvention?.enumValues)
             value = convertNameParts(defaultValue.value, resolveExternalModuleAndFn(config.namingConvention?.enumValues), config?.namingConvention?.transformUnderscore);
 
-          appliedDirectivesGen = `${appliedDirectivesGen}.default(${visitor.convertName(type.name.value)}.${value})`;
+          const enumTypeName = visitor.prefixTypeNamespace(
+            visitor.convertSchemaName(type.name.value, visitor.getType(type.name.value)?.astNode?.kind),
+          );
+          appliedDirectivesGen = `${appliedDirectivesGen}.default(${enumTypeName}.${value})`;
         }
         else {
           appliedDirectivesGen = `${appliedDirectivesGen}.default("${escapeGraphQLCharacters(defaultValue.value)}")`;

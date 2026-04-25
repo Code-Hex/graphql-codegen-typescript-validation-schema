@@ -181,8 +181,8 @@ describe('valibot', () => {
 
       export function NestedInputSchema(): v.GenericSchema<NestedInput> {
         return v.object({
-          child: v.lazy(() => v.nullish(NestedInputSchema())),
-          childrens: v.nullish(v.array(v.lazy(() => v.nullable(NestedInputSchema()))))
+          child: v.nullish(v.lazy(() => NestedInputSchema())),
+          childrens: v.nullish(v.array(v.nullable(v.lazy(() => NestedInputSchema()))))
         })
       }
       "
@@ -772,7 +772,7 @@ describe('valibot', () => {
           export function BookSchema(): v.GenericSchema<Book> {
             return v.object({
               __typename: v.optional(v.literal('Book')),
-              author: v.lazy(() => v.nullish(AuthorSchema())),
+              author: v.nullish(v.lazy(() => AuthorSchema())),
               title: v.nullish(v.string())
             })
           }
@@ -780,7 +780,7 @@ describe('valibot', () => {
           export function AuthorSchema(): v.GenericSchema<Author> {
             return v.object({
               __typename: v.optional(v.literal('Author')),
-              books: v.nullish(v.array(v.lazy(() => v.nullable(BookSchema())))),
+              books: v.nullish(v.array(v.nullable(v.lazy(() => BookSchema())))),
               name: v.nullish(v.string())
             })
           }
@@ -1019,7 +1019,7 @@ describe('valibot', () => {
       export function GeometrySchema(): v.GenericSchema<Geometry> {
         return v.object({
           __typename: v.optional(v.literal('Geometry')),
-          shape: v.lazy(() => v.nullish(ShapeSchema()))
+          shape: v.nullish(v.lazy(() => ShapeSchema()))
         })
       }
       "
@@ -1209,14 +1209,14 @@ describe('valibot', () => {
 
         export function BookSchema(): v.GenericSchema<Book> {
           return v.object({
-            author: v.lazy(() => v.nullish(AuthorSchema())),
+            author: v.nullish(v.lazy(() => AuthorSchema())),
             title: v.nullish(v.string())
           })
         }
 
         export function AuthorSchema(): v.GenericSchema<Author> {
           return v.object({
-            books: v.nullish(v.array(v.lazy(() => v.nullable(BookSchema())))),
+            books: v.nullish(v.array(v.nullable(v.lazy(() => BookSchema())))),
             name: v.nullish(v.string())
           })
         }
@@ -1296,6 +1296,49 @@ describe('valibot', () => {
     });
   })
   it.todo('properly generates custom directive values')
+  it('wraps lazy object references with nullish for nullable fields', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input UserInput {
+        kind: UserKind
+      }
+
+      input UserKind {
+        name: String!
+      }
+    `);
+
+    const result = await plugin(schema, [], { schema: 'valibot' }, {});
+    expect(result.content).toContain('kind: v.nullish(v.lazy(() => UserKindSchema()))');
+  })
+  it('respects enumPrefix: false when typesPrefix is configured', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      enum UserRole {
+        ADMIN
+      }
+
+      input CreateUserInput {
+        role: UserRole!
+      }
+    `);
+    const result = await plugin(
+      schema,
+      [],
+      {
+        schema: 'valibot',
+        importFrom: './types',
+        useTypeImports: true,
+        typesPrefix: 'I',
+        enumPrefix: false,
+      },
+      {},
+    );
+
+    expect(result.prepend).toContain('import { UserRole } from \'./types\'');
+    expect(result.prepend).toContain('import type { ICreateUserInput } from \'./types\'');
+    expect(result.content).toContain('export const UserRoleSchema = v.enum_(UserRole)');
+    expect(result.content).toContain('export function ICreateUserInputSchema(): v.GenericSchema<ICreateUserInput>');
+    expect(result.content).toContain('role: UserRoleSchema');
+  })
   it.todo('exports as const instead of func')
   it.todo('generate both input & type, export as const')
   it.todo('issue #394')

@@ -1,3 +1,4 @@
+import type { Types } from '@graphql-codegen/plugin-helpers';
 import type { ASTNode, ASTVisitFn } from 'graphql';
 
 export type NewVisitor = Partial<{
@@ -9,4 +10,5 @@ export type NewVisitor = Partial<{
 export interface SchemaVisitor extends NewVisitor {
   buildImports: () => string[]
   initialEmit: () => string
+  buildOperationDefinitions: (documents: Types.DocumentFile[]) => string[]
 }
