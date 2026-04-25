@@ -2,65 +2,222 @@
 
 [![Test](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/actions/workflows/ci.yml/badge.svg)](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/actions/workflows/ci.yml) [![npm version](https://badge.fury.io/js/graphql-codegen-typescript-validation-schema.svg)](https://badge.fury.io/js/graphql-codegen-typescript-validation-schema)
 
-[GraphQL code generator](https://github.com/dotansimha/graphql-code-generator) plugin to generate form validation schema from your GraphQL schema.
+[GraphQL Code Generator](https://github.com/dotansimha/graphql-code-generator) plugin that generates validation schemas from your GraphQL schema.
 
-- [x] support [yup](https://github.com/jquense/yup)
-- [x] support [zod](https://github.com/colinhacks/zod)
-- [x] support [zod v4](https://github.com/colinhacks/zod) (zodv4)
-- [x] support [myzod](https://github.com/davidmdm/myzod)
-- [x] support [valibot](https://valibot.dev/)
+- [x] [yup](https://github.com/jquense/yup)
+- [x] [zod](https://github.com/colinhacks/zod)
+- [x] [zod v4](https://github.com/colinhacks/zod) (`zodv4`)
+- [x] [myzod](https://github.com/davidmdm/myzod)
+- [x] [valibot](https://valibot.dev/)
 
-## Quick Start
+## Quick start
 
-Start by installing this plugin and write simple plugin config;
+GraphQL Code Generator's docs now lead with [`codegen.ts`](https://the-guild.dev/graphql/codegen/docs/config-reference/codegen-config). YAML still works, but new examples here use TypeScript config so plugin options can be typed and kept close to the plugin that consumes them.
 
 ```sh
-$ npm i graphql-codegen-typescript-validation-schema
+npm i graphql zod
+npm i -D @graphql-codegen/cli @graphql-codegen/typescript graphql-codegen-typescript-validation-schema
 ```
 
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-      - typescript-validation-schema # specify to use this plugin
-    config:
-      # You can put the config for typescript plugin here
-      # see: https://www.graphql-code-generator.com/plugins/typescript
-      strictScalars: true
-      # Overrides built-in ID scalar to both input and output types as string.
-      # see: https://the-guild.dev/graphql/codegen/plugins/typescript/typescript#scalars
-      scalars:
-        ID: string
-      # You can also write the config for this plugin together
-      schema: yup # or zod
-```
-
-It is recommended to write `scalars` config for built-in type `ID`, as in the yaml example shown above. For more information: [#375](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/pull/375)
-
-You can check [example](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) directory if you want to see more complex config example or how is generated some files.
-
-The Q&A for each schema is written in the README in the respective example directory.
-
-### TypeScript config and presets
-
-When you use `codegen.ts` with a preset such as `client`, put this plugin's options under the plugin entry. Some presets do not pass the shared generate-level `config` object to every plugin.
+The example below uses `zodv4`. If you use another validator, install that package instead and change `schema` to `yup`, `zod`, `myzod`, or `valibot`. The generated schema code imports the matching library, so lying here will fail in the least interesting way.
 
 ```ts
 import type { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
-  schema: 'schema.graphql',
+  schema: './schema.graphql',
   generates: {
-    './src/gql/': {
-      preset: 'client',
+    './src/graphql.ts': {
       plugins: [
+        'typescript',
         {
           'typescript-validation-schema': {
-            schema: 'zod',
+            schema: 'zodv4',
             scalarSchemas: {
               DateTime: 'z.string().datetime()',
             },
+          },
+        },
+      ],
+      config: {
+        strictScalars: true,
+        scalars: {
+          ID: {
+            input: 'string',
+            output: 'string',
+          },
+          DateTime: {
+            input: 'string',
+            output: 'string',
+          },
+        },
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+Run Codegen with:
+
+```sh
+npx graphql-codegen --config codegen.ts
+```
+
+The `scalars.ID` mapping is worth keeping even though it feels boring. It makes the generated TypeScript type for `ID` line up with the validation schema. See [#375](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/pull/375) for the original footgun.
+
+YAML configuration remains supported. Existing projects can keep it, and the old style examples live in [docs/yaml-configuration.md](./docs/yaml-configuration.md).
+
+For larger examples, see the [example](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) directory. Each schema package has extra notes in its own example README.
+
+## Where plugin config belongs
+
+GraphQL Code Generator accepts config at the [root, output, and plugin level](https://the-guild.dev/graphql/codegen/docs/config-reference/config-field). For this plugin, put validation-specific options on the `typescript-validation-schema` plugin entry when possible:
+
+```ts
+import type { CodegenConfig } from '@graphql-codegen/cli';
+
+const config: CodegenConfig = {
+  schema: './schema.graphql',
+  generates: {
+    './src/validation.ts': {
+      plugins: [
+        {
+          'typescript-validation-schema': {
+            schema: 'zodv4',
+            scalarSchemas: {
+              DateTime: 'z.string().datetime()',
+            },
+          },
+        },
+      ],
+      config: {
+        scalars: {
+          ID: {
+            input: 'string',
+            output: 'string',
+          },
+          DateTime: {
+            input: 'string',
+            output: 'string',
+          },
+        },
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+Shared options such as `scalars`, `strictScalars`, `typesPrefix`, or `enumsAsTypes` can still live at output level when they should apply to both `typescript` and this plugin.
+
+## Client preset
+
+For client apps, GraphQL Code Generator recommends the [`client` preset](https://the-guild.dev/graphql/codegen/plugins/presets/client-preset). Install the preset, then generate client artifacts and validation schemas as separate outputs:
+
+```sh
+npm i -D @graphql-codegen/client-preset
+```
+
+```ts
+import type { CodegenConfig } from '@graphql-codegen/cli';
+
+const config: CodegenConfig = {
+  schema: './schema.graphql',
+  documents: ['src/**/*.{graphql,ts,tsx}'],
+  generates: {
+    './src/gql/': {
+      preset: 'client',
+    },
+    './src/validation.ts': {
+      plugins: [
+        {
+          'typescript-validation-schema': {
+            schema: 'zodv4',
+            importFrom: './gql/graphql',
+            scalarSchemas: {
+              DateTime: 'z.string().datetime()',
+            },
+          },
+        },
+      ],
+      config: {
+        scalars: {
+          ID: {
+            input: 'string',
+            output: 'string',
+          },
+          DateTime: {
+            input: 'string',
+            output: 'string',
+          },
+        },
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+This avoids relying on preset internals to pass a shared `config` object through to every plugin.
+
+## Config API reference
+
+All snippets below are values for the `typescript-validation-schema` plugin config object unless the example shows a full `CodegenConfig`.
+
+### `schema`
+
+type: `ValidationSchema` default: `'yup'`
+
+Selects the validation library.
+
+```ts
+{
+  schema: 'yup',
+}
+```
+
+Supported values are `yup`, `zod`, `zodv4`, `myzod`, and `valibot`.
+
+### `zodImportPath`
+
+type: `string` default: `'zod'`
+
+Sets a custom import path for Zod. This only applies when `schema` is `zod`.
+
+```ts
+{
+  schema: 'zod',
+  zodImportPath: 'zod/v3',
+}
+```
+
+Use this if your project uses Zod v4 but wants this plugin's Zod v3-compatible output.
+
+### `importFrom`
+
+type: `string`
+
+Imports GraphQL TypeScript types from another generated file. If you skip this option, the generator omits the type import.
+
+```ts
+import type { CodegenConfig } from '@graphql-codegen/cli';
+
+const config: CodegenConfig = {
+  schema: './schema.graphql',
+  generates: {
+    './src/graphql.ts': {
+      plugins: ['typescript'],
+    },
+    './src/validation.ts': {
+      plugins: [
+        {
+          'typescript-validation-schema': {
+            schema: 'zodv4',
+            importFrom: './graphql',
           },
         },
       ],
@@ -71,297 +228,226 @@ const config: CodegenConfig = {
 export default config;
 ```
 
-## Config API Reference
-
-### `schema`
-
-type: `ValidationSchema` default: `'yup'`
-
-Specify generete validation schema you want.
-
-You can specify `yup` or `zod` or `zodv4` or `myzod` or `valibot`.
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-      - typescript-validation-schema
-    config:
-      schema: yup
-```
-
-### `zodImportPath`
-
-type: `string` default: `'zod'`
-
-Specifies a custom import path for the zod package. This is useful when you want to use a specific
-version or subpath of zod, such as the v3 compatibility layer in zod v4 ('zod/v3').
-Only applies when schema is set to 'zod'.
-
-```yml
-generates:
-  path/to/schemas.ts:
-    plugins:
-      - typescript
-      - typescript-validation-schema
-    config:
-      schema: zod
-      # Use zod v3 compatibility layer when using zod v4
-      zodImportPath: zod/v3
-```
-
-### `importFrom`
-
-type: `string`
-
-When provided, import types from the generated typescript types file path. if not given, omit import statement.
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-  path/to/validation.ts:
-    plugins:
-      - typescript-validation-schema
-    config:
-      importFrom: ./graphql # path for generated ts code
-```
-
-Then the generator generates code with import statement like below.
+Generated code imports from that file:
 
 ```ts
 import { GeneratedInput } from './graphql'
-
-/* generates validation schema here */
 ```
 
 ### `schemaNamespacedImportName`
 
 type: `string`
 
-If defined, will use named imports from the specified module (defined in `importFrom`) rather than individual imports for each type.
+Uses a namespace import from `importFrom` instead of one named import per type.
 
-```yml
-generates:
-  path/to/types.ts:
-    plugins:
-      - typescript
-  path/to/schemas.ts:
-    plugins:
-      - graphql-codegen-validation-schema
-    config:
-      schema: yup
-      importFrom: ./path/to/types
-      schemaNamespacedImportName: types
+```ts
+{
+  schema: 'yup',
+  importFrom: './graphql',
+  schemaNamespacedImportName: 'types',
+}
 ```
 
-Then the generator generates code with import statement like below.
+Generated code:
 
 ```ts
 import * as types from './graphql'
-
-/* generates validation schema here */
 ```
 
 ### `useTypeImports`
 
 type: `boolean` default: `false`
 
-Will use `import type {}` rather than `import {}` when importing generated TypeScript types.
-This gives compatibility with TypeScript's "importsNotUsedAsValues": "error" option.
-Should used in conjunction with `importFrom` option.
+Uses `import type {}` when importing generated TypeScript types. Use it with `importFrom`.
+
+```ts
+{
+  schema: 'zodv4',
+  importFrom: './graphql',
+  useTypeImports: true,
+}
+```
 
 ### `typesPrefix`
 
-type: `string` default: (empty)
+type: `string` default: `''`
 
-Prefixes all import types from generated typescript type.
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-  path/to/validation.ts:
-    plugins:
-      - typescript-validation-schema
-    config:
-      typesPrefix: I
-      importFrom: ./graphql # path for generated ts code
-```
-
-Then the generator generates code with import statement like below.
+Prefixes imported generated type names.
 
 ```ts
-import { IGeneratedInput } from './graphql'
-
-/* generates validation schema here */
+{
+  schema: 'zodv4',
+  importFrom: './graphql',
+  typesPrefix: 'I',
+}
 ```
 
 ### `typesSuffix`
 
-type: `string` default: (empty)
+type: `string` default: `''`
 
-Suffixes all import types from generated typescript type.
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-  path/to/validation.ts:
-    plugins:
-      - typescript-validation-schema
-    config:
-      typesSuffix: I
-      importFrom: ./graphql # path for generated ts code
-```
-
-Then the generator generates code with import statement like below.
+Suffixes imported generated type names.
 
 ```ts
-import { GeneratedInputI } from './graphql'
-
-/* generates validation schema here */
+{
+  schema: 'zodv4',
+  importFrom: './graphql',
+  typesSuffix: 'I',
+}
 ```
 
 ### `enumsAsTypes`
 
 type: `boolean` default: `false`
 
-Generates enum as TypeScript `type` instead of `enum`.
+Generates enum validation schemas for TypeScript string union types instead of TypeScript `enum`.
+
+```ts
+{
+  schema: 'zodv4',
+  enumsAsTypes: true,
+}
+```
 
 ### `notAllowEmptyString`
 
 type: `boolean` default: `false`
 
-Generates validation string schema as do not allow empty characters by default.
+Disallows empty strings in generated string schemas.
+
+```ts
+{
+  schema: 'yup',
+  notAllowEmptyString: true,
+}
+```
 
 ### `scalarSchemas`
 
 type: `ScalarSchemas`
 
-Extends or overrides validation schema for the built-in scalars and custom GraphQL scalars.
+Overrides validation schemas for built-in scalars and custom GraphQL scalars.
 
-#### yup schema
-
-```yml
-config:
-  schema: yup
-  scalarSchemas:
-    Date: yup.date()
-    Email: yup.string().email()
+```ts
+{
+  schema: 'yup',
+  scalarSchemas: {
+    Date: 'yup.date()',
+    Email: 'yup.string().email()',
+  },
+}
 ```
 
-#### zod schema
-
-```yml
-config:
-  schema: zod
-  scalarSchemas:
-    Date: z.date()
-    Email: z.string().email()
+```ts
+{
+  schema: 'zodv4',
+  scalarSchemas: {
+    Date: 'z.date()',
+    Email: 'z.string().email()',
+  },
+}
 ```
 
-#### zodv4 schema
-
-```yml
-config:
-  schema: zodv4
-  scalarSchemas:
-    Date: z.date()
-    Email: z.string().email()
+```ts
+{
+  schema: 'valibot',
+  scalarSchemas: {
+    Date: 'v.date()',
+    Email: 'v.pipe(v.string(), v.email())',
+  },
+}
 ```
 
 ### `defaultScalarTypeSchema`
 
 type: `string`
 
-Fallback scalar type for undefined scalar types in the schema not found in `scalarSchemas`.
+Fallback validation schema for scalar types not listed in `scalarSchemas`.
 
-#### yup schema
-```yml
-config:
-  schema: yup
-  defaultScalarSchema: yup.unknown()
-```
-
-#### zod schema
-```yml
-config:
-  schema: zod
-  defaultScalarSchema: z.unknown()
-```
-
-#### zodv4 schema
-```yml
-config:
-  schema: zodv4
-  defaultScalarSchema: z.unknown()
+```ts
+{
+  schema: 'zodv4',
+  defaultScalarTypeSchema: 'z.unknown()',
+}
 ```
 
 ### `withObjectType`
 
 type: `boolean` default: `false`
 
-Generates validation schema with GraphQL type objects. But excludes `Query`, `Mutation`, `Subscription` objects.
+Generates validation schemas for GraphQL object types. `Query`, `Mutation`, and `Subscription` are excluded.
 
-It is currently added for the purpose of using simple objects. See also [#20](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/issues/20#issuecomment-1058969191), [#107](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/issues/107).
+```ts
+{
+  schema: 'zodv4',
+  withObjectType: true,
+}
+```
 
-This option currently **does not support fragment** generation. If you are interested, send me PR would be greatly appreciated!
+This option was added for projects that need simple object schemas. See [#20](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/issues/20#issuecomment-1058969191) and [#107](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/issues/107).
+
+`withObjectType` does not support fragment generation.
 
 ### `withOperationType`
 
 type: `boolean` default: `false`
 
-Generates Zod schemas for GraphQL operation result selection sets.
-Use this when `withObjectType` is too broad because it describes the full GraphQL object type, while your query only selects a subset of fields.
+Generates Zod schemas for GraphQL operation result selection sets. Use this when `withObjectType` is too broad because your query selects only part of an object.
 
-```yml
-config:
-  schema: zod
-  withOperationType: true
+```ts
+{
+  schema: 'zodv4',
+  withOperationType: true,
+}
 ```
 
-Currently supported for `schema: zod` and `schema: zodv4`.
+Currently supported for `schema: 'zod'` and `schema: 'zodv4'`.
 
 ### `maxDepth`
 
 type: `number`
 
-Limits nested object validation depth for `withObjectType` schemas generated by `schema: zod` and `schema: zodv4`.
-This is useful for cyclic output graphs where validating the entire object graph would recurse forever.
+Limits nested object validation depth for `withObjectType` schemas generated by `schema: 'zod'` and `schema: 'zodv4'`.
 
-```yml
-config:
-  schema: zod
-  withObjectType: true
-  maxDepth: 1
+```ts
+{
+  schema: 'zodv4',
+  withObjectType: true,
+  maxDepth: 1,
+}
 ```
+
+Use this for cyclic output graphs where validating the whole object graph would recurse forever.
 
 ### `validationSchemaExportType`
 
 type: `ValidationSchemaExportType` default: `'function'`
 
-Specify validation schema export type.
+Controls whether schemas are exported as functions or constants.
+
+```ts
+{
+  schema: 'zodv4',
+  validationSchemaExportType: 'const',
+}
+```
 
 ### `zodOptionalType`
 
 type: `'nullish' | 'nullable' | 'optional'` default: `'nullish'`
 
-Controls how nullable GraphQL fields are generated for `schema: zod` and `schema: zodv4`.
-The default `nullish` mode matches GraphQL input coercion, where a nullable input field may be omitted or passed as `null`.
-Use `nullable` or `optional` only when your generated TypeScript `Maybe`/`InputMaybe` contract intentionally differs from GraphQL's default input coercion behavior.
+Controls how nullable GraphQL fields are generated for `schema: 'zod'` and `schema: 'zodv4'`.
 
-```yml
-config:
-  schema: zod
-  zodOptionalType: nullable
+```ts
+{
+  schema: 'zodv4',
+  zodOptionalType: 'nullable',
+}
 ```
 
-`nullishBehavior` is also accepted as an alias.
+The default `nullish` mode matches GraphQL input coercion, where a nullable input field may be omitted or passed as `null`. Use `nullable` or `optional` only when your generated TypeScript `Maybe` or `InputMaybe` contract differs from GraphQL's default behavior.
+
+`nullishBehavior` is accepted as an alias.
 
 ### `strictObjectSchemas`
 
@@ -369,11 +455,25 @@ type: `boolean` default: `false`
 
 Appends `.strict()` to generated Zod object schemas.
 
+```ts
+{
+  schema: 'zodv4',
+  strictObjectSchemas: true,
+}
+```
+
 ### `withDescriptions`
 
 type: `boolean` default: `false`
 
 Appends `.describe()` to generated Zod fields and object schemas from GraphQL descriptions.
+
+```ts
+{
+  schema: 'zodv4',
+  withDescriptions: true,
+}
+```
 
 ### `onlyEnums`
 
@@ -381,25 +481,48 @@ type: `boolean` default: `false`
 
 Generates only enum validation schemas.
 
+```ts
+{
+  schema: 'zodv4',
+  onlyEnums: true,
+}
+```
+
 ### `useEnumTypeAsDefaultValue`
 
 type: `boolean` default: `false`
 
-Uses the full path of the enum type as the default value instead of the stringified value.
+Uses the enum type path as the default value instead of the stringified enum value.
+
+```ts
+{
+  schema: 'zodv4',
+  useEnumTypeAsDefaultValue: true,
+}
+```
 
 ### `namingConvention`
 
-type: `NamingConventionMap` default: `{ enumValues: "change-case-all#pascalCase" }`
+type: `NamingConventionMap` default: `{ enumValues: 'change-case-all#pascalCase' }`
 
-Uses the full path of the enum type as the default value instead of the stringified value.
+Controls generated names. This follows GraphQL Code Generator's [`namingConvention`](https://the-guild.dev/graphql/codegen/docs/config-reference/naming-convention#namingconvention) option.
 
-Related: https://the-guild.dev/graphql/codegen/docs/config-reference/naming-convention#namingconvention
+```ts
+{
+  schema: 'zodv4',
+  namingConvention: {
+    enumValues: 'change-case-all#upperCase',
+  },
+}
+```
 
 ### `directives`
 
 type: `DirectiveConfig`
 
-Generates validation schema with more API based on directive schema. For example, yaml config and GraphQL schema is here.
+Maps GraphQL directives to validation library APIs.
+
+Given this schema:
 
 ```graphql
 input ExampleInput {
@@ -408,41 +531,30 @@ input ExampleInput {
 }
 ```
 
-#### yup schema
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-      - typescript-validation-schema
-    config:
-      schema: yup
-      directives:
-        # Write directives like
-        #
-        # directive:
-        #   arg1: schemaApi
-        #   arg2: ["schemaApi2", "Hello $1"]
-        #
-        # See more examples in `./tests/directive.spec.ts`
-        # https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/blob/main/tests/directive.spec.ts
-        required:
-          msg: required
-        constraint:
-          minLength: min
-          # Replace $1 with specified `startsWith` argument value of the constraint directive
-          startsWith: [matches, /^$1/]
-          format:
-            # This example means `validation-schema: directive-arg`
-            # directive-arg is supported String and Enum.
-            email: email
-```
-
-Then generates yup validation schema like below.
+Yup config:
 
 ```ts
-export function ExampleInputSchema(): yup.SchemaOf<ExampleInput> {
+{
+  schema: 'yup',
+  directives: {
+    required: {
+      msg: 'required',
+    },
+    constraint: {
+      minLength: 'min',
+      startsWith: ['matches', /^$1/],
+      format: {
+        email: 'email',
+      },
+    },
+  },
+}
+```
+
+Generated Yup schema:
+
+```ts
+export function ExampleInputSchema(): yup.ObjectSchema<ExampleInput> {
   return yup.object({
     email: yup.string().defined().required('Hello, World!').min(50).email(),
     message: yup.string().defined().matches(/^Hello/)
@@ -450,68 +562,24 @@ export function ExampleInputSchema(): yup.SchemaOf<ExampleInput> {
 }
 ```
 
-#### zod schema
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-      - typescript-validation-schema
-    config:
-      schema: zod
-      directives:
-        # Write directives like
-        #
-        # directive:
-        #   arg1: schemaApi
-        #   arg2: ["schemaApi2", "Hello $1"]
-        #
-        # See more examples in `./tests/directive.spec.ts`
-        # https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/blob/main/tests/directive.spec.ts
-        constraint:
-          minLength: min
-          # Replace $1 with specified `startsWith` argument value of the constraint directive
-          startsWith: [regex, /^$1/, message]
-          format:
-            # This example means `validation-schema: directive-arg`
-            # directive-arg is supported String and Enum.
-            email: email
-```
-
-Then generates zod validation schema like below.
+Zod config:
 
 ```ts
-export function ExampleInputSchema(): z.ZodSchema<ExampleInput> {
-  return z.object({
-    email: z.string().min(50).email(),
-    message: z.string().regex(/^Hello/, 'message')
-  })
+{
+  schema: 'zodv4',
+  directives: {
+    constraint: {
+      minLength: 'min',
+      startsWith: ['regex', /^$1/, 'message'],
+      format: {
+        email: 'email',
+      },
+    },
+  },
 }
 ```
 
-#### zodv4 schema
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript
-      - typescript-validation-schema
-    config:
-      schema: zodv4
-      directives:
-        constraint:
-          minLength: min
-          # Replace $1 with specified `startsWith` argument value of the constraint directive
-          startsWith: [regex, /^$1/, message]
-          format:
-            # This example means `validation-schema: directive-arg`
-            # directive-arg is supported String and Enum.
-            email: email
-```
-
-Then generates zodv4 validation schema like below.
+Generated Zod schema:
 
 ```ts
 export function ExampleInputSchema(): z.ZodObject<Properties<ExampleInput>> {
@@ -522,21 +590,4 @@ export function ExampleInputSchema(): z.ZodObject<Properties<ExampleInput>> {
 }
 ```
 
-#### other schema
-
-Please see [example](https://github.com/Code-Hex/graphql-codegen-typescript-validation-schema/tree/main/example) directory.
-
-## Notes
-
-Their is currently a compatibility issue with the client-preset. A workaround for this is to split the generation into two (one for client-preset and one for typescript-validation-schema).
-
-```yml
-generates:
-  path/to/graphql.ts:
-    plugins:
-      - typescript-validation-schema
-  /path/to/graphql/:
-    preset: 'client',
-      plugins:
-      ...
-```
+Other validation libraries use the same directive shape, but the API names differ. The generated examples in `example/` and `tests/directive.spec.ts` are the best source when wiring a new directive. Annoying, but honest.
