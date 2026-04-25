@@ -18,9 +18,7 @@ import { convertNameParts, DeclarationBlock, indent } from '@graphql-codegen/vis
 import {
   Kind,
 } from 'graphql';
-import { buildMaybeLazy } from '../lazy.js';
 import { buildApi, formatDirectiveConfig } from '../directive.js';
-import { buildScalarSchema } from '../scalar.js';
 import {
   escapeGraphQLCharacters,
   InterfaceTypeDefinitionBuilder,
@@ -29,6 +27,8 @@ import {
   isNonNullType,
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
+import { buildMaybeLazy } from '../lazy.js';
+import { buildScalarSchema } from '../scalar.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
 
 export class YupSchemaVisitor extends BaseSchemaVisitor {

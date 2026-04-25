@@ -1,7 +1,7 @@
 import type { TypeNode } from 'graphql';
-import { isEnumType, isScalarType } from 'graphql';
-
 import type { Visitor } from './visitor.js';
+
+import { isEnumType, isScalarType } from 'graphql';
 import { isNamedType } from './graphql.js';
 
 /**

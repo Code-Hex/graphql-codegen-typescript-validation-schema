@@ -17,9 +17,9 @@ export function buildScalarSchema(
   visitor: Visitor,
   scalarName: string,
   options: {
-    typeMap: Record<'string' | 'number' | 'boolean', string>;
-    fallback: string;
-    wrapCustom?: (schema: string) => string;
+    typeMap: Record<'string' | 'number' | 'boolean', string>
+    fallback: string
+    wrapCustom?: (schema: string) => string
   },
 ): string {
   if (config.scalarSchemas?.[scalarName]) {

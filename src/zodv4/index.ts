@@ -22,20 +22,16 @@ import { BaseSchemaVisitor } from '../schema_visitor.js';
 import { buildZodOperationSchemas } from '../zod/operation.js';
 import {
   anySchema,
-  applyDirectives,
   buildObjectExpression,
   buildObjectReturn,
-  enumDefaultTypeName,
-  enumDefaultValueName,
-  generateFieldZodSchema,
   generateFieldTypeZodSchema,
+  generateFieldZodSchema,
   isOneOfInputObject,
   maybeLazy,
   schemaDepthParameter,
   schemaDepthVariable,
   unionLiterals,
   withDescription,
-  zod4Scalar,
 } from '../zod/shared.js';
 
 export class ZodV4SchemaVisitor extends BaseSchemaVisitor {

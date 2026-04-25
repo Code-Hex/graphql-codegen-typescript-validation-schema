@@ -14,9 +14,7 @@ import type { ValidationSchemaPluginConfig } from '../config.js';
 import type { Visitor } from '../visitor.js';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 
-import { buildMaybeLazy } from '../lazy.js';
 import { buildApiForValibot, formatDirectiveConfig } from '../directive.js';
-import { buildScalarSchema } from '../scalar.js';
 import {
   InterfaceTypeDefinitionBuilder,
   isListType,
@@ -24,6 +22,8 @@ import {
   isNonNullType,
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
+import { buildMaybeLazy } from '../lazy.js';
+import { buildScalarSchema } from '../scalar.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
 
 export class ValibotSchemaVisitor extends BaseSchemaVisitor {

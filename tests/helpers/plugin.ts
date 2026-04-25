@@ -1,7 +1,7 @@
-import { buildSchema } from 'graphql';
-
-import { plugin } from '../../src/index.js';
 import type { ValidationSchemaPluginConfig } from '../../src/config.js';
+
+import { buildSchema } from 'graphql';
+import { plugin } from '../../src/index.js';
 
 export type { ValidationSchemaPluginConfig };
 

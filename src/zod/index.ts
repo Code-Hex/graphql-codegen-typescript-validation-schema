@@ -13,7 +13,6 @@ import type {
 import type { ValidationSchemaPluginConfig } from '../config.js';
 import type { Visitor } from '../visitor.js';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
-import { Kind } from 'graphql';
 import {
   InterfaceTypeDefinitionBuilder,
   ObjectTypeDefinitionBuilder,
@@ -22,11 +21,8 @@ import { BaseSchemaVisitor } from '../schema_visitor.js';
 import { buildZodOperationSchemas } from './operation.js';
 import {
   anySchema,
-  applyDirectives,
   buildObjectExpression,
   buildObjectReturn,
-  enumDefaultTypeName,
-  enumDefaultValueName,
   generateFieldTypeZodSchema,
   generateFieldZodSchema,
   isOneOfInputObject,
@@ -35,7 +31,6 @@ import {
   schemaDepthVariable,
   unionLiterals,
   withDescription,
-  zod4Scalar,
 } from './shared.js';
 
 export class ZodSchemaVisitor extends BaseSchemaVisitor {
@@ -323,4 +318,3 @@ export class ZodSchemaVisitor extends BaseSchemaVisitor {
     }
   }
 }
-
