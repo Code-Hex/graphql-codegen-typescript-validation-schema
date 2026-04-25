@@ -12,8 +12,8 @@ import type {
   TypeNode,
 } from 'graphql';
 
-import type { ValidationSchemaPluginConfig } from '../config.js';
-import type { Visitor } from '../visitor.js';
+import type { ValidationSchemaPluginConfig } from './config.js';
+import type { Visitor } from './visitor.js';
 import { resolveExternalModuleAndFn } from '@graphql-codegen/plugin-helpers';
 import { convertNameParts, indent } from '@graphql-codegen/visitor-plugin-common';
 import {
@@ -21,15 +21,15 @@ import {
   Kind,
   valueFromASTUntyped,
 } from 'graphql';
-import { buildApi, formatDirectiveConfig } from '../directive.js';
+import { buildApi, formatDirectiveConfig } from './directive.js';
 import {
   escapeGraphQLCharacters,
   isListType,
   isNamedType,
   isNonNullType,
-} from '../graphql.js';
-import { buildMaybeLazy } from '../lazy.js';
-import { buildScalarSchema } from '../scalar.js';
+} from './graphql.js';
+import { buildMaybeLazy } from './lazy.js';
+import { buildScalarSchema } from './scalar.js';
 
 export const anySchema = `definedNonNullAnySchema`;
 

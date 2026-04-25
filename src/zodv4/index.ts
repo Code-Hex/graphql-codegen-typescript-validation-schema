@@ -32,7 +32,7 @@ import {
   schemaDepthVariable,
   unionLiterals,
   withDescription,
-} from '../zod/shared.js';
+} from '../zod_shared.js';
 
 export class ZodV4SchemaVisitor extends BaseSchemaVisitor {
   constructor(schema: GraphQLSchema, config: ValidationSchemaPluginConfig) {
