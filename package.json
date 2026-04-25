@@ -52,10 +52,10 @@
   },
   "files": [
     "!dist/**/*.tsbuildinfo",
-    "docs/**/*",
     "LICENSE",
     "README.md",
-    "dist/**/*.{js,ts,json}"
+    "dist/**/*.{js,ts,json}",
+    "docs/**/*"
   ],
   "scripts": {
     "type-check": "tsc --noEmit",
