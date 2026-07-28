@@ -97,7 +97,7 @@
     "eslint": "10.8.0",
     "jest": "30.4.2",
     "myzod": "1.12.1",
-    "npm-run-all2": "9.0.2",
+    "npm-run-all2": "9.0.3",
     "ts-dedent": "^2.2.0",
     "ts-jest": "29.4.12",
     "typescript": "7.0.2",
