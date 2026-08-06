@@ -45,9 +45,11 @@ describe('zodv4', () => {
 
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -86,9 +88,11 @@ describe('zodv4', () => {
 
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -125,9 +129,11 @@ describe('zodv4', () => {
     const result = await plugin(schema, [], { schema: 'zodv4', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -165,9 +171,11 @@ describe('zodv4', () => {
     const result = await plugin(schema, [], { schema: 'zodv4', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -212,9 +220,11 @@ describe('zodv4', () => {
     const result = await plugin(schema, [], { schema: 'zodv4', scalars, importFrom: './types', schemaNamespacedImportName: 't' }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -254,9 +264,11 @@ describe('zodv4', () => {
     const result = await plugin(schema, [], { schema: 'zodv4', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -288,9 +300,11 @@ describe('zodv4', () => {
     const result = await plugin(schema, [], { schema: 'zodv4', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -323,9 +337,11 @@ describe('zodv4', () => {
     const result = await plugin(schema, [], { schema: 'zodv4', scalars, importFrom: './', schemaNamespacedImportName: 't' }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -362,9 +378,11 @@ describe('zodv4', () => {
     const result = await plugin(schema, [], { schema: 'zodv4', scalars }, {});
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -408,9 +426,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -451,9 +471,11 @@ describe('zodv4', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -494,9 +516,11 @@ describe('zodv4', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -537,9 +561,11 @@ describe('zodv4', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -574,9 +600,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -609,9 +637,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -648,9 +678,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -695,9 +727,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -744,9 +778,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -789,9 +825,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -834,9 +872,11 @@ describe('zodv4', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -877,9 +917,11 @@ describe('zodv4', () => {
     `);
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -1034,9 +1076,11 @@ describe('zodv4', () => {
 
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -1085,9 +1129,11 @@ describe('zodv4', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1128,9 +1174,11 @@ describe('zodv4', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1171,9 +1219,11 @@ describe('zodv4', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1217,9 +1267,11 @@ describe('zodv4', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1261,9 +1313,11 @@ describe('zodv4', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1324,9 +1378,11 @@ describe('zodv4', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1411,9 +1467,11 @@ describe('zodv4', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1477,9 +1535,11 @@ describe('zodv4', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1533,9 +1593,11 @@ describe('zodv4', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1591,9 +1653,11 @@ describe('zodv4', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1649,9 +1713,11 @@ describe('zodv4', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1700,9 +1766,11 @@ describe('zodv4', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1749,9 +1817,11 @@ describe('zodv4', () => {
 
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1800,9 +1870,11 @@ describe('zodv4', () => {
       );
       expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
         "
-        type Properties<T> = {
-          [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-        };
+        type Properties<T> = Required<{
+          [K in keyof T]: undefined extends T[K]
+            ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+            : z.ZodType<T[K]>
+        }>;
 
         type definedNonNullAny = {};
 
@@ -1867,9 +1939,11 @@ describe('zodv4', () => {
         );
         expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
           "
-          type Properties<T> = {
-            [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-          };
+          type Properties<T> = Required<{
+            [K in keyof T]: undefined extends T[K]
+              ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+              : z.ZodType<T[K]>
+          }>;
 
           type definedNonNullAny = {};
 
@@ -1913,9 +1987,11 @@ describe('zodv4', () => {
         );
         expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
           "
-          type Properties<T> = {
-            [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-          };
+          type Properties<T> = Required<{
+            [K in keyof T]: undefined extends T[K]
+              ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+              : z.ZodType<T[K]>
+          }>;
 
           type definedNonNullAny = {};
 
@@ -1975,9 +2051,11 @@ describe('zodv4', () => {
         );
         expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
           "
-          type Properties<T> = {
-            [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-          };
+          type Properties<T> = Required<{
+            [K in keyof T]: undefined extends T[K]
+              ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+              : z.ZodType<T[K]>
+          }>;
 
           type definedNonNullAny = {};
 
@@ -2048,9 +2126,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -2085,9 +2165,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -2146,9 +2228,11 @@ describe('zodv4', () => {
 
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
@@ -2208,9 +2292,11 @@ describe('zodv4', () => {
     );
     expect(removedInitialEmitValue(result.content)).toMatchInlineSnapshot(`
       "
-      type Properties<T> = {
-        [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;
-      };
+      type Properties<T> = Required<{
+        [K in keyof T]: undefined extends T[K]
+          ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }
+          : z.ZodType<T[K]>
+      }>;
 
       type definedNonNullAny = {};
 
