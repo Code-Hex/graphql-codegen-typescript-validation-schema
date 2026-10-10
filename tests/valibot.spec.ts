@@ -736,7 +736,44 @@ describe('valibot', () => {
         "
       `)
     });
-    it.todo('list field')
+    it('list field', async () => {
+      const schema = buildSchema(/* GraphQL */ `
+        input UserCreateInput {
+          tags: [String!]! @constraint(minLength: 1, maxLength: 10)
+          labels: [String!] @constraint(minLength: 1, maxLength: 10)
+          ids: [[String!]!]! @constraint(minLength: 1, maxLength: 10)
+        }
+        directive @constraint(minLength: Int!, maxLength: Int!) on INPUT_FIELD_DEFINITION
+      `);
+      const result = await plugin(
+        schema,
+        [],
+        {
+          schema: 'valibot',
+          notAllowEmptyString: true,
+          directives: {
+            constraint: {
+              minLength: ['minLength', '$1', 'Please input more than $1'],
+              maxLength: ['maxLength', '$1', 'Please input less than $1'],
+            },
+          },
+        },
+        {},
+      );
+
+      expect(result.content).toMatchInlineSnapshot(`
+        "
+
+        export function UserCreateInputSchema(): v.GenericSchema<UserCreateInput> {
+          return v.object({
+            tags: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1, "Please input more than 1"), v.maxLength(10, "Please input less than 10")),
+            labels: v.nullish(v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1, "Please input more than 1"), v.maxLength(10, "Please input less than 10"))),
+            ids: v.pipe(v.array(v.array(v.pipe(v.string(), v.minLength(1)))), v.minLength(1, "Please input more than 1"), v.maxLength(10, "Please input less than 10"))
+          })
+        }
+        "
+      `)
+    });
     describe('pR #112', () => {
       it.todo('with notAllowEmptyString')
       it.todo('without notAllowEmptyString')
