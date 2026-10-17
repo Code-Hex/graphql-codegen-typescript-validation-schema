@@ -211,17 +211,18 @@ function generateFieldValibotSchema(config: ValidationSchemaPluginConfig, visito
   return indent(`${field.name.value}: ${gen}`, indentCount);
 }
 
-function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode): string {
+function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, visitor: Visitor, field: InputValueDefinitionNode | FieldDefinitionNode, type: TypeNode, parentType?: TypeNode, isRoot = true): string {
   if (isListType(type)) {
-    const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type);
+    const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type, false);
     const arrayGen = `v.array(${gen})`;
+    const maybeDirectivesGen = isRoot ? pipeSchemaAndActions(arrayGen, actionsFromDirectives(config, field)) : arrayGen;
     if (!isNonNullType(parentType))
-      return `v.nullish(${arrayGen})`;
+      return `v.nullish(${maybeDirectivesGen})`;
 
-    return arrayGen;
+    return maybeDirectivesGen;
   }
   if (isNonNullType(type)) {
-    const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type);
+    const gen = generateFieldTypeValibotSchema(config, visitor, field, type.type, type, isRoot);
     return gen;
   }
   if (isNamedType(type)) {
@@ -229,7 +230,7 @@ function generateFieldTypeValibotSchema(config: ValidationSchemaPluginConfig, vi
     if (isListType(parentType))
       return `v.nullable(${maybeLazy(visitor, type, gen)})`;
 
-    const actions = actionsFromDirectives(config, field);
+    const actions = isRoot ? actionsFromDirectives(config, field) : [];
     const schema = maybeLazy(visitor, type, pipeSchemaAndActions(gen, actions));
 
     if (isNonNullType(parentType)) {
