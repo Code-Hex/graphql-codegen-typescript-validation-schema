@@ -177,7 +177,7 @@ importers:
         version: 7.3.0(graphql@17.0.2)
       '@graphql-tools/utils':
         specifier: ^13.0.0
-        version: 13.0.0(graphql@17.0.2)
+        version: 13.1.1(graphql@17.0.2)
       graphlib:
         specifier: ^2.1.8
         version: 2.1.8
@@ -834,8 +834,8 @@ packages:
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
-  '@graphql-tools/utils@13.0.0':
-    resolution: {integrity: sha512-eS6FbWFcmb5o0xKkmPn8EyqWuDl0S7kFJgpQisxL6I1Xn8Z1r8dz3TP90E8IEU743EdP3esP+TQIjY1E9KlPXw==}
+  '@graphql-tools/utils@13.1.1':
+    resolution: {integrity: sha512-3o36m/WESYlKGrhwOzX3DAmQe9N2al0FJvZkBY4z4NYlUG5Bc2ZqUxQHbL6hBhUY+MhDMI/EXAJW0YbhggzhvQ==}
     engines: {node: '>=22.18.0'}
     peerDependencies:
       graphql: ^16.0.0 || ^17.0.0
@@ -5094,7 +5094,7 @@ snapshots:
       graphql: 17.0.2
       tslib: 2.8.1
 
-  '@graphql-tools/utils@13.0.0(graphql@17.0.2)':
+  '@graphql-tools/utils@13.1.1(graphql@17.0.2)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@17.0.2)
       '@whatwg-node/promise-helpers': 2.0.0
