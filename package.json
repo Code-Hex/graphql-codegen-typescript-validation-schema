@@ -80,17 +80,17 @@
     "zod": "^3.25.0 || ^4.0.0"
   },
   "dependencies": {
-    "@graphql-codegen/plugin-helpers": "^7.0.0",
-    "@graphql-codegen/schema-ast": "6.1.1",
-    "@graphql-codegen/visitor-plugin-common": "^7.0.0",
+    "@graphql-codegen/plugin-helpers": "^8.0.0",
+    "@graphql-codegen/schema-ast": "7.0.0",
+    "@graphql-codegen/visitor-plugin-common": "^8.0.0",
     "@graphql-tools/utils": "^13.0.0",
     "graphlib": "^2.1.8",
     "graphql": "^17.0.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^10.0.0",
-    "@graphql-codegen/cli": "7.4.6",
-    "@graphql-codegen/typescript": "^6.0.0",
+    "@graphql-codegen/cli": "8.0.0",
+    "@graphql-codegen/typescript": "^7.0.0",
     "@tsconfig/recommended": "1.0.13",
     "@types/graphlib": "^2.1.8",
     "@types/node": "^26.0.0",
