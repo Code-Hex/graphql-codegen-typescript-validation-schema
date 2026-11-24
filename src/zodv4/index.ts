@@ -10,15 +10,15 @@ import type {
   UnionTypeDefinitionNode,
 } from 'graphql';
 
-import type { ValidationSchemaPluginConfig } from '../config.js';
-import type { Visitor } from '../visitor.js';
 import { DeclarationBlock, indent } from '@graphql-codegen/visitor-plugin-common';
 import { Kind } from 'graphql';
+import type { ValidationSchemaPluginConfig } from '../config.js';
 import {
   InterfaceTypeDefinitionBuilder,
   ObjectTypeDefinitionBuilder,
 } from '../graphql.js';
 import { BaseSchemaVisitor } from '../schema_visitor.js';
+import type { Visitor } from '../visitor.js';
 import { buildZodOperationSchemas } from '../zod/operation.js';
 import {
   anySchema,
@@ -51,7 +51,7 @@ export class ZodV4SchemaVisitor extends BaseSchemaVisitor {
           new DeclarationBlock({})
             .asKind('type')
             .withName('Properties<T>')
-            .withContent(['{', '  [K in keyof T]: z.ZodType<T[K], T[K] | undefined>;', '}'].join('\n'))
+            .withContent(['Required<{', '  [K in keyof T]: undefined extends T[K]', '    ? z.ZodType<T[K]> & { _zod: { optout: "optional" } }', '    : z.ZodType<T[K]>', '}>'].join('\n'))
             .string,
           // Unfortunately, zod doesn’t provide non-null defined any schema.
           // This is a temporary hack until it is fixed.
